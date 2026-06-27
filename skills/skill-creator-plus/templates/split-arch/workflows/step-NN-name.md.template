@@ -1,0 +1,5 @@
+# Step {{STEP_NUMBER}}: {{STEP_TITLE}}
+
+{{STEP_INSTRUCTIONS}}
+
+**完成后，读取 `workflows/{{NEXT_STEP_FILE}}` 继续。**

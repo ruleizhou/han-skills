@@ -1,0 +1,35 @@
+{
+  "name": "han",
+  "version": "0.1.0",
+  "description": "Han's skill set for building self-learning, on-demand-split skills.",
+  "author": {
+    "name": "Han",
+    "url": "https://github.com/YOUR_GH_USER"
+  },
+  "homepage": "https://github.com/YOUR_GH_USER/han-skill",
+  "repository": "https://github.com/YOUR_GH_USER/han-skill",
+  "keywords": [
+    "skills",
+    "skill-creator",
+    "self-learning"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Han Skills",
+    "shortDescription": "Personal skill factory and workflows",
+    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus — a factory for skills with feedback-loop self-learning and on-demand file-split architecture (SKILL.md router + workflows/ steps).",
+    "developerName": "Han",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/YOUR_GH_USER/han-skill",
+    "defaultPrompt": [
+      "Create a self-learning skill with a feedback loop",
+      "Split a bloated SKILL.md into on-demand files",
+      "Add self-learning to an existing skill"
+    ],
+    "brandColor": "#0EA5E9"
+  }
+}

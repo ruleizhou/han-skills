@@ -1,0 +1,19 @@
+{
+  "name": "han",
+  "version": "0.1.0",
+  "description": "Han's personal skill set — starts with skill-creator-plus, a factory for self-learning, on-demand-split skills.",
+  "author": {
+    "name": "Han",
+    "url": "https://github.com/YOUR_GH_USER"
+  },
+  "homepage": "https://github.com/YOUR_GH_USER/han-skill",
+  "repository": "https://github.com/YOUR_GH_USER/han-skill",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "skill-creator",
+    "self-learning",
+    "feedback-loop"
+  ],
+  "skills": "./skills/"
+}

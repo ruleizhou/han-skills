@@ -1,0 +1,42 @@
+---
+name: {{SKILL_NAME}}
+description: >
+  {{SKILL_DESCRIPTION}}
+---
+
+# {{SKILL_TITLE}}
+
+{{SKILL_BRIEF_INTRO}}
+
+## 核心原则
+
+{{CORE_PRINCIPLES}}
+
+## 模式判断
+
+**先判断用户意图属于哪种模式**：
+
+| 触发信号 | 模式 | 动作 |
+|----------|------|------|
+| {{MODE_TRIGGER_TABLE}} |
+
+## 预检清单
+
+在进入工作流之前快速判断：
+{{PREFLIGHT_CHECKLIST}}
+
+## Workflow
+
+本 skill 使用 {{STEP_COUNT}} 步工作流（Step 0 ~ Step {{LAST_STEP}}），按顺序执行。**每个步骤开始时，先 Read 对应的详细指令文件：**
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+{{WORKFLOW_TABLE}}
+
+**反馈闭环由用户主动触发，不在主流程中自动弹出。触发后读取 `workflows/feedback-loop.md`。**
+
+**开始执行时，首先读取 `workflows/step-00-{{FIRST_STEP}}.md`。**
+
+## 参考资料速查
+
+{{REFERENCES_LIST}}

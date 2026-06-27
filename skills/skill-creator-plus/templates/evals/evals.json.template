@@ -1,0 +1,16 @@
+{
+  "_schema": "evals.json — skill 的评测用例集。每个用例覆盖一种真实使用场景。详细方法论见 references/评测指南.md",
+  "_how_to_write_expectations": "expectations 是【可验证的陈述句】，不是模糊愿望。好的 expectation 有区分度：skill 做对时通过、做错时失败。存疑默认 FAIL。详见评测指南.md 第二章",
+  "skill_name": "{{SKILL_NAME}}",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "用户真实会说的任务描述（要具体、带场景、带文件名/业务背景，别出太明显的题）",
+      "expected_output": "期望结果的简要描述（给评审者看的）",
+      "files": [],
+      "expectations": [
+        "输出包含 X（可客观验证的陈述，如『表格含客户名、金额、日期三列』）"
+      ]
+    }
+  ]
+}
