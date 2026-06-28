@@ -5,13 +5,13 @@
     "url": "https://github.com/YOUR_GH_USER"
   },
   "metadata": {
-    "description": "Han 个人 skills 集合，首个 skill 为 skill-creator-plus（自学习 feedback loop + 按需文件拆分的 skill 工厂）。支持 Claude Code / Codex / OpenCode / Cursor 四平台分发。",
+    "description": "Han 个人 skills 集合：skill-creator-plus（自学习 skill 工厂）、han-imagen（生图引擎，OpenAI/Google 双 provider）、han-infographic（信息图 skill，防幻觉两阶段法 + 自学习）。支持 Claude Code / Codex / OpenCode / Cursor 四平台分发。",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "han",
-      "description": "Han's skill set — skill-creator-plus and more.",
+      "description": "Han's skill set — skill-creator-plus, han-imagen, han-infographic.",
       "source": {
         "source": "github",
         "repo": "YOUR_GH_USER/han-skill"

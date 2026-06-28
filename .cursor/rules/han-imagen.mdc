@@ -1,0 +1,155 @@
+---
+description: >
+  Han 生图底座 skill。双 provider 支持 OpenAI(gpt-image-1.5 / gpt-image-2 / dall-e-3)
+  与 Google(gemini-3-pro-image-preview / imagen),提供 provider / 模型 / 宽高比 / 尺寸 /
+  质量 / 参考图 / JSON 输出等选项;通过作用域隔离的 .han-skills/.env 与 EXTEND.md 配置,
+  支持中转 base_url,产物统一输出到 ~/Downloads/han-skill-imagen/。
+  当用户说「生成图片、画图、出图、画一张、render image、generate image、改图、编辑图片、
+  换个风格、给这段配个图、生成图片素材、image generation」时使用本 skill。
+  无 API key 时,优先使用当前运行时内置的生图工具,再用本 skill 的 Python 后端。
+alwaysApply: false
+globs:
+---
+# Han Imagen
+
+Han 生图体系的通用图片生成后端。
+
+这个 skill 是通用底座,默认不施加任何特定品牌/角色风格。上层业务 skill(如 `han-infographic`)应自带提示词、参考图与输出约定,通过本 skill 完成实际生图。
+
+## 后端选择
+
+按用户上下文选择最佳生图后端:
+
+1. **Python API 后端** —— 当配置了 han 作用域的 API key,或需要可复现的本地输出时使用。
+2. 若未配置 han 作用域的 key 且当前运行在 Codex,优先使用 Codex 内置的 imagen / 生图工具。
+3. 若未配置 key 且不在 Codex,尝试当前交互运行时自带的生图工具。
+4. 若既无 API 后端又无运行时生图工具,输出准备好的提示词并说明缺少后端。
+
+运行时内置生图工具不由 `scripts/main.py` 调用,它是 skill 层的兜底。需要可复现 CLI 行为或未来批量生成的工作流,以 Python 后端为稳定自动化路径。
+
+所有生成图片统一输出到:
+
+```text
+~/Downloads/han-skill-imagen/
+```
+
+文件名从图片主题或提示词派生,例如:
+
+```text
+~/Downloads/han-skill-imagen/python-cli-pipeline.png
+```
+
+若目标文件名已存在,追加数字后缀如 `-2`。
+
+## Python 后端
+
+主脚本:
+
+```bash
+python3 {baseDir}/scripts/main.py
+```
+
+v0.1 运行时仅依赖 Python 标准库,无需安装第三方包(需 python3)。
+
+Python 后端至少需要一个 provider 的 API key。Codex / ChatGPT 登录态不会自动赋予本脚本 API 访问权限。未配置 han 作用域 key 时,不要在 Codex 中首选 Python 后端,改用 Codex 内置生图工具。
+
+## 支持的 Provider
+
+| Provider | 环境变量 | 默认模型 |
+|----------|---------|---------|
+| `openai` | `OPENAI_API_KEY` | `gpt-image-1.5` |
+| `google` | `GOOGLE_API_KEY` 或 `GEMINI_API_KEY` | `gemini-3-pro-image-preview` |
+
+Provider base URL 覆盖(中转/代理):
+
+| Provider | 环境变量 |
+|----------|---------|
+| OpenAI | `OPENAI_BASE_URL` |
+| Google | `GOOGLE_BASE_URL` |
+
+模型覆盖:
+
+| Provider | 环境变量 |
+|----------|---------|
+| OpenAI | `OPENAI_IMAGE_MODEL` |
+| Google | `GOOGLE_IMAGE_MODEL` |
+
+## 配置
+
+加载优先级:
+
+```text
+CLI 参数 > EXTEND.md > <cwd>/.han-skills/.env > ~/.han-skills/.env > 非 provider 进程环境变量 > 内置默认值
+```
+
+Provider 环境变量默认按 han 作用域隔离。除非在 `.han-skills/.env` 中定义,否则 Python 后端会忽略 shell 里已 export 的 `OPENAI_API_KEY`、`GOOGLE_API_KEY`、`GEMINI_API_KEY`、provider base URL 和 provider 模型覆盖。
+
+若要刻意使用 shell 中已 export 的 provider 值,在 shell 中为本次运行设置此控制开关(该开关不从 `.han-skills/.env` 读取):
+
+```bash
+HAN_ALLOW_AMBIENT_PROVIDER_ENV=1
+```
+
+`EXTEND.md` 查找路径,首个命中生效:
+
+| 路径 | 作用域 |
+|------|--------|
+| `.han-skills/han-imagen/EXTEND.md` | 项目 |
+| `${XDG_CONFIG_HOME:-$HOME/.config}/han-skills/han-imagen/EXTEND.md` | XDG |
+| `$HOME/.han-skills/han-imagen/EXTEND.md` | 用户主目录 |
+
+schema 见 [preferences-schema.md](references/config/preferences-schema.md)。
+
+## 用法
+
+选择 Python API 后端时参考这些示例:
+
+```bash
+# 基础用法;保存到 ~/Downloads/han-skill-imagen/cat.png
+python3 {baseDir}/scripts/main.py --prompt "A cat"
+
+# 强制 provider/模型;--image 仅作为文件名/扩展名提示
+python3 {baseDir}/scripts/main.py --prompt "A cat" --image cat.png --provider openai --model gpt-image-1.5
+
+# Google + 宽高比 + 质量
+python3 {baseDir}/scripts/main.py --prompt "A landscape" --image out.png --provider google --ar 16:9 --quality 2k
+
+# 从文件读取提示词
+python3 {baseDir}/scripts/main.py --promptfiles system.md content.md --image out.png
+
+# 参考图(改图)
+python3 {baseDir}/scripts/main.py --prompt "Restyle this image" --ref source.png --image out.png --provider google
+
+# JSON 输出
+python3 {baseDir}/scripts/main.py --prompt "A cat" --image cat.png --json
+```
+
+更多示例见 [usage-examples.md](references/usage-examples.md)。
+
+## 选项
+
+| 选项 | 说明 |
+|------|------|
+| `--prompt <text>`, `-p` | 提示词文本 |
+| `--promptfiles <files...>` | 从文件读取提示词,空行拼接 |
+| `--image <path>` | 可选文件名/扩展名提示;最终图片仍保存到 `~/Downloads/han-skill-imagen/`,以内容相关文件名命名 |
+| `--provider openai\|google` | 强制 provider |
+| `--model <id>`, `-m` | provider 模型 ID |
+| `--ar <ratio>` | 宽高比,如 `16:9`、`1:1`、`4:3`、`9:16` |
+| `--size <WxH>` | provider 专属像素尺寸,如 `1024x1024` |
+| `--quality normal\|2k` | 质量预设;默认 `2k` |
+| `--imageSize 1K\|2K\|4K` | Google 图片尺寸提示 |
+| `--ref <files...>` | 参考图 |
+| `--n <count>` | 请求 provider 生成的图片数;v0.1 只保存返回的第一张 |
+| `--json` | 输出 JSON 结果 |
+
+## Provider 说明
+
+按需阅读:
+
+- OpenAI:[openai.md](references/providers/openai.md)
+- Google:[google.md](references/providers/google.md)
+
+## 当前范围
+
+v0.1 刻意不包含批量生成、重试和 provider 并发控制。等单图路径稳定后再加。

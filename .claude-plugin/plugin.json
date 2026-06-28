@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's personal skill set — starts with skill-creator-plus, a factory for self-learning, on-demand-split skills.",
+  "description": "Han's personal skill set: skill-creator-plus (self-learning skill factory), han-imagen (image generation engine with OpenAI/Google), han-infographic (infographic skill with anti-hallucination two-phase flow + self-learning).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -13,7 +13,9 @@
     "skills",
     "skill-creator",
     "self-learning",
-    "feedback-loop"
+    "feedback-loop",
+    "image-generation",
+    "infographic"
   ],
   "skills": "./skills/"
 }
