@@ -279,3 +279,8 @@ if $DRY_RUN; then
 fi
 
 echo -e "${GREEN}Done!${NC}"
+
+if [[ -d "$SCRIPT_DIR/mcp" ]]; then
+    echo ""
+    echo -e "${BLUE}附带的 MCP Server:${NC} 运行 ${GREEN}./scripts/setup-mcp.sh${NC} 查看注册方式"
+fi

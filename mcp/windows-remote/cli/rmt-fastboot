@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# 远程 fastboot 代理 —— flash 自动 SCP 上传，其他命令透传
+# 用法: rmt-fastboot flash <partition> <local_img>
+#       rmt-fastboot <其他 fastboot 命令>
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+source "${SCRIPT_DIR}/lib/ssh-utils.sh"
+
+WIN_TEMP='C:\Temp\windows-remote'
+
+if [[ "${1:-}" == "flash" ]]; then
+    shift
+
+    if [[ $# -lt 2 ]]; then
+        echo "用法: rmt-fastboot flash <partition> <local_img>" >&2
+        exit 1
+    fi
+
+    partition="$1"
+    local_file="$2"
+
+    if [[ ! -f "$local_file" ]]; then
+        echo "错误：本地文件不存在: $local_file" >&2
+        exit 1
+    fi
+
+    filename=$(basename "$local_file")
+    win_path="${WIN_TEMP}\\${filename}"
+
+    # 确保临时目录存在
+    ssh_exec "powershell -Command \"New-Item -Path '${WIN_TEMP}' -ItemType Directory -Force | Out-Null\"" >/dev/null
+
+    # SCP 上传
+    size=$(du -h "$local_file" | cut -f1)
+    echo "上传: $local_file ($size) → ${SSH_HOST}:${win_path}"
+    if ! scp_upload "$local_file" "$win_path"; then
+        echo "错误：SCP 上传失败" >&2
+        exit 1
+    fi
+
+    # 远程 fastboot flash
+    echo "执行: fastboot flash ${partition}"
+    ssh_exec "fastboot flash ${partition} \"${win_path}\""
+else
+    # 非 flash 命令，直接透传
+    ssh_exec "fastboot $*"
+fi

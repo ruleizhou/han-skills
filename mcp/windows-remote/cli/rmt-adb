@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# 远程 adb 代理 —— push 自动 SCP 上传，其他命令透传
+# 用法: rmt-adb push <local> <remote>
+#       rmt-adb <其他 adb 命令>
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+source "${SCRIPT_DIR}/lib/ssh-utils.sh"
+
+WIN_TEMP='C:\Temp\windows-remote'
+
+if [[ "${1:-}" == "push" ]]; then
+    shift
+    # 解析 push 选项（如 -p 等），以 - 开头的都是选项
+    push_opts=()
+    while [[ $# -gt 0 && "$1" == -* ]]; do
+        push_opts+=("$1")
+        shift
+    done
+
+    if [[ $# -lt 2 ]]; then
+        echo "用法: rmt-adb push [选项] <local> <remote>" >&2
+        exit 1
+    fi
+
+    local_file="$1"
+    device_path="$2"
+    shift 2
+
+    if [[ ! -f "$local_file" ]]; then
+        echo "错误：本地文件不存在: $local_file" >&2
+        exit 1
+    fi
+
+    filename=$(basename "$local_file")
+    win_path="${WIN_TEMP}\\${filename}"
+
+    # 确保临时目录存在
+    ssh_exec "powershell -Command \"New-Item -Path '${WIN_TEMP}' -ItemType Directory -Force | Out-Null\"" >/dev/null
+
+    # SCP 上传
+    size=$(du -h "$local_file" | cut -f1)
+    echo "上传: $local_file ($size) → ${SSH_HOST}:${win_path}"
+    if ! scp_upload "$local_file" "$win_path"; then
+        echo "错误：SCP 上传失败" >&2
+        exit 1
+    fi
+
+    # 远程 adb push
+    echo "执行: adb push ${push_opts[*]} \"${device_path}\""
+    ssh_exec "adb push ${push_opts[*]} \"${win_path}\" \"${device_path}\""
+else
+    # adb shell 特殊处理：-tt 强制 PTY 以获取原生终端输出（ls 多列等）
+    if [[ "${1:-}" == "shell" ]]; then
+        if [[ $# -eq 1 ]]; then
+            # 纯 shell，无命令：交互式 shell
+            ssh_interactive "adb shell -tt"
+        else
+            shift
+            ssh_exec "adb shell -tt $*"
+        fi
+    else
+        # 非 shell 命令，直接透传
+        ssh_exec "adb $*"
+    fi
+fi

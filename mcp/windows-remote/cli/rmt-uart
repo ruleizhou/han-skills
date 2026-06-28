@@ -1,0 +1,358 @@
+#!/usr/bin/env bash
+# 远程 UART 操作 —— 串口列表、发送、日志捕获/读取/停止/下载
+# 用法: rmt-uart <list|send|start|read|stop|upload> ...
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+source "${SCRIPT_DIR}/lib/ssh-utils.sh"
+
+WIN_TEMP='C:\Temp'
+
+usage() {
+    cat >&2 <<'HELP'
+用法: rmt-uart <子命令> [参数]
+
+子命令:
+  list                            列出可用 COM 口
+  send   <port> <command>         发送命令 [-b baudrate] [-t timeout] [--no-response]
+  start  <port>                   启动日志捕获 [-b baudrate] [-o output_file]
+  read   <port>                   读取全部日志 [--follow] [-n lines]
+  read   -f <file>                直接读指定文件 [--follow] [-n lines]
+  stop   <port>                   停止捕获
+  upload <port>                   下载日志到本地 [-o output_dir]
+  upload -f <remote_file>         下载指定文件 [-o output_dir]
+
+选项:
+  -b  波特率 (默认 115200)
+  -t  超时秒数 (send 默认 3)
+  -n  读取行数 (默认全量)
+  -o  输出路径 (upload 默认当前目录)
+  -f  指定远程文件路径
+  --follow      持续刷新模式 (Ctrl+C 退出)
+  --no-response  只发送不等待响应
+HELP
+    exit 1
+}
+
+# ────────────────────── 通用 helper ──────────────────────
+_work_dir()  { echo "${WIN_TEMP}\\serial_$1"; }
+_pid_file()  { echo "$(_work_dir "$1")\\manager.pid"; }
+_log_file()  { echo "$(_work_dir "$1")\\capture.log"; }
+_cmd_file()  { echo "$(_work_dir "$1")\\cmd.txt"; }
+_resp_file() { echo "$(_work_dir "$1")\\response.txt"; }
+_cur_file()  { echo "$(_work_dir "$1")\\current.txt"; }
+
+_manager_running() {
+    local port="$1" pid_file="$(_pid_file "$port")" result
+    result=$(echo "if (Test-Path '${pid_file}') { \$mpid=(Get-Content '${pid_file}').Trim(); \$p=Get-Process -Id \$mpid -ErrorAction SilentlyContinue; if(\$p){Write-Host ALIVE}else{Write-Host DEAD} }else{Write-Host NONE}" | ps_exec 2>/dev/null || echo "NONE")
+    [[ "$result" == *ALIVE* ]]
+}
+
+_current_log() {
+    local port="$1" cur_file="$(_cur_file "$port")" result
+    result=$(echo "if(Test-Path '${cur_file}'){Get-Content '${cur_file}' -Raw}else{Write-Host NONE}" | ps_exec 2>/dev/null || echo "NONE")
+    result=$(echo "$result" | tr -d '[:space:]')
+    if [[ "$result" == "NONE" ]] || [[ -z "$result" ]]; then
+        echo "$(_log_file "$port")"
+    else
+        echo "$result"
+    fi
+}
+
+# ────────────────────── list ──────────────────────
+cmd_list() {
+    echo '[System.IO.Ports.SerialPort]::GetPortNames() | ForEach-Object { Write-Host $_ }; Write-Host "---"; Get-CimInstance Win32_SerialPort | Format-Table DeviceID,Description,Status,MaxBaudRate -AutoSize' | ps_exec
+}
+
+# ────────────────────── send ──────────────────────
+cmd_send() {
+    local port="$1" command="$2" baudrate="$3" timeout="$4" read_response="$5"
+
+    if _manager_running "$port"; then
+        local cmd_file="$(_cmd_file "$port")" resp_file="$(_resp_file "$port")"
+        echo "Remove-Item '${resp_file}' -Force -ErrorAction SilentlyContinue" | ps_exec
+        local tout_val="$timeout"
+        $read_response || tout_val="0"
+        echo "Set-Content -Path '${cmd_file}' -Value @('${command//\'/\'\'}','${tout_val}') -Encoding UTF8 -Force" | ps_exec
+
+        if ! $read_response; then
+            echo "已发送（管理器模式）: ${command}"
+            return 0
+        fi
+
+        local total_wait=$((timeout + 5)) elapsed=0
+        while ((elapsed < total_wait)); do
+            sleep 0.5; elapsed=$((elapsed + 1))
+            local check
+            check=$(echo "if(Test-Path '${resp_file}'){Write-Host EXISTS}else{Write-Host NONE}" | ps_exec 2>/dev/null || echo "NONE")
+            if [[ "$check" == *EXISTS* ]]; then
+                local resp
+                resp=$(echo "Get-Content '${resp_file}' -Raw -Encoding UTF8" | ps_exec 2>/dev/null || echo "")
+                echo "Remove-Item '${resp_file}' -Force -ErrorAction SilentlyContinue" | ps_exec
+                echo "已发送: ${command}"
+                echo "响应:"
+                echo "$resp"
+                return 0
+            fi
+        done
+        echo "已发送: ${command}"
+        echo "响应: 命令超时（${timeout}秒）"
+    else
+        local resp_part=""
+        $read_response && resp_part="Start-Sleep -Seconds ${timeout}; \$r=\$p.ReadExisting(); if(\$r){Write-Host '响应:'; Write-Host \$r}else{Write-Host '无响应数据'};"
+        echo "try { \$p=New-Object System.IO.Ports.SerialPort('${port}',${baudrate}); \$p.Encoding=[System.Text.Encoding]::UTF8; \$p.ReadTimeout=$((timeout * 1000)); \$p.Open(); \$p.WriteLine('${command//\'/\'\'}'); Write-Host \"已发送: ${command//\'/\'\'}\"; ${resp_part} \$p.Close() } catch { Write-Host \"错误: \$(\$_.Exception.Message)\" }" | ps_exec
+    fi
+}
+
+# ────────────────────── start ──────────────────────
+cmd_start() {
+    local port="$1" baudrate="$2" output_file="$3"
+
+    if _manager_running "$port"; then
+        echo "管理进程已在运行（端口 ${port}），如需重启请先 rmt-uart stop ${port}"
+        return 1
+    fi
+
+    local work_dir="$(_work_dir "$port")" pid_file="$(_pid_file "$port")" log_file
+    if [[ -n "$output_file" ]]; then
+        log_file="$output_file"
+    else
+        log_file="${work_dir}\\capture_$(date +%Y%m%d_%H%M%S).log"
+    fi
+
+    # 检查串口可用
+    local port_check
+    port_check=$(echo "try{\$p=New-Object System.IO.Ports.SerialPort('${port}',${baudrate});\$p.Open();\$p.Close();Write-Host PORT_OK}catch{Write-Host PORT_BUSY}" | ps_exec 2>/dev/null || echo "PORT_BUSY")
+    if [[ "$port_check" != *PORT_OK* ]]; then
+        echo "错误：串口 ${port} 被占用，无法打开"
+        return 1
+    fi
+
+    # 确保工作目录存在
+    ssh_exec "powershell -Command \"New-Item -Path '${work_dir}' -ItemType Directory -Force | Out-Null\"" >/dev/null 2>&1 || true
+
+    # 清理旧文件
+    local cmd_file="$(_cmd_file "$port")" resp_file="$(_resp_file "$port")"
+    ssh_exec "powershell -Command \"Remove-Item '${cmd_file}' -Force -ErrorAction SilentlyContinue; Remove-Item '${resp_file}' -Force -ErrorAction SilentlyContinue\"" >/dev/null 2>&1 || true
+
+    # 检查 Python + pyserial
+    local py_check
+    py_check=$(ssh_exec "python --version 2>&1" 2>/dev/null || echo "")
+    if [[ "$py_check" != *Python* ]]; then
+        echo "错误：Windows 端未安装 Python，请安装后运行: pip install pyserial"
+        return 1
+    fi
+    local pys_check
+    pys_check=$(ssh_exec "python -c \"import serial; print('PYSERIAL_OK')\"" 2>/dev/null || echo "")
+    if [[ "$pys_check" != *PYSERIAL_OK* ]]; then
+        echo "错误：Windows 端未安装 pyserial，请运行: pip install pyserial"
+        return 1
+    fi
+
+    # SCP 部署 serial_logger.py
+    local local_script="${SCRIPT_DIR}/../scripts/serial_logger.py"
+    if [[ ! -f "$local_script" ]]; then
+        echo "错误：找不到 serial_logger.py: $local_script"
+        return 1
+    fi
+    local remote_script="${work_dir}\\serial_logger.py"
+    load_ssh_config >/dev/null
+    echo "部署: serial_logger.py → ${SSH_HOST}:${remote_script}"
+    if ! scp_upload "$local_script" "$remote_script"; then
+        echo "错误：SCP 部署 serial_logger.py 失败"
+        return 1
+    fi
+
+    # WMI 启动后台进程
+    local cmd_line="python ${remote_script} ${port} ${baudrate} ${log_file} ${pid_file} ${cmd_file} ${resp_file}"
+    echo "启动串口管理进程..."
+    ssh_exec "powershell -Command \"\$r=Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList '${cmd_line}'; if(\$r.ReturnValue -eq 0){ \$r.ProcessId | Out-File -FilePath '${pid_file}' -Encoding UTF8 -Force; Write-Host 'OK'; Write-Host \\\"PID: \$(\$r.ProcessId)\\\"; Write-Host \\\"端口: ${port}\\\"; Write-Host \\\"波特率: ${baudrate}\\\"; Write-Host \\\"日志文件: ${log_file}\\\" }else{ Write-Host \\\"启动失败: WMI 返回码 \$(\$r.ReturnValue)\\\" }\""
+
+    # 等待日志文件出现
+    echo "等待日志初始化..."
+    local ready=false
+    for _ in $(seq 1 10); do
+        sleep 0.5
+        local check
+        check=$(echo "if(Test-Path '${log_file}'){(Get-Item '${log_file}').Length}else{Write-Host NONE}" | ps_exec 2>/dev/null || echo "NONE")
+        if [[ "$check" != *NONE* ]] && [[ -n "$check" ]] && [[ "$check" != "0" ]]; then
+            ready=true; break
+        fi
+    done
+    if ! $ready; then
+        echo "警告：日志文件尚未出现，进程可能未正常启动"
+        return 1
+    fi
+
+    # 二次确认
+    sleep 2
+    if ! _manager_running "$port"; then
+        echo "错误：管理进程启动后异常退出"
+        ssh_exec "powershell -Command \"if(Test-Path '${log_file}'){Get-Content '${log_file}' -Tail 5 -Encoding UTF8}else{Write-Host '日志文件不存在'}\""
+        return 1
+    fi
+
+    # 写 current.txt
+    local cur_file="$(_cur_file "$port")"
+    ssh_exec "powershell -Command \"Set-Content -Path '${cur_file}' -Value '${log_file}' -Encoding UTF8\"" >/dev/null 2>&1
+
+    echo ""
+    echo "✓ 串口捕获已就绪"
+    echo "  端口: ${port}"
+    echo "  日志: ${log_file}"
+    echo "  读取: rmt-uart read ${port}"
+    echo "  上传: rmt-uart upload ${port}"
+    echo "  停止: rmt-uart stop ${port}"
+}
+
+# ────────────────────── read ──────────────────────
+cmd_read() {
+    local port="$1" file="$2" lines="$3" follow="$4"
+    if [[ -z "$file" ]]; then
+        file=$(_current_log "$port")
+    fi
+
+    if $follow; then
+        # 持续刷新模式
+        echo "持续刷新: ${file}（Ctrl+C 退出）"
+        trap 'echo ""; echo "已停止" ; exit 0' INT
+        local last_size=0
+        while true; do
+            local result
+            result=$(echo "if(Test-Path '${file}'){ \$c=Get-Content '${file}' -Encoding UTF8 -Raw; if(\$c.Length -gt ${last_size}){ Write-Host (\$c.Substring(${last_size})) }; Write-Host \"SIZE:\$(\$c.Length)\" }else{Write-Host 'NONE'}" | ps_exec 2>/dev/null || echo "NONE")
+            if [[ "$result" == "NONE" ]]; then
+                echo "等待日志文件..."
+                sleep 2
+                continue
+            fi
+            # 提取 SIZE: 行获取当前文件大小
+            local size_line
+            size_line=$(echo "$result" | grep '^SIZE:' | tail -1)
+            local new_size="${size_line#SIZE:}"
+            # 打印除 SIZE 行之外的内容
+            echo "$result" | grep -v '^SIZE:' || true
+            if [[ -n "$new_size" ]] && [[ "$new_size" =~ ^[0-9]+$ ]]; then
+                last_size="$new_size"
+            fi
+            sleep 1
+        done
+    else
+        # 单次读取模式
+        local tail_opt=""
+        if [[ -n "$lines" ]] && [[ "$lines" -gt 0 ]]; then
+            tail_opt="-Tail ${lines}"
+        fi
+        echo "if(Test-Path '${file}'){Get-Content '${file}' ${tail_opt} -Encoding UTF8}else{Write-Host '日志文件不存在: ${file}'}" | ps_exec
+    fi
+}
+
+# ────────────────────── stop ──────────────────────
+cmd_stop() {
+    local port="$1"
+    local pid_file="$(_pid_file "$port")" log_file="$(_current_log "$port")"
+
+    echo "if(Test-Path '${pid_file}'){ \$mpid=(Get-Content '${pid_file}').Trim(); \$p=Get-Process -Id \$mpid -ErrorAction SilentlyContinue; if(\$p){Stop-Process -Id \$mpid -Force; Write-Host \"已停止管理进程 PID: \$mpid\"}else{Write-Host \"进程已不存在 PID: \$mpid\"}; Remove-Item '${pid_file}' -Force }else{Write-Host \"PID 文件不存在: ${pid_file}\"}" | ps_exec
+
+    if [[ -n "$log_file" ]]; then
+        echo ""
+        echo "=== 最终日志（最后 20 行） ==="
+        echo "if(Test-Path '${log_file}'){Get-Content '${log_file}' -Tail 20 -Encoding UTF8}else{Write-Host '日志文件不存在'}" | ps_exec
+    fi
+}
+
+# ────────────────────── upload ──────────────────────
+cmd_upload() {
+    local port="$1" file="$2" output_dir="$3" remote_path
+    if [[ -n "$file" ]]; then
+        remote_path="$file"
+    else
+        remote_path=$(_current_log "$port")
+    fi
+
+    local filename=$(basename "${remote_path//\\//}")
+    local local_path="${output_dir}/${filename}"
+
+    echo "下载: ${remote_path} → ${local_path}"
+    if scp_download "$remote_path" "$local_path"; then
+        local size=$(du -h "$local_path" 2>/dev/null | cut -f1 || echo "?")
+        echo "完成: ${local_path} (${size})"
+    else
+        echo "错误：SCP 下载失败" >&2
+        return 1
+    fi
+}
+
+# ────────────────────── 主入口 ──────────────────────
+if [[ $# -eq 0 ]]; then usage; fi
+
+SUBCMD="$1"
+shift
+
+case "$SUBCMD" in
+    list) cmd_list ;;
+    send)
+        port=""; command=""; baudrate=115200; timeout=3; read_response=true
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -b) baudrate="$2"; shift 2 ;;
+                -t) timeout="$2"; shift 2 ;;
+                --no-response) read_response=false; shift ;;
+                -*|--*) echo "未知选项: $1" >&2; usage ;;
+                *)
+                    if [[ -z "$port" ]]; then port="$1"
+                    elif [[ -z "$command" ]]; then command="$1"
+                    else usage; fi
+                    shift ;;
+            esac
+        done
+        [[ -z "${port}" ]] || [[ -z "${command}" ]] && usage
+        cmd_send "$port" "$command" "$baudrate" "$timeout" "$read_response" ;;
+    start)
+        port=""; baudrate=115200; output_file=""
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -b) baudrate="$2"; shift 2 ;;
+                -o) output_file="$2"; shift 2 ;;
+                -*|--*) echo "未知选项: $1" >&2; usage ;;
+                *) if [[ -z "$port" ]]; then port="$1"; else usage; fi; shift ;;
+            esac
+        done
+        cmd_start "$port" "$baudrate" "$output_file" ;;
+    read)
+        port=""; file=""; lines=""; follow=false
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -f) file="$2"; shift 2 ;;
+                -n) lines="$2"; shift 2 ;;
+                --follow) follow=true; shift ;;
+                -*|--*) echo "未知选项: $1" >&2; usage ;;
+                *) if [[ -z "$port" ]]; then port="$1"; else usage; fi; shift ;;
+            esac
+        done
+        [[ -z "$file" ]] && [[ -z "$port" ]] && usage
+        cmd_read "$port" "$file" "$lines" "$follow" ;;
+    stop)
+        port=""
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -*|--*) echo "未知选项: $1" >&2; usage ;;
+                *) port="$1"; shift ;;
+            esac
+        done
+        cmd_stop "$port" ;;
+    upload)
+        port=""; file=""; output_dir="."
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -f) file="$2"; shift 2 ;;
+                -o) output_dir="$2"; shift 2 ;;
+                -*|--*) echo "未知选项: $1" >&2; usage ;;
+                *) if [[ -z "$port" ]]; then port="$1"; else usage; fi; shift ;;
+            esac
+        done
+        [[ -z "$file" ]] && [[ -z "$port" ]] && usage
+        cmd_upload "$port" "$file" "$output_dir" ;;
+    -h|--help|help) usage ;;
+    *) echo "未知子命令: ${SUBCMD}" >&2; usage ;;
+esac

@@ -1,0 +1,12 @@
+{
+  "name": "windows-remote",
+  "description": "远程 Windows PC 控制 — adb/fastboot/UART/SSH",
+  "env": {
+    "SSH_HOST_ALIAS": "SSH config Host 别名（推荐，免密登录更可靠）",
+    "WINDOWS_HOST": "Windows 局域网 IP（未设 SSH_HOST_ALIAS 时使用）",
+    "WINDOWS_USER": "Windows 用户名（兜底）",
+    "WINDOWS_PORT": "SSH 端口（兜底，默认 22）",
+    "WINDOWS_KEY_PATH": "SSH 私钥路径（兜底，默认 ~/.ssh/id_ed25519）"
+  },
+  "setup_guide": "详见 mcp/windows-remote/README.md，Windows 端需先运行 scripts/setup-windows.ps1"
+}

@@ -11,6 +11,9 @@ Han 个人 Skills 仓库。单一真源在 `skills/`，四平台（Claude Code /
 - `hooks/` —— Claude Code SessionStart 钩子，开会话时打印 skill 速查。
 - `scripts/validate.py` —— 四平台一致性校验。
 - `scripts/gen_cursor_rules.py` —— SKILL.md → .mdc 转换器（支持 `--check`）。
+- `scripts/setup-mcp.sh` —— 发现并注册 `mcp/` 下附带的 MCP Server。
+- `mcp/<name>/` —— 附带的 MCP Server，不为 skill（无 SKILL.md），由 `scripts/setup-mcp.sh` 管理注册。
+- `mcp/<name>/mcp.json` —— MCP 元数据（name, description, env vars）。
 - `install.sh` —— 把 `skills/*` 软链到本地各平台目录。
 
 ## Conventions
@@ -28,7 +31,8 @@ Han 个人 Skills 仓库。单一真源在 `skills/`，四平台（Claude Code /
 - **Always**：改任一 manifest 的 `name`/`version` 后，同步另一套，并跑 `python3 scripts/validate.py`。
 - **Always**：新增 skill 后，按需更新三套 manifest 的 description/keywords。
 - **Never**：手编 `.cursor/rules/*.mdc`（它是生成物，会被下次生成覆盖、CI 会判过期）。
-- **Never**：硬编码本机用户目录或绝对路径。
+- **Never**：硬编码本机用户目录或绝对路径（MCP 注册路径由 `setup-mcp.sh` 运行时动态解析）。
+- MCP Server 不参与 `validate.py` / `gen_cursor_rules.py` 校验（它们只处理 `skills/`）。
 
 ## Commands
 
