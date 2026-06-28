@@ -1,7 +1,8 @@
 ---
 description: >
-  Han 生图底座 skill。双 provider 支持 OpenAI(gpt-image-1.5 / gpt-image-2 / dall-e-3)
-  与 Google(gemini-3-pro-image-preview / imagen),提供 provider / 模型 / 宽高比 / 尺寸 /
+  Han 生图底座 skill。三 provider 支持 OpenAI(gpt-image-1.5 / dall-e-3)、
+  Google(gemini-3-pro-image-preview / imagen) 与 DataEyesAI(gpt-image-2 中转),
+  提供 provider / 模型 / 宽高比 / 尺寸 /
   质量 / 参考图 / JSON 输出等选项;通过作用域隔离的 .han-skills/.env 与 EXTEND.md 配置,
   支持中转 base_url,产物统一输出到 ~/Downloads/han-skill-imagen/。
   当用户说「生成图片、画图、出图、画一张、render image、generate image、改图、编辑图片、
@@ -59,6 +60,7 @@ Python 后端至少需要一个 provider 的 API key。Codex / ChatGPT 登录态
 |----------|---------|---------|
 | `openai` | `OPENAI_API_KEY` | `gpt-image-1.5` |
 | `google` | `GOOGLE_API_KEY` 或 `GEMINI_API_KEY` | `gemini-3-pro-image-preview` |
+| `dataeyes` | `DATAAI_API_KEY` | `gpt-image-2` |
 
 Provider base URL 覆盖(中转/代理):
 
@@ -66,6 +68,7 @@ Provider base URL 覆盖(中转/代理):
 |----------|---------|
 | OpenAI | `OPENAI_BASE_URL` |
 | Google | `GOOGLE_BASE_URL` |
+| DataEyes | `DATAAI_BASE_URL`(默认 `https://cloud.dataeyes.ai/v1`) |
 
 模型覆盖:
 
@@ -82,7 +85,7 @@ Provider base URL 覆盖(中转/代理):
 CLI 参数 > EXTEND.md > <cwd>/.han-skills/.env > ~/.han-skills/.env > 非 provider 进程环境变量 > 内置默认值
 ```
 
-Provider 环境变量默认按 han 作用域隔离。除非在 `.han-skills/.env` 中定义,否则 Python 后端会忽略 shell 里已 export 的 `OPENAI_API_KEY`、`GOOGLE_API_KEY`、`GEMINI_API_KEY`、provider base URL 和 provider 模型覆盖。
+Provider 环境变量默认按 han 作用域隔离。除非在 `.han-skills/.env` 中定义,否则 Python 后端会忽略 shell 里已 export 的 `OPENAI_API_KEY`、`GOOGLE_API_KEY`、`GEMINI_API_KEY`、`DATAAI_API_KEY`、provider base URL 和 provider 模型覆盖。
 
 若要刻意使用 shell 中已 export 的 provider 值,在 shell 中为本次运行设置此控制开关(该开关不从 `.han-skills/.env` 读取):
 
@@ -133,7 +136,7 @@ python3 {baseDir}/scripts/main.py --prompt "A cat" --image cat.png --json
 | `--prompt <text>`, `-p` | 提示词文本 |
 | `--promptfiles <files...>` | 从文件读取提示词,空行拼接 |
 | `--image <path>` | 可选文件名/扩展名提示;最终图片仍保存到 `~/Downloads/han-skill-imagen/`,以内容相关文件名命名 |
-| `--provider openai\|google` | 强制 provider |
+| `--provider openai\|google\|dataeyes` | 强制 provider |
 | `--model <id>`, `-m` | provider 模型 ID |
 | `--ar <ratio>` | 宽高比,如 `16:9`、`1:1`、`4:3`、`9:16` |
 | `--size <WxH>` | provider 专属像素尺寸,如 `1024x1024` |
