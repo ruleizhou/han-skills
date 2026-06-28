@@ -1,0 +1,14 @@
+{
+  "id": "20260628-214530",
+  "timestamp": "2026-06-28T21:45:30+08:00",
+  "input_summary": "han-skill 个人 AI Skill 多平台分发仓库概览",
+  "content_type": "技术架构/概览汇报",
+  "layout": "dense-modules",
+  "style": "lab-notes",
+  "aspect": "landscape",
+  "backend": "han-imagen-python",
+  "provider": "dataeyes",
+  "satisfaction": "satisfied",
+  "image_path": "~/Downloads/han-skill-imagen/han-skill-overview-infographic.png",
+  "result_assessment": "success"
+}

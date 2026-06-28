@@ -102,6 +102,22 @@
       "first_seen": "2026-06-28",
       "last_seen": "2026-06-28",
       "outcome": "success"
+    },
+    {
+      "id": "ptrn-006",
+      "name": "技术架构/概览汇报 → dense-modules + lab-notes",
+      "category": "layout-style-recommend",
+      "content_type": "技术架构/概览汇报",
+      "layout": "dense-modules",
+      "style": "lab-notes",
+      "aspect": "landscape",
+      "description": "项目概览+技术架构混合内容，密集模块配实验室笔记风，兼具信息密度与技术感。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["架构", "概览", "项目", "汇报", "平台", "系统", "分发", "skill"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
     }
   ]
 }
