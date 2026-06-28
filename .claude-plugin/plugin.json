@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's personal skill set: skill-creator-plus (self-learning skill factory), han-imagen (image generation engine with OpenAI/Google), han-infographic (infographic skill with anti-hallucination two-phase flow + self-learning).",
+  "description": "Han's personal skill set: skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown skills with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -15,7 +15,11 @@
     "self-learning",
     "feedback-loop",
     "image-generation",
-    "infographic"
+    "infographic",
+    "hand-drawn",
+    "teardown",
+    "slides",
+    "svg"
   ],
   "skills": "./skills/"
 }

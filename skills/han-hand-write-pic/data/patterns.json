@@ -1,0 +1,79 @@
+{
+  "_schema": "patterns.json — 手绘知识卡参数经验库。每次出图后将验证有效的「内容类型→布局/风格/密度」组合沉淀于此,Step 1 用它给参数推荐。",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目",
+    "high_confidence_threshold": "confidence >= 3 可在 Step 1 作为强推荐"
+  },
+  "_fields": {
+    "id": "唯一标识 ptrn-NNN",
+    "name": "组合简述",
+    "category": "固定为 style-density-recommend",
+    "content_type": "适用的内容类型,如 工具总结/概念科普/流程教程",
+    "layout": "推荐的 layout 值(auto/flow/comparison/grouped-cards/cycle/timeline/matrix/pyramid/dense-modules)",
+    "style": "推荐的 style 值(hand-drawn-edu/chubby-sketch 或 han-infographic 风格词)",
+    "aspect": "推荐画幅 landscape/portrait/square",
+    "density": "normal 或 high",
+    "description": "为什么这个组合适合该内容类型",
+    "confidence": "置信度,初始 1,success +1 / fail -1",
+    "frequency": "使用次数",
+    "keywords": "内容类型关键词,用于 Step 1 匹配",
+    "first_seen": "首次发现 YYYY-MM-DD",
+    "last_seen": "最近一次 YYYY-MM-DD",
+    "outcome": "success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "工具/技能总结 → chubby-sketch + high + portrait",
+      "category": "style-density-recommend",
+      "content_type": "工具总结",
+      "layout": "dense-modules",
+      "style": "chubby-sketch",
+      "aspect": "portrait",
+      "density": "high",
+      "description": "工具清单、技能列表、速查表等信息量大的实用总结,用 chubby-sketch 圆角海报风配高密度,容得下又可爱。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["工具", "命令", "技能", "速查", "清单", "cheatsheet", "总结", "对比"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "概念科普/学习卡 → hand-drawn-edu + normal + landscape",
+      "category": "style-density-recommend",
+      "content_type": "概念科普",
+      "layout": "auto",
+      "style": "hand-drawn-edu",
+      "aspect": "landscape",
+      "density": "normal",
+      "description": "讲解单个概念、知识点、学习卡,用手账教育风配 normal 密度,留白足、易读、亲和。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["概念", "原理", "科普", "学习", "知识", "解释", "入门", "理解"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "流程/教程 → flow + hand-drawn-edu + normal",
+      "category": "style-density-recommend",
+      "content_type": "流程教程",
+      "layout": "flow",
+      "style": "hand-drawn-edu",
+      "aspect": "landscape",
+      "density": "normal",
+      "description": "顺序步骤、操作流程、教程,用 flow 布局配手账教育风,箭头叙事清晰。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["流程", "步骤", "教程", "操作", "怎么做", "顺序", "指南"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
+    }
+  ]
+}

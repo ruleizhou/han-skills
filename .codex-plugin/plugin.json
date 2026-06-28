@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's skill set: self-learning skill factory + image generation (han-imagen) + infographic (han-infographic).",
+  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides, svg).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -13,13 +13,17 @@
     "skill-creator",
     "self-learning",
     "image-generation",
-    "infographic"
+    "infographic",
+    "hand-drawn",
+    "teardown",
+    "slides",
+    "svg"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Han Skills",
-    "shortDescription": "Personal skill factory and workflows",
-    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), and han-infographic (infographic with anti-hallucination two-phase flow + self-learning).",
+    "shortDescription": "Personal skill factory and image-generation workflows",
+    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), and han-svg (editable SVG diagrams).",
     "developerName": "Han",
     "category": "Productivity",
     "capabilities": [
@@ -32,7 +36,11 @@
       "Split a bloated SKILL.md into on-demand files",
       "Add self-learning to an existing skill",
       "Generate an infographic from an article",
-      "Draw / generate an image (OpenAI or Google)"
+      "Draw / generate an image (OpenAI or Google)",
+      "Draw a hand-drawn sketchnote knowledge card",
+      "Make a teardown / exploded-view diagram",
+      "Generate an image slide deck (PPTX/PDF)",
+      "Draw an editable SVG diagram"
     ],
     "brandColor": "#0EA5E9"
   }

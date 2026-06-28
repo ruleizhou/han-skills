@@ -1,0 +1,146 @@
+---
+description: >
+  把内容(文章/主题/素材)做成适合阅读和分享的图片式幻灯片——每页是一张独立完整的图片,
+  再合并成 PPTX 和 PDF。支持 18 种风格预设(blueprint 默认)+ 18 种布局,受众/页数可调,
+  每页走 han-imagen 出图,纯 Python 标准库合并(无需第三方包)。当用户说「做幻灯片、做 PPT、
+  生成 deck、把文章做成演示、生成 PPT/PPTX/PDF、图片式幻灯片」时使用本 skill。
+  想要单张信息图用 han-infographic;想要可编辑图表用 han-svg。
+alwaysApply: false
+globs:
+---
+# Han Slides
+
+把内容做成图片优先的幻灯片系列,再合并成 PPTX 和 PDF。
+
+本 skill 面向阅读与分享:每页幻灯片应自解释、视觉完整、可独立作为单图使用。它不是传统的可编辑 PowerPoint 排版引擎——PPTX 输出是每页放一张完整图片。
+
+## 默认值
+
+| 设置 | 默认 |
+|------|------|
+| 语言 | `zh`(除非源内容/请求明确要求其他) |
+| 工作目录 | `slide-deck/{topic-slug}/` |
+| 画幅 | `landscape` / `16:9` |
+| 风格 | `blueprint`(除非内容信号建议其他预设) |
+| 受众 | `general` |
+| 幻灯片数 | 按源长度,通常 8-18 |
+| 生图后端 | 有 key 时 `han-imagen`;否则 Codex/运行时生图工具 |
+
+## 选项
+
+接受 CLI 风格选项:
+
+| 选项 | 说明 |
+|------|------|
+| `--style <name>` | 预设或自定义风格名,见 [style-system.md](references/style-system.md) |
+| `--audience <type>` | `beginners`/`intermediate`/`experts`/`executives`/`general` |
+| `--lang <code>` | 输出语言,如 `zh`/`en`/`ja` |
+| `--slides <N>` | 目标页数,建议 5-25,最多 30 |
+| `--ref <files...>` | 风格/配色/主题参考图 |
+| `--outline-only` | 生成 outline.md 后停止 |
+| `--prompts-only` | 生成提示词后停止 |
+| `--images-only` | 从已有提示词直接出图 |
+| `--regenerate <N>` | 重新生成指定页,如 `3` 或 `2,5,8` |
+| `--no-confirm` | 跳过选项确认 |
+
+## 文件布局
+
+```text
+slide-deck/{topic-slug}/
+├── source-{topic-slug}.md
+├── analysis.md
+├── outline.md
+├── refs/
+├── prompts/
+│   ├── 01-slide-cover.md
+│   └── NN-slide-{slug}.md
+├── 01-slide-cover.png
+├── NN-slide-{slug}.png
+├── {topic-slug}.pptx
+└── {topic-slug}.pdf
+```
+
+备份规则:即将覆盖的文件若已存在,先重命名为 `<name>-backup-YYYYMMDD-HHMMSS.<ext>`。
+
+## 工作流
+
+### Step 1: 建目录与分析
+
+1. 从主题派生 2-5 词英文 `topic-slug`。
+2. 解析显式选项。
+3. 创建 `slide-deck/{topic-slug}/`、`prompts/`、`refs/`。
+4. 把源内容存为 `source-{topic-slug}.md`。
+5. 读取偏好(首个命中):`.han-skills/han-slides/EXTEND.md` → `${XDG_CONFIG_HOME:-$HOME/.config}/han-skills/han-slides/EXTEND.md` → `$HOME/.han-skills/han-slides/EXTEND.md`。
+6. 分析源语言、受众、内容类型、关键事实、页数、风格信号,存 `analysis.md`。
+7. 若目录已有生成内容,询问备份重生成/复用提示词/重出图/退出(除非 `--no-confirm`)。
+
+风格选择与页数启发式见 [style-system.md](references/style-system.md)。
+
+### Step 2: 确认选项
+
+生成前确认(除非 `--no-confirm`/`直接生成`/`跳过确认`):
+
+- 风格预设或自定义维度
+- 受众、页数
+- 是否在提示词前审大纲、出图前审提示词
+
+选项文案见 [confirmation.md](references/confirmation.md)。
+
+### Step 3: 生成大纲
+
+用 [outline-template.md](references/outline-template.md) 创建 `outline.md`,须含:
+
+- 主题、风格、维度、受众、语言、页数
+- 一个 `<STYLE_INSTRUCTIONS>...</STYLE_INSTRUCTIONS>` 块
+- 逐页条目(含文件名)、封面与封底
+- 每页一个清晰的叙事目标
+
+`--outline-only` 时在此停止。
+
+### Step 4: 审大纲
+
+若启用,展示紧凑表格(`# | 文件名 | 标题 | 类型 | 布局`),询问继续/先改 outline/重新生成。
+
+### Step 5: 生成提示词文件
+
+对 outline 每页:
+
+1. 读 [base-prompt.md](references/base-prompt.md)。
+2. 从 outline 复制完整 `<STYLE_INSTRUCTIONS>` 块。
+3. 加该页内容。
+4. 命名布局时加 [layouts.md](references/layouts.md) 的布局指引。
+5. 存为 `prompts/NN-slide-{slug}.md`。
+
+**每页提示词必须在出图前全部就绪——prompts 目录是可复现记录。** `--prompts-only` 时在此停止。
+
+### Step 6: 审提示词
+
+若启用,展示提示词索引,询问继续/先改/重新生成。
+
+### Step 7: 出图
+
+按最佳后端顺序:
+
+1. `han-imagen` Python 后端(有 han 作用域 key 或需确定性 CLI 输出时)。
+2. Codex 内置生图工具(无 key 且在 Codex)。
+3. 当前运行时原生生图工具。
+4. 无后端则停止,报告提示词路径。
+
+顺序生成,每页图片按 outline 文件名(`NN-slide-{slug}.png`)存入 deck 目录。参考图复制到 `refs/NN-ref-{slug}.{ext}` 并写入提示词 frontmatter;后端支持则传 `--ref`,否则在提示词里描述风格/配色。
+
+### Step 8: 合并 PPTX 与 PDF
+
+```bash
+python3 {baseDir}/scripts/merge_to_pptx.py slide-deck/{topic-slug}
+python3 {baseDir}/scripts/merge_to_pdf.py slide-deck/{topic-slug}
+```
+
+脚本扫描 `NN-slide-*.png|jpg|jpeg`,按编号排序,生成 `{topic-slug}.pptx` 和 `{topic-slug}.pdf`(纯标准库,无需第三方包)。
+
+### Step 9: 最终报告
+
+报告:主题、风格/受众/语言/页数、本地 deck 目录、PPTX 与 PDF 路径、生成的提示词/图片数。简短。
+
+## 编辑已有 deck
+
+见 [modification-guide.md](references/modification-guide.md)。规则:先改提示词文件 → 重新生成对应图片 → 重跑合并脚本。**提示词文件始终是单一真源。**

@@ -1,0 +1,71 @@
+{
+  "_schema": "patterns.json — 拆解图参数经验库。每次出图后将验证有效的「对象类型→模式/画幅」组合沉淀于此,Step 1 用它给参数推荐。",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目",
+    "high_confidence_threshold": "confidence >= 3 可在 Step 1 作为强推荐"
+  },
+  "_fields": {
+    "id": "唯一标识 ptrn-NNN",
+    "name": "组合简述",
+    "category": "固定为 mode-recommend",
+    "object_type": "对象类型,如 电子产品/机械结构/管道流体/生活用品",
+    "mode": "推荐模式 hybrid/exploded/cutaway/auto",
+    "aspect": "推荐画幅 landscape/portrait/square",
+    "description": "为什么这个模式适合该对象类型",
+    "confidence": "置信度,初始 1,success +1 / fail -1",
+    "frequency": "使用次数",
+    "keywords": "对象类型关键词,用于 Step 1 匹配",
+    "first_seen": "首次发现 YYYY-MM-DD",
+    "last_seen": "最近一次 YYYY-MM-DD",
+    "outcome": "success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "电子产品 → hybrid + landscape",
+      "category": "mode-recommend",
+      "object_type": "电子产品",
+      "mode": "hybrid",
+      "aspect": "landscape",
+      "description": "手机/电脑/家电等电子产品,既要看外观又要看内部芯片/电池/散热,hybrid 混合模式最全面。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["手机", "电脑", "电子", "电器", "芯片", "电池", "家电", "设备", "产品"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "机械结构/发动机 → exploded + landscape",
+      "category": "mode-recommend",
+      "object_type": "机械结构",
+      "mode": "exploded",
+      "aspect": "landscape",
+      "description": "发动机/齿轮箱/机械装置等,强调零件、装配顺序、连接关系,exploded 爆炸图最直观。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["机械", "发动机", "齿轮", "轴承", "结构", "装置", "装配", "零件"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "管道/流体/容器 → cutaway + landscape",
+      "category": "mode-recommend",
+      "object_type": "管道流体",
+      "mode": "cutaway",
+      "aspect": "landscape",
+      "description": "管道/水泵/容器/保温杯等,强调内部布局、通道、流体路径,cutaway 剖面图最合适。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["管道", "流体", "容器", "水泵", "保温杯", "通道", "剖面", "截面", "水路"],
+      "first_seen": "2026-06-28",
+      "last_seen": "2026-06-28",
+      "outcome": "success"
+    }
+  ]
+}
