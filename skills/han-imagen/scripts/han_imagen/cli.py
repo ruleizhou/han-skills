@@ -30,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="image_path",
         help="Optional output filename/extension hint; final images are saved under ~/Downloads/han-skill-imagen",
     )
-    parser.add_argument("--provider", choices=["openai", "google"], help="Image provider")
+    parser.add_argument("--provider", choices=["openai", "google", "dataeyes"], help="Image provider")
     parser.add_argument("-m", "--model", help="Provider model ID")
     parser.add_argument("--ar", dest="aspect_ratio", help="Aspect ratio, e.g. 16:9 or 1:1")
     parser.add_argument("--size", help="Provider-specific size, e.g. 1024x1024")

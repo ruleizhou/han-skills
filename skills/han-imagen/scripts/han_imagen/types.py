@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
-Provider = Literal["openai", "google"]
+Provider = Literal["openai", "google", "dataeyes"]
 Quality = Literal["normal", "2k"]
 ImageSize = Literal["1K", "2K", "4K"]
 
@@ -32,7 +32,7 @@ class ExtendConfig:
     default_aspect_ratio: str | None = None
     default_image_size: ImageSize | None = None
     default_model: dict[Provider, str | None] = field(
-        default_factory=lambda: {"openai": None, "google": None}
+        default_factory=lambda: {"openai": None, "google": None, "dataeyes": None}
     )
 
 

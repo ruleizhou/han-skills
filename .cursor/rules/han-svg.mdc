@@ -68,6 +68,7 @@ python3 {baseDir}/scripts/main.py render \
 - 本地工作文件存 `svg/{topic-slug}/`。
 - 用 `--download` 时把最终交付物复制到 `~/Downloads/han-skill-svg/`。
 - 不依赖外部图片。
+- **architecture 类型渲染后**, 按 [references/architecture.md](references/architecture.md) 的折线优化规则手动优化 SVG 边路由(直线→折线, 消重叠, 汇聚入口)。
 
 ## CLI
 

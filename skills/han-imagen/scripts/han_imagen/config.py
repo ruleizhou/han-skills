@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .types import CliArgs, ExtendConfig, ImageSize, Provider, Quality
 
-PROVIDERS = {"openai", "google"}
+PROVIDERS = {"openai", "google", "dataeyes"}
 QUALITIES = {"normal", "2k"}
 IMAGE_SIZES = {"1K", "2K", "4K"}
 
@@ -113,26 +113,31 @@ def detect_provider(args: CliArgs) -> Provider:
 
     has_google = bool(os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY"))
     has_openai = bool(os.environ.get("OPENAI_API_KEY"))
+    has_dataeyes = bool(os.environ.get("DATAAI_API_KEY"))
 
     if args.reference_images:
         if has_google:
             return "google"
+        if has_dataeyes:
+            return "dataeyes"
         if has_openai:
             return "openai"
         raise ValueError(
-            "Reference images require a han-scoped GOOGLE_API_KEY/GEMINI_API_KEY or OPENAI_API_KEY, "
-            "or pass --provider explicitly."
+            "Reference images require a han-scoped GOOGLE_API_KEY/GEMINI_API_KEY, "
+            "DATAAI_API_KEY, or OPENAI_API_KEY, or pass --provider explicitly."
         )
 
     if has_google:
         return "google"
+    if has_dataeyes:
+        return "dataeyes"
     if has_openai:
         return "openai"
 
     raise ValueError(
-        "No han-scoped API key found. Add GOOGLE_API_KEY/GEMINI_API_KEY or OPENAI_API_KEY "
-        "to <cwd>/.han-skills/.env or ~/.han-skills/.env. To deliberately use shell "
-        "provider env, set HAN_ALLOW_AMBIENT_PROVIDER_ENV=1."
+        "No han-scoped API key found. Add GOOGLE_API_KEY/GEMINI_API_KEY, DATAAI_API_KEY, "
+        "or OPENAI_API_KEY to <cwd>/.han-skills/.env or ~/.han-skills/.env. "
+        "To deliberately use shell provider env, set HAN_ALLOW_AMBIENT_PROVIDER_ENV=1."
     )
 
 
@@ -144,4 +149,6 @@ def get_model_for_provider(provider: Provider, requested_model: str | None, conf
         return configured
     if provider == "openai":
         return os.environ.get("OPENAI_IMAGE_MODEL") or "gpt-image-1.5"
+    if provider == "dataeyes":
+        return "gpt-image-2"
     return os.environ.get("GOOGLE_IMAGE_MODEL") or "gemini-3-pro-image-preview"

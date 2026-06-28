@@ -8,8 +8,10 @@ PROVIDER_ENV_KEYS = frozenset(
         "OPENAI_API_KEY",
         "GOOGLE_API_KEY",
         "GEMINI_API_KEY",
+        "DATAAI_API_KEY",
         "OPENAI_BASE_URL",
         "GOOGLE_BASE_URL",
+        "DATAAI_BASE_URL",
         "OPENAI_IMAGE_MODEL",
         "GOOGLE_IMAGE_MODEL",
     }
