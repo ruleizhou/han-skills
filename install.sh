@@ -731,7 +731,7 @@ ${BOLD}示例:${NC}
   $0                          # 装全部到所有平台
   $0 status                   # 看状态
   $0 install claude           # 只装 Claude Code
-  $0 install cursor           # 生成 .mdc → ~/.cursor/rules
+  $0 install cursor           # 软链 → ~/.cursor/skills
   $0 install claude --mcp-only
   $0 uninstall cursor         # 卸载 Cursor
   $0 update --all             # 全平台重装

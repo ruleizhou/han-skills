@@ -20,7 +20,7 @@ Han 个人 Skills 仓库。单一真源在 `skills/`，四平台（Claude Code /
 
 - **单一真源**：`skills/` 是唯一编辑入口。`.cursor/rules/*.mdc` 是派生物，**禁止手改**。
 - **两套 manifest 同步**：`.claude-plugin/plugin.json` 与 `.codex-plugin/plugin.json` 的 `name`/`version` 必须一致；`marketplace.json` 的 `metadata.version` 与 `plugins[0].name` 也要同步。当前 name=`han`，version=`0.1.0`。
-- **OpenCode / Cursor 无 manifest**：OpenCode 靠目录扫描（`~/.config/opencode/skills`、`~/.claude/skills`），Cursor 靠 `.mdc` 转换。
+- **OpenCode / Cursor 无 manifest**：OpenCode 靠目录扫描（`~/.config/opencode/skills`、`~/.claude/skills`），Cursor 靠 `~/.cursor/skills` 软链接（与 Claude 相同）。
 - skill 名建议 kebab-case；`SKILL.md` 的 `name` 字段必须 == 所在目录名。
 - frontmatter 用相对路径或 `${CLAUDE_PLUGIN_ROOT}`，禁止硬编码绝对路径。
 - skill 间通过明确 CLI 接口协作，不读对方私有目录。
