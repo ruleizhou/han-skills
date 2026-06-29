@@ -6,7 +6,7 @@ description: >
   生成后沉淀「内容类型→布局/风格组合」经验,越用越懂哪种参数出图最好。
   当用户说「生成信息图、把内容转成图、把这篇文章做成大图、高密度信息大图、可视化摘要、
   infographic、画张图总结一下、给这段配个信息图、知识卡片图」时使用本 skill。
-  想要纯文字配图/单张插图,用 han-imagen;想要可编辑图表,用 d2-diagram。
+  想要纯文字配图/单张插图,用 han-imagen;想要可编辑图表,用 han-d2-diagram。
 alwaysApply: false
 globs:
 ---

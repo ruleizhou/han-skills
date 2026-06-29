@@ -1,0 +1,58 @@
+---
+name: han-skill-creator-plus
+description: >
+  创建带有自主学习能力（feedback loop / 自学习 / 越用越完善）和按需文件拆分架构（SKILL.md 路由层 + workflows/ 分步骤）的 skill。
+  Trigger when: 用户说"创建一个能自学习的 skill"、"skill 需要越用越完善"、"创建带反馈闭环的 skill"、
+  "把 skill 拆分成多个文件"、"拆解 SKILL.md"、"skill 怎么做按需加载"、"skill 省 token"、
+  "为已有 skill 添加自学习/拆分架构"、"skill 不触发"、"触发错了"、"效果跑偏"、"太啰嗦"、
+  "改进调试已有 skill"、"create skill with self-learning/feedback loop"。
+  如果用户只是说"创建一个 skill"（无自学习/拆分需求），应触发官方 skill-creator 而非本 skill。
+---
+
+# Skill Creator Plus
+
+在官方 skill-creator 基础上，新增**文件拆分架构**和**自主学习能力**。
+
+## 核心原则
+
+1. **先选架构再动手** — 写任何代码前，先和用户确认：传统单文件还是拆分+自学习
+2. **模板驱动** — 从 `templates/` 复制骨架文件，减少重复工作
+3. **引用官方流程** — eval、iteration、packaging 直接复用官方 skill-creator
+4. **可逆迁移** — 任何时候都可以从传统架构迁移到拆分架构
+
+## 模式判断
+
+| 触发信号 | 模式 | 动作 |
+|----------|------|------|
+| "创建 skill" + "自学习/越用越完善/拆分" | 新建 | Step 0 → Step 1 → Step 2 → Step 3 → Step 5 → Step 6 |
+| "为已有 skill 添加自学习/拆分" | 迁移 | Step 4 |
+| "skill 不触发/触发错了/效果跑偏/太啰嗦" | 改进调试 | 读 `references/改进调试.md` 按诊断决策树执行 |
+| 用户说只想要传统单文件 skill | 转发 | 引导用户使用官方 skill-creator |
+
+## Workflow
+
+本 skill 使用 6 步工作流（Step 0 ~ Step 5），按需执行。**每个步骤开始时，先 Read 对应的详细指令文件：**
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+| 0 | `workflows/step-00-needs.md` | 需求捕获 + 架构选择（拆分/自学习/两者都要） |
+| 1 | `workflows/step-01-gen-split-arch.md` | 从模板生成文件拆分结构 |
+| 2 | `workflows/step-02-gen-self-learning.md` | 添加自主学习基础设施（data/ + feedback-loop + learn 步骤） |
+| 3 | `workflows/step-03-eval-iterate.md` | 评估与迭代（引用官方 skill-creator 流程） |
+| 4 | `workflows/step-04-migrate.md` | 为已有 skill 追加拆分架构和自学习 |
+| 5 | `workflows/step-05-package.md` | 打包（引用官方 skill-creator 的 package_skill.py） |
+| 6 | `workflows/step-06-ship.md` | 最后一公里：安装位置、名字校验、重启会话、自测触发 |
+
+**开始执行时，首先读取 `workflows/step-00-needs.md`。**
+
+## 参考资料速查
+
+- 文件拆分架构说明：`references/split-architecture.md`
+- Skill 写作指南（风格/自检/description/安全）：`references/skill-writing-guide.md`
+- 改进调试剧本（E5 诊断决策树）：`references/改进调试.md`
+- 评测指南（分层验证/evals契约/触发查询集/量表/平台）：`references/评测指南.md`
+- 自主学习机制说明：`references/self-learning-mechanism.md`
+- 拆分架构模板：`templates/split-arch/`
+- 自学习基础设施模板：`templates/self-learning/`
+- 官方 skill-creator（评估/迭代/打包）：`~/.claude/plugins/marketplaces/anthropic-agent-skills/skills/skill-creator/SKILL.md`
+- 最佳实践参考：`../kernel-crash-analyzer/`（拆分+自学习的 live reference）
