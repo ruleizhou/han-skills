@@ -1,0 +1,95 @@
+# Entity-Relationship Diagram Template
+# Usage: d2 --sketch er-diagram.d2 output.png
+
+direction: right
+
+style: {
+  fill-pattern: dots
+  stroke-dash: 3
+  border-radius: 5
+}
+
+# Users Table
+users: {
+  shape: sql_table
+  style.fill: "#E3F2FD"
+  
+  id: int {constraint: primary_key}
+  username: varchar(50) {constraint: unique}
+  email: varchar(100)
+  password_hash: varchar(255)
+  created_at: timestamp
+  updated_at: timestamp
+}
+
+# Profiles Table
+profiles: {
+  shape: sql_table
+  style.fill: "#F3E5F5"
+  
+  id: int {constraint: primary_key}
+  user_id: int {constraint: foreign_key}
+  full_name: varchar(100)
+  bio: text
+  avatar_url: varchar(255)
+  location: varchar(100)
+}
+
+# Posts Table
+posts: {
+  shape: sql_table
+  style.fill: "#E8F5E9"
+  
+  id: int {constraint: primary_key}
+  user_id: int {constraint: foreign_key}
+  title: varchar(200)
+  content: text
+  status: enum {constraint: "published, draft, archived"}
+  published_at: timestamp
+  created_at: timestamp
+}
+
+# Comments Table
+comments: {
+  shape: sql_table
+  style.fill: "#FFF8E1"
+  
+  id: int {constraint: primary_key}
+  post_id: int {constraint: foreign_key}
+  user_id: int {constraint: foreign_key}
+  content: text
+  created_at: timestamp
+}
+
+# Categories Table
+categories: {
+  shape: sql_table
+  style.fill: "#FFF3E0"
+  
+  id: int {constraint: primary_key}
+  name: varchar(50)
+  slug: varchar(50) {constraint: unique}
+  description: text
+}
+
+# Post-Categories Junction Table
+post_categories: {
+  shape: sql_table
+  style.fill: "#ECEFF1"
+  
+  post_id: int {constraint: foreign_key}
+  category_id: int {constraint: foreign_key}
+}
+
+# Relationships
+users -> profiles: has one {
+  style.stroke-dash: 3
+}
+
+users -> posts: has many
+users -> comments: has many
+
+posts -> comments: has many
+posts -> post_categories: belongs to many
+
+categories -> post_categories: belongs to many

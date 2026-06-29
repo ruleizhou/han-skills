@@ -1,0 +1,18 @@
+{
+  "_comment": "常用 Module 名称列表，用于交互选择。若无匹配可自由输入。可手动编辑此文件增删。",
+  "modules": [
+    "Kernel",
+    "Driver",
+    "USB",
+    "Display",
+    "Camera",
+    "Audio",
+    "Power",
+    "Thermal",
+    "Modem",
+    "WLAN",
+    "Bluetooth",
+    "Build System",
+    "Toolchain"
+  ]
+}

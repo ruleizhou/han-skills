@@ -1,0 +1,38 @@
+---
+description: >
+  交互式 Git 提交信息生成器，基于 ~/.git-template 格式模板。
+  收集 Project/Bug-ID/Module 信息，AI 自动分析 diff 填充摘要/根因/方案。
+  触发词：git commit、提交代码、生成 commit、写 commit message、帮我提交
+alwaysApply: false
+globs:
+---
+# Git 提交信息生成器
+
+基于 `~/.git-template` 格式，交互式收集元数据，AI 自动分析 diff 生成规范提交。
+
+## 核心原则
+
+1. **模板优先** — 始终以 `~/.git-template` 为格式基准，运行时读取
+2. **交互收集** — Module、Project、Bug-ID 均通过交互确认，Module 始终启用
+3. **AI 驱动** — 摘要、根因、方案由 AI 分析 git diff 自动填充
+4. **预览确认** — 执行 `git commit` 前必须展示完整消息并等待确认
+
+## 预检清单
+
+- 当前目录是否为 git 仓库？→ `git rev-parse --git-dir`
+- 是否已有 staged 变更？→ `git diff --staged --stat`
+- 是否有 unstaged 变更？→ `git diff --stat`
+- `~/.git-template` 是否存在？→ 读取确认格式
+
+## Workflow
+
+本 skill 使用 4 步工作流，顺序执行。**每个步骤开始时，先 Read 对应的详细指令文件：**
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+| 0 | `workflows/step-00-collect.md` | 交互收集 Module/Project/Bug-ID |
+| 1 | `workflows/step-01-diff.md` | git diff 分析 |
+| 2 | `workflows/step-02-draft.md` | 组装 commit message |
+| 3 | `workflows/step-03-commit.md` | 预览确认 + 执行 git commit |
+
+**开始执行时，首先读取 `workflows/step-00-collect.md`。**

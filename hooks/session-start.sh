@@ -13,4 +13,12 @@ cat <<'EOF'
   kernel-crash-analyzer-v2  Linux 内核崩溃分析 (高通/Android: NULL 指针/KASAN UAF/SLUB/ABBA 死锁/panic/ramdump)
     触发:"kernel crash"、"死机"、"ramdump"、"KASAN"、"kernel panic"、
          "NULL pointer"、"deadlock"、"问题解决了"、"修好了"
+  d2-diagram           D2 声明式图表 (流程图/架构图/ER/类图, sketch 手绘风, PNG+SVG)
+    触发:"画个流程图"、"架构图"、"ER 图"、"类图"、"把这段转成图表"、
+         "D2 怎么画"、"sketch 手绘风"、"生成手绘风格"
+  git-commit           交互式 Git 提交信息生成器 (基于 ~/.git-template)
+    触发:"git commit"、"提交代码"、"生成 commit"、"写 commit message"、"帮我提交"
+  flash-test           UFS/eMMC 读写速率测试 (顺序/随机, 规格对标)
+    触发:"测 UFS 速度"、"测闪存"、"跑性能"、"看带宽"、"存储测试"、
+         "跑 fio 测试"、"flash benchmark"、"再看结果"
 EOF

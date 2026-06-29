@@ -1,0 +1,111 @@
+# System Architecture Template
+# Usage: d2 --sketch system-architecture.d2 output.png
+
+direction: down
+
+# Global style for sketch look
+style: {
+  fill-pattern: dots
+  stroke-dash: 3
+  border-radius: 8
+  shadow: true
+}
+
+# Client Layer
+client: {
+  label: Client Layer
+  style.fill: "#E3F2FD"
+  style.stroke: "#1976D2"
+  
+  web: Web Browser
+  mobile: Mobile App
+  desktop: Desktop App
+}
+
+# Load Balancer
+lb: Load Balancer {
+  shape: diamond
+  style.fill: "#FFF3E0"
+  style.stroke: "#F57C00"
+}
+
+# Application Layer
+app: {
+  label: Application Layer
+  style.fill: "#FFF8E1"
+  style.stroke: "#FFA000"
+  
+  api1: API Server 1
+  api2: API Server 2
+  worker: Background Worker
+}
+
+# Service Layer
+service: {
+  label: Service Layer
+  style.fill: "#F3E5F5"
+  style.stroke: "#7B1FA2"
+  
+  auth: Auth Service
+  user: User Service
+  order: Order Service
+  notification: Notification Service
+}
+
+# Data Layer
+data: {
+  label: Data Layer
+  style.fill: "#E8F5E9"
+  style.stroke: "#388E3C"
+  
+  primary: Primary DB {
+    shape: cylinder
+  }
+  replica: Replica DB {
+    shape: cylinder
+  }
+  cache: Cache {
+    shape: rectangle
+    style.fill: "#FFEBEE"
+  }
+  queue: Message Queue {
+    shape: queue
+  }
+}
+
+# External Services
+external: {
+  label: External Services
+  style.fill: "#ECEFF1"
+  style.stroke: "#546E7A"
+  
+  payment: Payment Gateway
+  email: Email Service
+  storage: File Storage
+}
+
+# Connections
+client.web -> lb
+client.mobile -> lb
+client.desktop -> lb
+
+lb -> app.api1
+lb -> app.api2
+
+app.api1 -> service.auth
+app.api1 -> service.user
+app.api1 -> service.order
+app.worker -> service.notification
+
+service.auth -> data.primary
+service.user -> data.primary
+service.order -> data.primary
+service.order -> data.queue
+
+service.notification -> data.queue: consumes
+
+data.primary -> data.replica: replication
+
+app.api1 -> external.payment
+app.api1 -> external.email
+app.api1 -> external.storage

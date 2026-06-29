@@ -1,0 +1,99 @@
+{
+  "schema_version": 2,
+  "last_updated": "2026-06-19T05:35:00Z",
+  "device_profiles": {
+    "CY14-64G": {
+      "model": "CY14-64G",
+      "rev": "0002",
+      "manufacturer": "Samsung (0x0298)",
+      "capacity": "64GB",
+      "kernel": "5.4.242-qgki-debug",
+      "platform": "lahaina (SM8350)",
+      "ufs_version": "UFS 3.1 (推测)",
+      "wb_supported": true,
+      "wb_enabled": true,
+      "spec": {"seqread": 820, "seqwrite": 520, "randread": 35000, "randwrite": 80000}
+    },
+    "SDINFDK4-64G": {
+      "model": "SDINFDK4-64G",
+      "rev": "1288",
+      "manufacturer": "SanDisk (0x0145)",
+      "capacity": "64GB",
+      "kernel": "5.4.242-qgki-debug",
+      "platform": "lahaina (SM8350)",
+      "ufs_version": "UFS 3.1 (推测)",
+      "wb_supported": true,
+      "wb_enabled": true,
+      "wb_max_alloc_units": 3561,
+      "spec": {"seqread": 1100, "seqwrite": 550, "randread": 0, "randwrite": 0, "note": "随机规格未知，待用户提供"}
+    }
+  },
+  "test_results": {
+    "CY14-64G_20260619": {
+      "device": "CY14-64G",
+      "date": "2026-06-19",
+      "method": "ufs_test_sh",
+      "scheduler": "none",
+      "wb_enabled": false,
+      "spec": {"seqread": 820, "seqwrite": 520, "randread": 35000, "randwrite": 80000},
+      "results": {
+        "seqread_nj1_mbps":  {"min":913.0,"median":913.0,"max":916.0},
+        "seqread_nj2_mbps":  {"min":1398.0,"median":1402.0,"max":1411.0},
+        "seqread_nj4_mbps":  {"min":1710.0,"median":1715.0,"max":1717.0},
+        "seqread_nj8_mbps":  {"min":1891.0,"median":1893.0,"max":1895.0},
+        "seqwrite_nj1_mbps": {"min":421.0,"median":422.0,"max":423.0},
+        "seqwrite_nj2_mbps": {"min":484.0,"median":486.0,"max":487.0},
+        "seqwrite_nj4_mbps": {"min":420.0,"median":475.0,"max":475.0},
+        "seqwrite_nj8_mbps": {"min":149.0,"median":157.0,"max":162.0},
+        "randread_iops":     {"min":45700.0,"median":47400.0,"max":48600.0},
+        "randwrite_iops":    {"min":3415.0,"median":3556.0,"max":3672.0}
+      },
+      "verdict": {"seqread":"pass","seqwrite":"fail","randread":"pass","randwrite":"warn"}
+    },
+    "CY14-64G_20260618": {
+      "device": "CY14-64G",
+      "date": "2026-06-18",
+      "method": "legacy_per_cmd",
+      "_deprecated": true,
+      "scheduler": "none",
+      "spec_read": 820,
+      "spec_write": 520,
+      "results": {
+        "seq_read_1g_mbps": 949,
+        "seq_read_4g_mbps": 1346,
+        "seq_write_1g_mbps": 451,
+        "seq_write_4g_mbps": 451,
+        "rand_read_4k_iops": 6191,
+        "rand_write_4k_iops": 5381,
+        "rand_read_128k_mbps": 203
+      }
+    },
+    "SDINFDK4-64G_20260618": {
+      "device": "SDINFDK4-64G",
+      "date": "2026-06-18",
+      "method": "legacy_per_cmd",
+      "_deprecated": true,
+      "scheduler": "none",
+      "spec_read": 1100,
+      "spec_write": 550,
+      "wb_max_alloc_units": 3561,
+      "results": {
+        "seq_read_1g_mbps": 849,
+        "seq_read_4g_mbps": 1132,
+        "seq_write_1g_mbps": 595,
+        "seq_write_4g_mbps": 215,
+        "rand_read_4k_iops": 5435,
+        "rand_write_4k_iops": 10100,
+        "rand_read_128k_mbps": 105
+      }
+    }
+  },
+  "alerts": [
+    {"text": "CY14-64G(三星): WB关闭时顺序写峰值486MB/s未达标520MB/s, 启用WB是关键", "confidence": 2, "frequency": 2},
+    {"text": "CY14-64G(三星): SLC断崖已确认——8GB累计写入后从475→157MB/s(67%降速)暴露TLC直写", "confidence": 2, "frequency": 1},
+    {"text": "CY14-64G(三星): 顺序读裸rawdump达1893MB/s, 为规格820MB/s的231%, 读通路极健康", "confidence": 2, "frequency": 1},
+    {"text": "SDINFDK4-64G(闪迪): 写SLC峰值595MB/s达标550MB/s ✅; 持续写215MB/s出现SLC断崖(64%降速)", "confidence": 2, "frequency": 2},
+    {"text": "随机IOPS受限于psync引擎(iodepth cap=1)，SanDisk随机写10.1k IOPS明显优于三星5.4k", "confidence": 2, "frequency": 2},
+    {"text": "SanDisk wb_max_alloc_units=3561(三星1536)虽大但SLC耗尽后TLC直写仅215MB/s", "confidence": 2, "frequency": 2}
+  ]
+}

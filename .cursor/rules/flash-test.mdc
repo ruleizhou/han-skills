@@ -1,0 +1,83 @@
+---
+description: >
+  闪存（UFS/eMMC）读写速率测试。触发词：跑一下闪存测试、测 UFS 速度、测顺序读写、测随机 IOPS、flash benchmark、跑 fio 测试、存储性能测试、看 UFS 带宽够不够。当用户提到测试设备存储性能、验证 UFS 规格、排查存储慢问题时触发。
+alwaysApply: false
+globs:
+---
+# Flash 闪存读写速率测试 Skill
+
+自动化测试 Android 设备 UFS/eMMC 的顺序/随机读写性能，与规格对标，输出报告。
+
+## 核心原则
+
+1. **先检测后测试** — 先收集块设备、UFS 型号、调度器、Write Booster 状态，再执行测试
+2. **块设备优先** — 始终优先 `--direct=1` 直接读写裸块设备（`readlink /dev/block/by-name/userdata` 动态定位），绕过文件系统缓存
+3. **SLC 断崖意识** — 写带宽随 numjobs（累积写入量）升高而骤降，提示 SLC 缓存耗尽；高档写入值更能暴露真实 TLC 直写性能
+4. **规格对标** — 测试结果必须与数据手册或 UFS 规格表对比，给出达标/未达标结论
+5. **自学习闭环** — 每次测试结果记录到 `data/patterns.json`，越用越精准
+
+## 模式判断
+
+| 触发信号 | 模式 | 动作 |
+|----------|------|------|
+| "测 UFS"、"测闪存"、"跑性能"、"看带宽"、"存储测试" | 测试模式 | 完整工作流 Step 0→1→2→3→4→5 |
+| "修好了"、"搞定了"、"换了个 UFS"、"再看结果" | 反馈闭环 | 读取 `workflows/feedback-loop.md` |
+
+## 预检清单
+
+- [ ] 设备通过 adb 连接 `adb devices`
+- [ ] `/data/local/tmp/fio` 存在（Step 2 会自动从 references/ 推送）
+- [ ] 确认 UFS 块设备路径 `/dev/block/by-name/userdata`
+- [ ] 有 root 权限（`su root id`）
+
+## Workflow
+
+本 skill 使用 6 步工作流（Step 0 ~ Step 5），按顺序执行。**每个步骤开始时，先 Read 对应的详细指令文件：**
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+| 0 | `workflows/step-00-collect-requirements.md` | 收集测试需求（类型、条件、规格） |
+| 1 | `workflows/step-01-check-device.md` | 检测设备 UFS 信息、WB 状态、调度器 |
+| 2 | `workflows/step-02-setup-env.md` | 配置环境（调度器、块设备、fio 就绪） |
+| 3 | `workflows/step-03-run-tests.md` | 执行测试（顺序读/写 + 随机 IOPS） |
+| 4 | `workflows/step-04-analyze-results.md` | 分析结果、对标规格、检测异常 |
+| 5 | `workflows/step-05-report.md` | 输出报告、收录到 patterns.json |
+
+**反馈闭环由用户主动触发，不在主流程中自动弹出。触发后读取 `workflows/feedback-loop.md`。**
+
+**开始执行时，首先读取 `workflows/step-00-collect-requirements.md`。**
+
+## 路径约定
+
+Claude Code 加载 skill 时 cwd 是用户目录，不是 skill 安装目录，没有自动注入的 `$SKILL_DIR`。推送 fio/脚本前，先按候选目录动态定位本 skill 基础目录（详见 step-02）：
+
+```bash
+SKILL_DIR=$(for d in \
+  ~/.claude/skills/flash-test \
+  ~/.codex/skills/flash-test \
+  ~/.config/opencode/skills/flash-test \
+  ~/.ai_utils/skills/flash-test; do
+  [ -f "$d/references/fio" ] && { echo "$d"; break; }
+done)
+```
+
+- fio 二进制：`"$SKILL_DIR/references/fio"`（ARM aarch64 预编译）
+- 测试脚本：`"$SKILL_DIR/references/ufs_test.sh"`
+
+> ⚠️ 不硬编码本机绝对路径。skill 装到任一标准目录或留在源仓库，探测都能命中；`$SKILL_DIR` 为空说明 skill 没装到位。
+
+## 参考资料速查
+
+- 测试脚本: `references/ufs_test.sh`（设备上 `/data/local/tmp/ufs_test.sh`）
+- fio 二进制: `references/fio`
+- 设备规格库: `data/patterns.json`（`device_profiles.<model>.spec` 按型号查规格）
+- 历史案例: `data/cases/`
+
+## 已知 UFS 型号规格（权威源：data/patterns.json → device_profiles.<model>.spec）
+
+| 型号 | 厂商 | 顺序读 MB/s | 顺序写 MB/s | 随机读 IOPS | 随机写 IOPS |
+|------|------|-----------|-----------|-----------|-----------|
+| CY14-64G | Samsung | 820 | 520 | 35000 | 80000 |
+| SDINFDK4-64G | SanDisk | 1100 | 550 | 待提供 | 待提供 |
+
+> `patterns.json` 是权威源（动态更新）；本表为快查，新增型号测完后先在 patterns.json 补 `device_profiles.<model>.spec`，再在此追加一行（手动保持同步）。

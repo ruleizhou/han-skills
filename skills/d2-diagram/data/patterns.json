@@ -1,0 +1,76 @@
+{
+  "_schema": "D2 图表模式/经验库",
+  "_version": "2.0",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "流程图快速创建",
+      "category": "图表类型识别",
+      "description": "用户明确要求'流程图'时，直接使用 oval(起止) + rectangle(处理) + diamond(决策)，参考 flowchart.d2 模板",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["流程图", "flowchart", "流程", "步骤", "决策"],
+      "first_seen": "2026-05-27",
+      "last_seen": "2026-05-27",
+      "outcome": "success",
+      "template_ref": "assets/templates/flowchart.d2"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "UML类图专用语法",
+      "category": "错误避免",
+      "description": "画UML类图时必须使用 shape: class 语法（字段/方法/可见性），禁止用 rectangle 手动拼接",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["类图", "UML", "class", "类", "字段", "方法", "继承"],
+      "first_seen": "2026-05-27",
+      "last_seen": "2026-05-27",
+      "outcome": "success",
+      "template_ref": "assets/templates/class-diagram.d2"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "技术文档clean风格",
+      "category": "样式偏好",
+      "description": "用户说'技术文档'或'文档用'时，使用 --theme=300 主题，不添加 --sketch",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["技术文档", "文档", "clean", "专业"],
+      "first_seen": "2026-05-27",
+      "last_seen": "2026-05-27",
+      "outcome": "success",
+      "template_ref": null
+    },
+    {
+      "id": "ptrn-004",
+      "name": "演示文稿sketch风格",
+      "category": "样式偏好",
+      "description": "用户说'演示'、'PPT'、'手绘'时，使用 --sketch 参数生成手绘风格",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["演示", "PPT", "手绘", "sketch", "汇报"],
+      "first_seen": "2026-05-27",
+      "last_seen": "2026-05-27",
+      "outcome": "success",
+      "template_ref": null
+    },
+    {
+      "id": "ptrn-005",
+      "name": "暗色环境SVG模式",
+      "category": "样式偏好",
+      "description": "用户提到'暗色'、'dark'时，必须生成 SVG 格式并添加 --dark-theme=200（PNG 不支持暗色主题）",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["暗色", "dark", "黑色", "夜间"],
+      "first_seen": "2026-05-27",
+      "last_seen": "2026-05-27",
+      "outcome": "success",
+      "template_ref": null
+    }
+  ]
+}

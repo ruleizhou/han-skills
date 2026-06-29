@@ -1,0 +1,73 @@
+# Flowchart Template
+# Usage: d2 --sketch flowchart.d2 output.png
+
+direction: down
+
+style: {
+  fill-pattern: dots
+  stroke-dash: 3
+  border-radius: 10
+}
+
+# Start/End nodes (oval shape)
+start: Start {
+  shape: oval
+  style.fill: "#E8F5E9"
+  style.stroke: "#4CAF50"
+}
+
+end: End {
+  shape: oval
+  style.fill: "#FFEBEE"
+  style.stroke: "#F44336"
+}
+
+# Process nodes (rectangle)
+input: Input Data {
+  style.fill: "#E3F2FD"
+}
+
+process: Process Data {
+  style.fill: "#E3F2FD"
+}
+
+transform: Transform {
+  style.fill: "#E3F2FD"
+}
+
+output: Output Result {
+  style.fill: "#E3F2FD"
+}
+
+# Decision nodes (diamond shape)
+valid: Valid? {
+  shape: diamond
+  style.fill: "#FFF3E0"
+  style.stroke: "#FF9800"
+}
+
+error: Handle Error {
+  style.fill: "#FFEBEE"
+  style.stroke: "#F44336"
+}
+
+retry: Retry? {
+  shape: diamond
+  style.fill: "#FFF3E0"
+  style.stroke: "#FF9800"
+}
+
+# Connections
+start -> input
+input -> valid
+
+valid -> process: Yes
+valid -> error: No
+
+process -> transform
+transform -> output
+output -> end
+
+error -> retry
+retry -> input: Yes
+retry -> end: No

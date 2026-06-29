@@ -1,0 +1,77 @@
+# UML 类图 Template
+# Created: 2026-05-27
+# Usage: d2 --theme=300 -l elk class-diagram.d2 output.png
+# Description: UML 类图，展示类结构和继承关系
+
+direction: down
+
+# 基类
+User: {
+  shape: class
+  #id: int
+  -name: string
+  -email: string
+  -password: string
+  +login(): bool
+  +logout(): void
+  +getProfile(): Profile
+}
+
+# 子类
+Admin: {
+  shape: class
+  -role: string
+  -permissions: string[]
+  +manageUsers(): void
+  +setPermissions(): void
+}
+
+Guest: {
+  shape: class
+  -visitCount: int
+  +browse(): void
+  +register(): User
+}
+
+# 关联类
+Profile: {
+  shape: class
+  -userId: int
+  -avatar: string
+  -bio: string
+  +update(): void
+  +getAvatar(): string
+}
+
+Order: {
+  shape: class
+  -id: int
+  -total: float
+  -status: string
+  +place(): bool
+  +cancel(): void
+  +getTotal(): float
+}
+
+# 继承关系（空心三角箭头）
+Admin -> User: 继承 {
+  target-arrowhead.shape: triangle
+  target-arrowhead.style.filled: false
+}
+
+Guest -> User: 继承 {
+  target-arrowhead.shape: triangle
+  target-arrowhead.style.filled: false
+}
+
+# 组合关系
+User -> Profile: 拥有 {
+  source-arrowhead: 1
+  target-arrowhead: 1
+}
+
+# 聚合关系
+User -> Order: 下单 {
+  source-arrowhead: 1
+  target-arrowhead: 0..*
+}

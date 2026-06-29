@@ -1,0 +1,136 @@
+# Network Topology Template
+# Usage: d2 --sketch network-topology.d2 output.png
+
+direction: down
+
+style: {
+  fill-pattern: dots
+  stroke-dash: 3
+  border-radius: 8
+  shadow: true
+}
+
+# Internet
+internet: Internet {
+  shape: cloud
+  style.fill: "#E3F2FD"
+  style.stroke: "#1976D2"
+}
+
+# DMZ
+dmz: {
+  label: DMZ
+  style.fill: "#FFF3E0"
+  style.stroke: "#F57C00"
+  
+  firewall1: Firewall {
+    shape: rectangle
+    style.fill: "#FFCC80"
+  }
+  
+  loadbalancer: Load Balancer {
+    shape: diamond
+    style.fill: "#FFE0B2"
+  }
+  
+  waf: WAF {
+    style.fill: "#FFE0B2"
+  }
+}
+
+# Application Tier
+app: {
+  label: Application Tier
+  style.fill: "#E8F5E9"
+  style.stroke: "#388E3C"
+  
+  web1: Web Server 1
+  web2: Web Server 2
+  web3: Web Server 3
+}
+
+# Service Tier
+service: {
+  label: Service Tier
+  style.fill: "#F3E5F5"
+  style.stroke: "#7B1FA2"
+  
+  api1: API Gateway
+  app1: App Server 1
+  app2: App Server 2
+}
+
+# Database Tier
+database: {
+  label: Database Tier
+  style.fill: "#ECEFF1"
+  style.stroke: "#546E7A"
+  
+  primary: Primary DB {
+    shape: cylinder
+    style.fill: "#CFD8DC"
+  }
+  
+  replica1: Replica 1 {
+    shape: cylinder
+    style.fill: "#B0BEC5"
+  }
+  
+  replica2: Replica 2 {
+    shape: cylinder
+    style.fill: "#B0BEC5"
+  }
+}
+
+# Cache & Queue
+cache: {
+  label: Cache Layer
+  style.fill: "#FFF8E1"
+  style.stroke: "#F9A825"
+  
+  redis1: Redis Primary
+  redis2: Redis Replica
+}
+
+# Management
+management: {
+  label: Management
+  style.fill: "#FFEBEE"
+  style.stroke: "#C62828"
+  
+  monitoring: Monitoring
+  logging: Logging
+  backup: Backup
+}
+
+# Connections
+internet -> dmz.firewall1
+
+dmz.firewall1 -> dmz.waf
+dmz.waf -> dmz.loadbalancer
+
+dmz.loadbalancer -> app.web1
+dmz.loadbalancer -> app.web2
+dmz.loadbalancer -> app.web3
+
+app.web1 -> service.api1
+app.web2 -> service.api1
+app.web3 -> service.api1
+
+service.api1 -> service.app1
+service.api1 -> service.app2
+
+service.app1 -> database.primary
+service.app2 -> database.primary
+
+database.primary -> database.replica1
+database.primary -> database.replica2
+
+service.app1 -> cache.redis1
+service.app2 -> cache.redis1
+
+cache.redis1 -> cache.redis2: replication
+
+service.app1 -> management.monitoring
+service.app1 -> management.logging
+database.primary -> management.backup

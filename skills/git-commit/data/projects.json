@@ -1,0 +1,13 @@
+{
+  "_comment": "internal_name 用于交互展示，customer_name 用于 commit 消息。可手动编辑此文件增删项目。",
+  "projects": [
+    {
+      "internal_name": "MT582",
+      "customer_name": "M61"
+    },
+    {
+      "internal_name": "MC5612",
+      "customer_name": "Dotson"
+    }
+  ]
+}

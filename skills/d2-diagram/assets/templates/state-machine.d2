@@ -1,0 +1,72 @@
+# 状态机 Template
+# Created: 2026-05-27
+# Usage: d2 --theme=300 -l elk state-machine.d2 output.png
+# Description: 订单状态转换图
+
+direction: down
+
+style: {
+  fill-pattern: dots
+  stroke-dash: 3
+  border-radius: 8
+  shadow: true
+}
+
+# 状态
+created: 已创建 {
+  shape: oval
+  style.fill: "#E3F2FD"
+}
+
+paid: 已支付 {
+  shape: oval
+  style.fill: "#E8F5E9"
+}
+
+shipped: 已发货 {
+  shape: oval
+  style.fill: "#FFF3E0"
+}
+
+delivered: 已送达 {
+  shape: oval
+  style.fill: "#C8E6C9"
+}
+
+cancelled: 已取消 {
+  shape: oval
+  style.fill: "#FFEBEE"
+}
+
+refunded: 已退款 {
+  shape: oval
+  style.fill: "#F3E5F5"
+}
+
+# 转换
+created -> paid: 支付成功 {
+  style.stroke: "#4CAF50"
+  style.stroke-width: 2
+}
+
+created -> cancelled: 用户取消 {
+  style.stroke: "#F44336"
+}
+
+paid -> shipped: 商家发货 {
+  style.stroke: "#FF9800"
+  style.stroke-width: 2
+}
+
+paid -> refunded: 申请退款 {
+  style.stroke: "#9C27B0"
+}
+
+shipped -> delivered: 确认收货 {
+  style.stroke: "#4CAF50"
+  style.stroke-width: 2
+}
+
+shipped -> refunded: 退货退款 {
+  style.stroke: "#9C27B0"
+}

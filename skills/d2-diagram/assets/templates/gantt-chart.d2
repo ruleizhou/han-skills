@@ -1,0 +1,78 @@
+# 甘特图 Template
+# Created: 2026-05-27
+# Usage: d2 --theme=300 -l elk gantt-chart.d2 output.png
+# Description: 项目计划时间线
+
+direction: right
+
+style: {
+  font-size: 16
+}
+
+# 阶段分组
+phase1: {
+  label: 需求阶段
+  style.fill: "#E3F2FD"
+
+  req_collect: 需求收集 {
+    style.fill: "#BBDEFB"
+  }
+  req_review: 需求评审 {
+    style.fill: "#BBDEFB"
+  }
+  req_confirm: 需求确认 {
+    style.fill: "#90CAF9"
+  }
+
+  req_collect -> req_review -> req_confirm
+}
+
+phase2: {
+  label: 开发阶段
+  style.fill: "#FFF3E0"
+
+  design: 概要设计 {
+    style.fill: "#FFE0B2"
+  }
+  dev: 编码实现 {
+    style.fill: "#FFE0B2"
+  }
+  dev_review: 代码评审 {
+    style.fill: "#FFCC80"
+  }
+
+  design -> dev -> dev_review
+}
+
+phase3: {
+  label: 测试阶段
+  style.fill: "#E8F5E9"
+
+  test: 集成测试 {
+    style.fill: "#C8E6C9"
+  }
+  uat: 验收测试 {
+    style.fill: "#A5D6A7"
+  }
+
+  test -> uat
+}
+
+phase4: {
+  label: 发布阶段
+  style.fill: "#F3E5F5"
+
+  deploy: 部署上线 {
+    style.fill: "#E1BEE7"
+  }
+  monitor: 线上监控 {
+    style.fill: "#CE93D8"
+  }
+
+  deploy -> monitor
+}
+
+# 阶段间依赖
+phase1.req_confirm -> phase2.design: 依赖
+phase2.dev_review -> phase3.test: 依赖
+phase3.uat -> phase4.deploy: 依赖

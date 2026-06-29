@@ -1,0 +1,80 @@
+# 序列图 Template
+# Created: 2026-05-27
+# Usage: d2 --theme=300 -l elk sequence-diagram.d2 output.png
+# Description: API 调用时序交互图
+
+direction: right
+
+style: {
+  fill-pattern: dots
+  stroke-dash: 3
+  border-radius: 8
+  shadow: true
+}
+
+# 参与者
+client: 客户端 {
+  shape: rectangle
+  style.fill: "#E3F2FD"
+}
+
+gateway: API网关 {
+  shape: rectangle
+  style.fill: "#FFF3E0"
+}
+
+service: 用户服务 {
+  shape: rectangle
+  style.fill: "#E8F5E9"
+}
+
+auth: 认证服务 {
+  shape: rectangle
+  style.fill: "#F3E5F5"
+}
+
+db: 数据库 {
+  shape: cylinder
+  style.fill: "#E0F7FA"
+}
+
+# 请求流程
+client -> gateway: 1. 发送请求 {
+  style.stroke: "#1976D2"
+  style.stroke-width: 2
+}
+
+gateway -> auth: 2. 验证Token {
+  style.stroke: "#7B1FA2"
+  style.stroke-width: 2
+}
+
+auth -> gateway: 3. 验证通过 {
+  style.stroke: "#7B1FA2"
+  style.stroke-dash: 5
+}
+
+gateway -> service: 4. 转发请求 {
+  style.stroke: "#FF9800"
+  style.stroke-width: 2
+}
+
+service -> db: 5. 查询数据 {
+  style.stroke: "#0097A7"
+  style.stroke-width: 2
+}
+
+db -> service: 6. 返回结果 {
+  style.stroke: "#0097A7"
+  style.stroke-dash: 5
+}
+
+service -> gateway: 7. 响应数据 {
+  style.stroke: "#FF9800"
+  style.stroke-dash: 5
+}
+
+gateway -> client: 8. 返回响应 {
+  style.stroke: "#1976D2"
+  style.stroke-dash: 5
+}
