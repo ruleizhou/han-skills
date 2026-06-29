@@ -352,9 +352,9 @@ install_mcps() {
         return 0
     fi
 
-    # 需要 Python（注册命令要用）
-    if ! detect_python 2>/dev/null; then
-        warn "$agent: 未检测到 Python，跳过 MCP 注册"
+    # 需要 Python >= 3.10（MCP server 运行依赖）
+    if ! detect_python; then
+        warn "$agent: 未找到 Python >= 3.10，跳过 MCP 注册（可设置 HAN_MCP_PYTHON）"
         return 0
     fi
 
