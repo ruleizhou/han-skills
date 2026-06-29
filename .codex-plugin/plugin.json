@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides, svg) + llm-wiki (personal knowledge-base wiki with 9 commands) + kernel-crash-analyzer-v2 (Linux kernel crash analysis for Qualcomm/Android) + d2-diagram (D2 declarative diagrams) + git-commit (interactive git commit message generator) + flash-test (UFS/eMMC read/write benchmark).",
+  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides, svg) + llm-wiki (personal knowledge-base wiki with 9 commands) + kernel-crash-analyzer-v2 (Linux kernel crash analysis for Qualcomm/Android) + d2-diagram (D2 declarative diagrams) + git-commit (interactive git commit message generator) + flash-test (UFS/eMMC read/write benchmark) + util-tools (kernel dev toolkit router, /util-tools command).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -30,13 +30,16 @@
     "commit",
     "flash",
     "ufs",
-    "benchmark"
+    "benchmark",
+    "util-tools",
+    "router",
+    "bringup"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Han Skills",
     "shortDescription": "Personal skill factory and image-generation workflows",
-    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams), and llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save). Includes kernel-crash-analyzer-v2 (Linux kernel crash analysis — NULL pointer / KASAN UAF / SLUB / deadlock — with disassembly-first workflow + self-learning). Also ships d2-diagram (D2 declarative diagrams), git-commit (interactive git commit message generator), and flash-test (UFS/eMMC read/write benchmark).",
+    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams), and llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save). Includes kernel-crash-analyzer-v2 (Linux kernel crash analysis — NULL pointer / KASAN UAF / SLUB / deadlock — with disassembly-first workflow + self-learning). Also ships d2-diagram (D2 declarative diagrams), git-commit (interactive git commit message generator), and flash-test (UFS/eMMC read/write benchmark). Also ships util-tools (kernel dev toolkit router — /util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type; new sub-skills created on demand via skill-creator-plus).",
     "developerName": "Han",
     "category": "Productivity",
     "capabilities": [
@@ -58,7 +61,8 @@
       "Analyze a Linux kernel crash dump (NULL pointer / KASAN / SLUB / deadlock) on Qualcomm/Android",
       "Draw a D2 declarative diagram (flowchart / architecture / ER / class)",
       "Generate a structured git commit message from a diff",
-      "Benchmark UFS/eMMC read/write throughput on an Android device"
+      "Benchmark UFS/eMMC read/write throughput on an Android device",
+      "Route a kernel dev task (debug / bringup / feature-dev) via /util-tools"
     ],
     "brandColor": "#0EA5E9"
   }

@@ -21,4 +21,7 @@ cat <<'EOF'
   flash-test           UFS/eMMC 读写速率测试 (顺序/随机, 规格对标)
     触发:"测 UFS 速度"、"测闪存"、"跑性能"、"看带宽"、"存储测试"、
          "跑 fio 测试"、"flash benchmark"、"再看结果"
+  util-tools           内核工具总路由 (/util-tools 命令触发, Debug/器件 Bringup/功能开发三场景)
+    触发:"/util-tools"、"看下这个死机 log"、"bringup 一个 I2C sensor"、
+         "实现一个 sysfs 接口"、"分析 USB 拷贝速度"、"问题解决了"
 EOF

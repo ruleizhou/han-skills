@@ -16,16 +16,16 @@
     },
     {
       "id": "ptrn-002",
-      "name": "dwc3 remove 缺少 disable_irq 导致 readl hang",
-      "crash_type": "Hardware hang",
-      "category": "关机路径 IRQ 同步缺失",
-      "description": "dwc3_remove() 在 dwc3_core_exit_mode() 释放 DMA 前未 disable_irq()，pending DWC3 中断访问已释放 DMA → SMMU context fault → 嵌套 IRQ 中 readl() 卡在不可访问的硬件寄存器。synchronize_irq 虽在 dwc3_core_exit 之前，但已在 dwc3_core_exit_mode 之后，竞态窗口仍在",
-      "confidence": 3,
-      "frequency": 3,
-      "fix_template": "dwc3_remove(): dwc3_core_exit_mode() 之前加 disable_irq(dwc->irq_gadget)，删除其后冗余的 synchronize_irq。probe err5 路径同样保护",
-      "keywords": ["DWC3", "reboot", "readl", "hang", "disable_irq", "synchronize_irq", "dwc3_remove", "dwc3_core_exit_mode", "SMMU", "IRQ race", "shutdown"],
+      "name": "dwc3 remove 缺少 disable_irq 导致 readl hang / DWC3 中断风暴 DMA 竞态",
+      "crash_type": "Hardware hang / Oops 转 panic",
+      "category": "关机路径 IRQ/DMA 同步缺失",
+      "description": "DWC3 在 reboot/shutdown 期间: (变体A) remove 路径未 disable_irq 导致 pending IRQ 访问已释放 DMA → SMMU fault → readl hang; (变体B) gadget VBUS-active 未连接状态下 'atomic' DMA 模式在中断风暴(~990/s)下 IOVA spinlock 竞争 → DMA unmap/硬件访问竞态 → SMMU context fault (FAR=0x0) → 系统资源耗尽 → 其他驱动(如 WLAN DSC)超时 chain-panic",
+      "confidence": 4,
+      "frequency": 4,
+      "fix_template": "(变体A) dwc3_remove: dwc3_core_exit_mode() 前加 disable_irq; (变体B) DT: qcom,iommu-dma=fastmap + qcom,iommu-faults=stall-disable,HUPCF,no-CFRE,non-fatal; USB 默认 mode none 避免 VBUS-active 中间态",
+      "keywords": ["DWC3", "reboot", "readl", "hang", "interrupt storm", "SMMU context fault", "FAR=0x0", "atomic DMA", "fastmap", "IOMMU_DOMAIN_DMA", "VBUS active", "gadget", "chain panic", "WLAN timeout"],
       "first_seen": "2026-05-25",
-      "last_seen": "2026-05-26",
+      "last_seen": "2026-06-27",
       "outcome": "success"
     },
     {
@@ -56,6 +56,43 @@
             "方案2存在futex_wait_restart悬空指针+ENOMEM ABI退化"
           ],
           "timestamp": "2026-06-09T12:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "ptrn-004",
+      "name": "WLAN DSC 状态机超时在 reboot 期间主动 BUG panic",
+      "crash_type": "Oops 转 panic",
+      "category": "shutdown 路径状态机同步缺失",
+      "description": "WLAN (qcacld-3.0) DSC watchdog timer 在 reboot 期间检测到 PSOC idle_shutdown 转换超过 60s 未完成，调用 QDF_DEBUG_PANIC → BUG() 主动 panic。调用栈: __dsc_dbg_trans_timeout[timer] → run_timer_softirq → cpuidle。通常是系统其他子系统(如 DWC3)关机异常导致 IPC 通道阻塞/WLAN FW 无响应。寄存器中的 LIST_POISON2 暗示潜在 timer data freed-memory 访问。KASAN 启用但无报告时，需考虑系统关机乱序而非单一 UAF",
+      "confidence": 1,
+      "frequency": 1,
+      "fix_template": "P0: DSC idle_shutdown/idle_restart 超时不 panic 改为 dsc_err 日志 + return; P1: reboot notifier 预取消所有挂起 DSC 转换; P2: PSOC 析构路径使用 timer_shutdown_sync + deferred work 避免死锁",
+      "keywords": ["WLAN", "DSC", "__dsc_dbg_trans_timeout", "__hdd_psoc_idle_shutdown", "qcacld-3.0", "QDF_DEBUG_PANIC", "idle shutdown timeout", "timer callback BUG", "LIST_POISON2", "chain panic", "shutdown race"],
+      "first_seen": "2026-06-27",
+      "last_seen": "2026-06-27",
+      "outcome": "success",
+      "adversarial_verifications": [
+        {
+          "case_id": "dwc3-interrupt-storm-smmu-fault-reboot",
+          "root_cause_verdict": "CONCUR_WITH_CAUTION",
+          "root_cause_challenges": [
+            "x25=LIST_POISON2 是 freed memory 硬证据，被低估",
+            "损坏的 timer 数据会产生相同超时症状",
+            "经典的 del_timer_sync 缺失导致 timer 在 free 后触发",
+            "时间线关联(RCU stall→WLAN timeout)缺乏因果证据"
+          ],
+          "fix_verdict": "REJECT→已修订",
+          "fix_issues": [
+            "[HIGH] del_timer_sync 可能死锁 → deferred work",
+            "[HIGH] BUG→WARN 在内存损坏时转为静默损坏 → flag 检查",
+            "[HIGH] 遗漏 rmmod/probe 错误路径 → 移到析构函数",
+            "[MEDIUM] timer 武装-取消-触发竞态窗口 → reboot notifier",
+            "[MEDIUM] 应使用 QDF 封装 API",
+            "[MEDIUM] 60s shutdown 阻塞未解决 → reboot notifier 提前取消"
+          ],
+          "challenges_resolved": true,
+          "timestamp": "2026-06-27T18:00:00+08:00"
         }
       ]
     }

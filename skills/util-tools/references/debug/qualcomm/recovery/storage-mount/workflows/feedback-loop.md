@@ -1,0 +1,151 @@
+# 反馈闭环
+
+用户已发出"完成/解决"信号，现在回顾历史、整理链路、存档案例、更新模式库。
+
+## 步骤 1：回顾本次过程
+
+从当前对话历史中提取关键信息：
+
+- 用户输入/任务描述
+- 执行的步骤序列
+- 每步的关键输出和决策点
+- 最终结论/产物
+- **挂载点**：目标挂载路径
+- **块设备路径**：如 `/dev/block/sdg1`
+- **平台**：芯片平台和 Android 版本
+- **DWC3 模式**：是否涉及 DRD 竞态
+- **SELinux 状态**：enforcing/permissive，是否有 avc
+
+如果对话历史中找不到完整信息，用 `AskUserQuestion` 向用户确认关键细节。
+
+## 步骤 2：呈现回顾
+
+将所有分析/处理轮次按时间排序，呈现给用户：
+
+```markdown
+## 回顾
+
+| # | 时间 | 输入 | 关键决策 | 结果 |
+|---|------|------|---------|------|
+| 1 | ... | ... | ... | ... |
+```
+
+## 步骤 3：确认最终结果
+
+用 `AskUserQuestion` 让用户确认哪些部分是有效的：
+
+```
+question: "以上过程中，哪部分的结果是正确的/有效的？"
+header: "闭环确认"
+options:
+  - label: "全部正确"
+    description: "整个过程的分析和结论都是正确的"
+  - label: "部分正确"
+    description: "有些步骤有效，有些需要调整"
+  - label: "都不对"
+    description: "实际结果与以上分析都不符"
+```
+
+## 步骤 4：存档案例（双格式）
+
+同时生成 **JSON** (机器索引) 和 **Markdown** (人类阅读) 两份案例文件。
+
+### 4.1 JSON 格式（写入 skill 内部）
+
+写入 `data/cases/<YYYYMMDD-HHMMSS>-recovery-mount.json`：
+
+```json
+{
+  "id": "<YYYYMMDD-HHMMSS>",
+  "timestamp": "<ISO8601>",
+  "input_summary": "<输入摘要>",
+  "process_steps": ["<步骤1>", "<步骤2>"],
+  "key_findings": ["<发现1>", "<发现2>"],
+  "final_result": "<最终结果>",
+  "result_assessment": "<success/partial/failed>",
+  "mount_point": "<挂载点路径>",
+  "block_device": "<块设备路径>",
+  "platform": "<芯片平台>",
+  "root_cause_category": "<A/B/C/D>",
+  "selinux_involved": false
+}
+```
+
+### 4.2 Markdown 格式（输出到当前工作路径）
+
+写入**用户当前工作目录**下 `<YYYYMMDD-HHMMSS>-recovery-mount.md`，使用以下模板：
+
+```markdown
+# Recovery 存储挂载问题分析
+
+> **案例 ID**：<YYYYMMDD-HHMMSS>
+> **日期**：<YYYY-MM-DD>
+> **结论**：<一句话总结>
+
+---
+
+## 1. 问题描述
+
+<问题详述，包含关键上下文、环境信息>
+
+## 2. 关键日志摘录
+
+| 时间 | 日志内容 | 含义 |
+|------|---------|------|
+| ... | ... | ... |
+
+## 3. 过程检查点
+
+| 检查项 | 状态 | 证据 |
+|--------|------|------|
+| init.rc 挂载点 | ... | ... |
+| USB 枚举日志 | ... | ... |
+| SELinux avc | ... | ... |
+| 代码缺陷 | ... | ... |
+
+## 4. 根因分析
+
+<根因分类和详细分析>
+
+## 5. 方案/建议
+
+| 优先级 | 文件 | 修改内容 | 预期效果 |
+|--------|------|----------|----------|
+| P0 | init.rc | ... | ... |
+| P0 | udisk_install.cpp | ... | ... |
+
+## 6. 关键引用
+
+```
+<修改前后的关键代码对比>
+```
+```
+
+**JSON 写入 skill 内部 `data/cases/` 供模式库自动索引和匹配；Markdown 写入用户当前工作路径供阅读和团队分享。两者必须同时生成，内容一致。**
+
+## 步骤 5：更新模式库
+
+更新 `data/patterns.json`：
+
+- **success 的结果**：提取有效模式，如果已有匹配 → `confidence += 1`, `frequency += 1`；如果是新模式 → 追加 `confidence: 1`
+- **failed 的结果**：对应模式 `confidence -= 1`；confidence < 0 时从 patterns.json 中移除
+- 更新前后展示 diff preview 让用户 review
+
+## 步骤 6：更新领域知识
+
+如果本次过程揭示了新的领域知识或经验规则，追加到 `references/known-issues.md`。
+
+## 步骤 7：输出闭环总结
+
+```markdown
+## 反馈闭环总结
+
+- **任务**：Recovery 存储挂载调试
+- **关键发现**：<要点>
+- **案例存档**：JSON → skill `data/cases/<case_id>.json` | Markdown → 当前工程 `<case_id>.md`
+- **模式库更新**：<新增/更新了哪些模式，confidence 变化>
+```
+
+---
+
+**闭环完成。该问题的知识已沉淀到 `data/cases/`（JSON 机读索引）和当前工作路径（Markdown 阅读文档），`data/patterns.json` 已更新，后续相似任务将获得更精准的处理线索。**

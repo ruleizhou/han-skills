@@ -1,0 +1,58 @@
+{
+  "_schema": "patterns.json — USB 传输性能分析的模式/经验库",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "_fields": {
+    "id": "唯一标识，格式 ptrn-<自增三位数>",
+    "name": "模式简短名称",
+    "category": "protocol / kernel_param / hardware / method",
+    "description": "模式详细描述，包含关键特征和判断依据",
+    "confidence": "置信度，初始为 1, success +1, fail -1",
+    "frequency": "出现次数",
+    "keywords": "用于模式匹配的关键词列表",
+    "first_seen": "首次发现日期 YYYY-MM-DD",
+    "last_seen": "最近一次出现日期 YYYY-MM-DD",
+    "outcome": "最终结果: success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "BOT 协议写慢于读 2-4x",
+      "category": "protocol",
+      "description": "BOT (Bulk-Only Transport) 协议下,每次写操作后内核发送 SYNCHRONIZE_CACHE 命令强制刷新 U 盘缓存。BOT 的 can_queue=1 导致缓存刷新串行阻塞后续 I/O。叠加 max_sectors=240(120KB) 将大文件拆成数千次小 I/O,放大刷新开销。结果：写比读慢 2-4 倍是 BOT 协议的普遍现象。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["BOT", "SYNCHRONIZE_CACHE", "can_queue", "写慢", "读写不对称", "max_sectors", "usb-storage"],
+      "first_seen": "2026-05-24",
+      "last_seen": "2026-05-24",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "am_foreground_service_stop 精确耗时提取",
+      "category": "method",
+      "description": "Android logcat 中 FileOperationService 的 am_foreground_service_stop 消息第 10 个字段直接包含操作耗时(ms)。比手动计算时间戳差值更精确,是 USB 传输性能分析的可靠数据源。进度更新间隔(~500ms)一致说明瓶颈不在应用层。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["am_foreground_service_stop", "logcat", "FileOperationService", "耗时", "计时", "DocumentsUI"],
+      "first_seen": "2026-05-24",
+      "last_seen": "2026-05-24",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "max_sectors 偏小放大写性能问题",
+      "category": "kernel_param",
+      "description": "usb-storage 驱动默认 max_sectors=240(120KB),而 USB 3.0 max_hw_sectors 可达 2048(1MB)。120KB/command 将 1GB 写入拆成 ~8533 次 I/O,每次 I/O 后的 SYNCHRONIZE_CACHE 导致大量时间花在缓存刷新上。提升到 2048 可将 I/O 次数减少 8.5 倍。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["max_sectors", "120KB", "2048", "scsiglue.c", "I/O粒度", "碎片化"],
+      "first_seen": "2026-05-24",
+      "last_seen": "2026-05-24",
+      "outcome": "success"
+    }
+  ]
+}

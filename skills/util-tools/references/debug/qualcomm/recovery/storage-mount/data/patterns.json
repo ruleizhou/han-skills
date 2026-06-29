@@ -1,0 +1,88 @@
+{
+  "_schema": "patterns.json — 模式/经验库，每次成功分析后将有效的模式沉淀于此",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "_fields": {
+    "id": "唯一标识，格式 ptrn-<自增三位数>",
+    "name": "模式简短名称（一句话概括）",
+    "category": "A:init.rc缺失 / B:DWC3竞态 / C:SELinux拦截 / D:路径不固定",
+    "description": "模式详细描述，包含关键特征和判断依据",
+    "confidence": "置信度，初始为 1，success +1, fail -1",
+    "frequency": "出现次数",
+    "keywords": "用于模式匹配的关键词列表",
+    "platform": "适用的芯片平台",
+    "first_seen": "首次发现日期 YYYY-MM-DD",
+    "last_seen": "最近一次出现日期 YYYY-MM-DD",
+    "outcome": "最终结果: success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "init.rc 缺少挂载点目录",
+      "category": "A",
+      "description": "Recovery init.rc 中没有 mkdir 创建挂载点目录，导致 mount 报 ENOENT。恢复进程无 rootfs 写权限，SELinux enforcing 下 mkdir 会被拦截，挂载点必须由 init 进程创建。",
+      "confidence": 5,
+      "frequency": 5,
+      "keywords": ["No such file or directory", "mount", "ENONENT", "mkdir", "init.rc", "udisk", "sdcard"],
+      "platform": "Qualcomm (通用)",
+      "first_seen": "2026-05-29",
+      "last_seen": "2026-05-29",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "DWC3 DRD 模式竞态（ADB vs OTG）",
+      "category": "B",
+      "description": "Recovery 启动时 ADB (SetUsbConfig) 将 DWC3 切到 peripheral 模式，与 OTG 自动检测 U 盘需要的 host 模式竞态。写 sys.usb.config=none 会触发 UDC write → DWC3 reset → 破坏已有 Host 枚举。关键证据：dmesg 中看到 xhci-hcd remove/destroy + dwc3 mode 切换日志。",
+      "confidence": 5,
+      "frequency": 5,
+      "keywords": ["dwc3", "xhci", "remove", "destroy", "otg", "host", "peripheral", "DRD", "dual role", "sys.usb.config", "adb"],
+      "platform": "Qualcomm Khaje/Bengal (SM6115)",
+      "first_seen": "2026-05-29",
+      "last_seen": "2026-05-29",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "stat() 成功但 mount 失败（块设备层未就绪）",
+      "category": "B",
+      "description": "块设备 node 已创建（stat 返回 0），但内核 VFS 层/块设备层内部初始化未完成，mount 仍报 ENOENT 或 Invalid argument。需要 sleep(2) 等待块设备层就绪后再 mount。",
+      "confidence": 5,
+      "frequency": 5,
+      "keywords": ["stat", "success", "mount", "failed", "ENOENT", "sleep", "block device", "not ready"],
+      "platform": "Qualcomm (通用)",
+      "first_seen": "2026-05-29",
+      "last_seen": "2026-05-29",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-004",
+      "name": "SELinux enforcing 拦截 recovery 进程 mkdir",
+      "category": "C",
+      "description": "SELinux enforcing 模式下，recovery 进程在 rootfs 上创建目录被 avc denied。解决方案：让 init 进程在 init.rc 中预先创建挂载点，避免修改 SELinux 策略。",
+      "confidence": 5,
+      "frequency": 5,
+      "keywords": ["avc", "denied", "selinux", "enforcing", "mkdir", "rootfs", "permission"],
+      "platform": "Qualcomm (通用)",
+      "first_seen": "2026-05-29",
+      "last_seen": "2026-05-29",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-005",
+      "name": "sys.usb.config=none 触发 DWC3 reset 破坏枚举",
+      "category": "B",
+      "description": "用户态写 sys.usb.config=none 会向 UDC 端点写入 → DWC3 controller reset → 破坏已有 Host 模式下的 USB 设备枚举。对 U 盘挂载是反作用。MSM DWC3 驱动在 OTG 模式下由 extcon (PD PHY) 自动切换，不需要手动操作。",
+      "confidence": 5,
+      "frequency": 5,
+      "keywords": ["sys.usb.config", "none", "dwc3", "reset", "UDC", "gadget", "enumeration"],
+      "platform": "Qualcomm (通用)",
+      "first_seen": "2026-05-29",
+      "last_seen": "2026-05-29",
+      "outcome": "success"
+    }
+  ]
+}

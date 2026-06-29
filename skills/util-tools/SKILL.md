@@ -1,0 +1,61 @@
+---
+name: util-tools
+description: "内核工具总路由，仅通过 /util-tools 命令触发。按 场景→平台→模块→类型 四级交互引导，覆盖 Debug / 器件 Bringup / 功能开发 三大场景，定位到对应子 skill。"
+---
+
+# Util Tools - 内核工具总路由
+
+## 核心原则
+
+1. **交互选择不可跳过（最高优先级）** — 扫描完成后唯一合法动作是调用 AskUserQuestion，严禁推断用户意图
+2. **路由即索引** — 本 skill 不做深度技术分析，负责发现和分派子 skill
+3. **子 skill 不存在是常态** — 首次遇到的问题类型走通用框架，事后创建子 skill
+4. **文件夹即分类** — 子 skill 按 `references/<scenario>/<platform>/<module>/<type>/` 目录结构组织
+5. **新建子 skill 统一委托 skill-creator-plus** — 自动获得拆分架构 + 自学习能力
+
+## 模式判断
+
+| 触发信号 | 动作 |
+|----------|------|
+| 用户描述调试/分析/排查类问题 | 场景=debug |
+| 用户描述器件 bringup/新硬件接入/驱动开发 | 场景=bringup |
+| 用户描述功能开发/新特性实现/内核增强 | 场景=featdev |
+| "问题解决了/修好了/搞定了/器件跑通了/功能上线了" | 读取 `workflows/feedback-loop.md` |
+
+## 预检清单
+
+- 是否是纯知识问答（不需要实际操作环境）？→ 不应触发本 skill
+- 触发后 → **直接执行下方触发流程**，不允许自动推断或跳过
+
+## 触发流程（场景选择内联，无额外 Read）
+
+### 1. 扫描目录（静默执行，结果不向用户展示）
+
+```bash
+python3 scripts/scan_routes.py
+```
+
+将 stdout JSON 解析为 `R`，字段：`scenarios`、`by_scenario.{debug,bringup,featdev}`。
+
+### 2. 场景选择
+
+调用 AskUserQuestion（header: "场景"）：
+- `Debug — 调试/分析/排查问题`
+- `器件 Bringup — 新硬件接入/驱动开发`
+- `功能开发 — 新特性实现/内核增强`
+
+### 3. 读取对应路由文件
+
+| 选择 | 读取 |
+|------|------|
+| Debug | `workflows/debug-router.md` |
+| 器件 Bringup | `workflows/bringup-router.md` |
+| 功能开发 | `workflows/featdev-router.md` |
+
+## 参考资料速查
+
+| 文件 | 用途 |
+|------|------|
+| `references/subskill-catalog.md` | 子 skill 目录索引（`scan_routes.py --catalog` 生成） |
+| `scripts/scan_routes.py` | 目录扫描脚本（`--scenario <name>` 过滤，`--catalog` 刷新索引） |
+| `../skill-creator-plus/` | 子 skill 创建工具（统一委托） |
