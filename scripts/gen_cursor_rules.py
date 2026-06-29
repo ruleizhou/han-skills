@@ -13,6 +13,7 @@ CLI
 ---
     python3 scripts/gen_cursor_rules.py          # write .cursor/rules/*.mdc
     python3 scripts/gen_cursor_rules.py --check  # exit 1 if any rule missing/stale
+    python3 scripts/gen_cursor_rules.py --output ~/.cursor/rules  # write to a custom dir
 
 Run after changing any SKILL.md, before committing.
 """
@@ -92,16 +93,25 @@ def _discover_skill_mds() -> list[Path]:
     return out
 
 
-def generate() -> int:
-    RULES_DIR.mkdir(parents=True, exist_ok=True)
+def _rel_or_abs(path: Path) -> str:
+    """Render a path relative to ROOT when inside it, else as-is (e.g. ~/.cursor/rules)."""
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def generate(output_dir: Path | None = None) -> int:
+    rules_dir = output_dir if output_dir is not None else RULES_DIR
+    rules_dir.mkdir(parents=True, exist_ok=True)
     skill_mds = _discover_skill_mds()
     written = 0
     for skill_md in skill_mds:
-        mdc = RULES_DIR / f"{skill_md.parent.name}.mdc"
+        mdc = rules_dir / f"{skill_md.parent.name}.mdc"
         mdc.write_text(render_mdc(skill_md), encoding="utf-8")
         written += 1
-        print(f"wrote {mdc.relative_to(ROOT)}")
-    print(f"\nDone: {written} cursor rule(s) under {RULES_DIR.relative_to(ROOT)}/")
+        print(f"wrote {_rel_or_abs(mdc)}")
+    print(f"\nDone: {written} cursor rule(s) under {_rel_or_abs(rules_dir)}/")
     return 0
 
 
@@ -133,9 +143,17 @@ def check() -> int:
 
 
 def main() -> int:
-    if "--check" in sys.argv[1:]:
+    args = sys.argv[1:]
+    if "--check" in args:
         return check()
-    return generate()
+    output_dir = None
+    if "--output" in args:
+        i = args.index("--output")
+        if i + 1 >= len(args):
+            print("--output requires a directory", file=sys.stderr)
+            return 2
+        output_dir = Path(args[i + 1]).expanduser()
+    return generate(output_dir)
 
 
 if __name__ == "__main__":
