@@ -59,25 +59,29 @@
 - 完整 frontmatter（见下方模板）
 - **模式感知**：归档路径根据 `wiki/.mode.json` 的 mode 决定（见下方路由表）
 
-**步骤 5.5：图文并茂（按需配 D2 图）**
+**步骤 5.5：图文并茂（按需多引擎配图）**
 
-页面创建后，为适合可视化的笔记配上 D2 图，做到图文并茂。详细规则见 `references/diagram-guide.md`（与 `ingest` 共用同一套配图内核）。
+页面创建后，为适合可视化的笔记配图，做到图文并茂。按内容智能选引擎（D2 / han-svg / han-infographic / han-hand-write-pic / han-disassembly-diagram），详细规则见 `references/diagram-guide.md`（与 `ingest` 共用同一套配图内核）。
 
 **配图范围**：`synthesis` / `decision` / `concept` / `source` 类型配图；`session`（整段多主题对话摘要）默认**跳过**。
 
 **流程**：
-1. 检测 D2 CLI：`which d2 && d2 --version`。未安装 → 走降级（D2 源以代码块嵌入 + 手动编译提示，见 diagram-guide.md 第 7 节），不中断
-2. 按笔记类型 + 内容特征，依 `references/diagram-guide.md` 智能判断：是否配图、配什么类型
-   - synthesis（多步分析/对比）→ flowchart 或 system-architecture
-   - decision（架构/策略选型）→ system-architecture（决策涉及的架构）+ 可选方案对比
-   - concept / source → 同 ingest 规则
+1. 一次性检测引擎可用性：`which d2 && d2 --version`、`python3 "${CLAUDE_PLUGIN_ROOT}/skills/han-svg/scripts/main.py" --help`、检查 `.han-skills/.env` 是否有 han 作用域 key（无 key 标记 AI 引擎不可用）
+2. 按笔记类型 + 内容特征，依 `references/diagram-guide.md` 决定：是否配图、**用哪个引擎 + 什么类型**
+   - 先查 `data/patterns.json`（diagram-guide.md 第 8 节）命中经验
+   - synthesis（多步分析/对比）→ D2 flowchart / han-svg matrix（对比）/ han-infographic（高密度总览）
+   - decision（架构/策略选型）→ D2 system-architecture（决策架构）+ 可选 han-svg matrix（方案对比）
+   - concept / source → 同 ingest 规则（结构→D2，对比/时间线→han-svg，总览→AI）
+   - AI 引擎选中但无 key → 降级到 D2/han-svg（见 diagram-guide.md 第 7 节）
    - 简单结论性笔记（无结构/流程）→ 跳过
-3. 对待配图笔记：
+3. 对待配图笔记（按引擎执行，命令见 diagram-guide.md 第 4 节）：
    - 在笔记**同目录**建 `_diagrams/`（如 `wiki/analyses/_diagrams/`，路径随上方 mode 路由表）
-   - 读 `d2-diagram/assets/templates/<type>.d2` 作骨架，写 `<笔记slug>-<类型短码>.d2`
-   - 编译为 SVG（命令见 diagram-guide.md 第 4 节；SVG 自动适配亮/暗主题，无需 PNG/Playwright）
-   - 正文嵌入 `![图 N: 标题](_diagrams/xxx.svg)` + 图号 + **图后 2-5 句说明**
-4. **最小本地验证**：`ls -lh _diagrams/<name>.svg` 确认文件存在且非空（save 不跑全量 lint，保持轻量；全量图片死链检查由后续 `ingest` Step 10 或 `/llm-wiki lint` 兜底）
+   - **D2**：读 `d2-diagram/assets/templates/<type>.d2` 作骨架，写 `<笔记slug>-<短码>.d2` → 编译 SVG
+   - **han-svg**：写 spec.json → `render --svg <绝对路径>_diagrams/<slug>-svg-<code>.svg`
+   - **AI 三件套**：跑对应 skill 的 workflow 生成 prompt → 调 `han-imagen --json` → `cp` 到 `_diagrams/<slug>-<code>.png`
+   - 正文嵌入 `![图 N: 标题](_diagrams/xxx.svg|.png)` + 图号 + **图后 2-5 句说明**
+4. **自学习回写**：配图成功后回写 `data/patterns.json`（命中 frequency+1，新组合追加 confidence=1；降级记 outcome=degraded）
+5. **最小本地验证**：`ls -lh _diagrams/<name>` 确认文件存在且非空（save 不跑全量 lint，保持轻量；全量图片死链检查由后续 `ingest` Step 10 或 `/llm-wiki lint` 兜底）
 
 **步骤 6：收集链接**
 

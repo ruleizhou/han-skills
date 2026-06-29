@@ -32,7 +32,7 @@ globs:
 | 命令 | 功能 | 详解位置 |
 |------|------|----------|
 | `init` | 初始化 wiki 目录结构 | `references/cmd-init.md` |
-| `ingest` | 收录指定目录文档到 wiki（概念/来源页自动配 D2 图，图文并茂） | `references/cmd-ingest.md` |
+| `ingest` | 收录指定目录文档到 wiki（概念/来源页按内容智能选引擎配图，图文并茂） | `references/cmd-ingest.md` |
 | `query` | 查询 wiki 内容（BM25 检索 + 综合回答） | `references/cmd-query.md` |
 | `lint` | 健康检查 | `references/cmd-lint.md` |
 | `card` | 抽卡学习 / 复习知识卡片 | `references/cmd-card.md` |
@@ -40,7 +40,7 @@ globs:
 | `research` | 自主联网研究并整合到 wiki | `references/cmd-research.md` |
 | `mode` | 查看/切换 wiki 方法论模式（Engineering/Generic/LYT/PARA/Zettelkasten） | `references/cmd-mode.md` |
 | `think` | 10 原则深度思考框架（观察→倾听→思考→连接→感受→接受→创造→成长） | `references/cmd-think.md` |
-| `save` | 保存对话洞察为结构化 wiki 页面（5 种笔记类型，按需配 D2 图，模式感知） | `references/cmd-save.md` |
+| `save` | 保存对话洞察为结构化 wiki 页面（5 种笔记类型，按需多引擎智能配图，模式感知） | `references/cmd-save.md` |
 
 如果用户的话意明确指向某个操作但没有用命令格式（如「帮我收录这篇论文」「检查一下 wiki」「抽张卡」「考考我」「复习一下」），自动匹配对应命令执行。
 
@@ -138,5 +138,5 @@ sources: [[来源1]], [[来源2]]
 
 - `references/cmd-<命令名>.md`——各命令的详细流程（执行对应命令时读取该文件）
 - `references/page-templates.md`——页面模板（创建页面时读取）
-- `references/diagram-guide.md`——图文并茂配图指南（ingest/save 配 D2 图时读取）
+- `references/diagram-guide.md`——图文并茂配图指南（多引擎：D2 / han-svg / han-infographic / han-hand-write-pic / han-disassembly-diagram，ingest/save 配图时读取）
 - `references/schema-guide.md`——AGENTS.md 配置指南（初始化时读取）

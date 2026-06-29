@@ -118,7 +118,7 @@ sources: "[[来源1]], [[来源2]]"
 - [[来源2]] - 提供了什么角度
 ```
 
-> **配图（可选）**：若概念有模块/流程/状态/交互等结构（非纯定义），按 `references/diagram-guide.md` 生成 D2 图并嵌入「核心要素」章节后。格式：`![图 N: 标题](_diagrams/<slug>-<type>.svg)` + 图号 + 图后 2-5 句说明（SVG 自动适配亮/暗主题）。简单概念可不配。
+> **配图（可选）**：若概念有模块/流程/状态/交互等结构（非纯定义），按 `references/diagram-guide.md` 智能选引擎配图（结构→D2/han-svg，高密度总览→信息图）并嵌入「核心要素」章节后。格式：`![图 N: 标题](_diagrams/<slug>-<type>.svg|.png)` + 图号 + 图后 2-5 句说明。简单概念可不配。
 
 ## 来源页面（Source）
 
@@ -180,7 +180,7 @@ ingest_progress: 0/10
 - 补充了 [[实体Z]] 的背景信息
 ```
 
-> **配图（可选）**：按 `references/diagram-guide.md` 为来源配 **1 张整体概览图**（反映核心结构或主流程），嵌入「摘要」章节后。
+> **配图（可选）**：按 `references/diagram-guide.md` 为来源配 **1 张整体概览图**（反映核心结构或主流程；结构→D2/han-svg，高密度总览→han-infographic），嵌入「摘要」章节后。
 
 ## 分析页面（Analysis）
 
@@ -237,7 +237,7 @@ sources: "[[来源1]], [[来源2]], [[来源3]]"
 - [[来源C]]
 ```
 
-> **配图（可选）**：多步分析/架构决策适合配图，按 `references/diagram-guide.md` 生成 `flowchart`（推理链）或 `system-architecture`（综合结构/方案对比），嵌入「分析」章节相应维度后。`session` 类型不配图。
+> **配图（可选）**：多步分析/架构决策适合配图，按 `references/diagram-guide.md` 智能选引擎：推理链→D2 `flowchart`，综合结构→D2 `system-architecture`，方案对比→han-svg `matrix` / han-infographic，嵌入「分析」章节相应维度后。`session` 类型不配图。
 
 ## overview.md —— 总览页
 

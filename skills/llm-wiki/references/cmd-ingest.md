@@ -241,26 +241,29 @@ folders:
 > **目的**：保证 `03-Drivers/Clock.md` 这样的顶层入口页有基本内容可读，同时引导读者到 `wiki/entities/ClockDxe.md` 获取更详细的技术分析。打通 init 创建的 Seed 页面和 ingest 创建的深度页面之间的断层。
 > **完成本步后**：更新 source 页面的 `ingest_progress: 4.5/10`
 
-**第 4.6 步：为内容页生成 D2 图表（图文并茂）**
+**第 4.6 步：为内容页生成图表（多引擎图文并茂）**
 
-在所有内容页创建/更新完成后，为适合可视化的页面配上 D2 图，做到图文并茂。详细规则见 `references/diagram-guide.md`。
+在所有内容页创建/更新完成后，为适合可视化的页面配图，做到图文并茂。按内容智能选引擎（D2 / han-svg / han-infographic / han-hand-write-pic / han-disassembly-diagram），详细规则见 `references/diagram-guide.md`。
 
 **配图范围**：本次新建/更新的**概念页 + 来源页**（实体页、知识卡片**不配图**）。
 
 **流程**：
-1. 检测 D2 CLI：`which d2 && d2 --version`。未安装 → 走降级（D2 源以代码块嵌入 + 手动编译提示，见 diagram-guide.md 第 7 节），不中断流程
-2. 对每个候选页面，按 `references/diagram-guide.md` 的智能判断规则决定：是否配图、配几张、配什么类型
-   - 简单概念（纯定义、无结构）→ 跳过
-   - 中等/复杂概念 → 1-2 张（system-architecture / flowchart / state-machine / sequence-diagram）
-   - 来源页 → 1 张整体概览图
-3. 对每个待配图页面：
-   - 在页面**同目录**建 `_diagrams/`（如 `wiki/concepts/_diagrams/`）
-   - 读 `d2-diagram/assets/templates/<type>.d2` 作骨架，写 `<页面slug>-<类型短码>.d2`
-   - 编译为 SVG（`d2 --theme=300 --dark-theme=200 -l <engine> ...`，命令见 diagram-guide.md 第 4 节；SVG 自动适配亮/暗主题，无需 PNG/Playwright）
-   - 在正文相应章节嵌入：`![图 N: 标题](_diagrams/xxx.svg)` + 图号 + **图后 2-5 句说明**
-4. **验证门（必须执行）**：对每张图 `ls -lh _diagrams/<name>.svg` 确认文件存在且非空；确认嵌入的相对路径正确（指向页面同目录的 `_diagrams/`）
-5. **完成本步后**：更新 source 页面的 `ingest_progress: 4.6/10`
-6. 收录结束汇报："为 N 个概念页/来源页配了 M 张 D2 图"（或"本次无适合配图的页面"）
+1. 一次性检测引擎可用性：`which d2 && d2 --version`、`python3 "${CLAUDE_PLUGIN_ROOT}/skills/han-svg/scripts/main.py" --help`、检查 `.han-skills/.env` 是否有 han 作用域 key（无 key 标记 AI 引擎不可用）
+2. 对每个候选页面，按 `references/diagram-guide.md` 决定：是否配图、配几张、**用哪个引擎 + 什么类型**
+   - 先查 `data/patterns.json`（diagram-guide.md 第 8 节）命中经验（content_type 关键词 + confidence≥3 强推荐）
+   - 无命中走第 2 节映射表：结构（架构/流程/状态/时序/ER/类/网络/甘特）→ **D2**；对比/日程/时间线/易读架构 → **han-svg**；高密度总览 → **han-infographic**；暖色总结 → **han-hand-write-pic**；物体拆解 → **han-disassembly-diagram**
+   - AI 引擎选中但无 key → 降级到 D2/han-svg（见 diagram-guide.md 第 7 节）
+   - 简单概念（纯定义、无结构）→ 跳过；来源页 → 1 张整体概览图
+3. 对每个待配图页面（按引擎执行，命令见 diagram-guide.md 第 4 节）：
+   - 在页面**同目录**建 `_diagrams/`（如 `wiki/concepts/_diagrams/`，路径随 mode 路由表）
+   - **D2**：读 `d2-diagram/assets/templates/<type>.d2` 作骨架，写 `<页面slug>-<短码>.d2` → 编译 SVG
+   - **han-svg**：写 spec.json → `render --svg <绝对路径>_diagrams/<slug>-svg-<code>.svg`（直出，无需 --download）
+   - **AI 三件套**：跑对应 skill 的 workflow 生成 prompt → 调 `han-imagen --json` 拿 output_path → `cp` 到 `_diagrams/<slug>-<code>.png`
+   - 在正文相应章节嵌入：`![图 N: 标题](_diagrams/xxx.svg|.png)` + 图号 + **图后 2-5 句说明**
+4. **验证门（必须执行）**：对每张图 `ls -lh _diagrams/<name>` 确认文件存在且非空；确认嵌入的相对路径正确（指向页面同目录的 `_diagrams/`）
+5. **自学习回写**：配图成功后回写 `data/patterns.json`（命中条目 frequency+1，新组合追加 confidence=1；降级记 outcome=degraded）
+6. **完成本步后**：更新 source 页面的 `ingest_progress: 4.6/10`
+7. 收录结束汇报："为 N 个概念页/来源页配了 M 张图：D2 x / han-svg y / info z / hand w / disasm v（其中 a 张因无 key 降级为 D2/han-svg）"（或"本次无适合配图的页面"）
 
 **第 5 步：更新 overview.md**
 只有以下情况才更新：
@@ -393,7 +396,7 @@ Agent("处理 {folder_name} 的文档，读取 {folder_name}（通过 .ingest-fo
    - 使用 `grep -rl "自动填充" <vault-root>/0*-*/` 发现所有含占位符的 Seed 页
    - 以文件名关键词匹配（非 tags），优先级 1 完全包含 + 优先级 2 语义关联
    - 执行后运行验证门：`grep -rl "自动填充" <vault-root>/0*-*/` 确认匹配到的 Seed 页不再含占位符
-3. **步骤 4.6 — 为内容页生成 D2 图表（图文并茂）**：按 `references/diagram-guide.md` 为本次新建/更新的概念页 + 来源页配图（实体页/卡片不配）。因要写 `_diagrams/` 文件并修改多个页面，**必须在主 agent 串行执行**（不下放给并行 sub-agent）
+3. **步骤 4.6 — 为内容页生成图表（多引擎图文并茂）**：按 `references/diagram-guide.md` 智能选引擎为本次新建/更新的概念页 + 来源页配图（实体页/卡片不配）。因要写 `_diagrams/` 文件并修改多个页面，**必须在主 agent 串行执行**（不下放给并行 sub-agent）
 4. **步骤 5 — 更新 overview.md**：加锁
 5. **步骤 6 — 更新 index.md**：加锁，统一添加所有新建/更新条目
 6. **步骤 7 — 追加 log.md**：加锁，汇总所有 folder 的操作
