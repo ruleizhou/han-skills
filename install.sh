@@ -704,7 +704,7 @@ cmd_legacy() {
 }
 
 show_help() {
-    cat <<EOF
+    echo -e "$(cat <<EOF
 ${BOLD}Han Skills + MCP 安装器${NC}
 
 ${BOLD}用法:${NC}
@@ -738,6 +738,7 @@ ${BOLD}示例:${NC}
 
 ${BOLD}配置:${NC}  $CONF_FILE
 EOF
+)"
 }
 
 # ============================================================
