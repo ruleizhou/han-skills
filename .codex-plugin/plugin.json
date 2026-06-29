@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides, svg).",
+  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides, svg) + llm-wiki (personal knowledge-base wiki with 9 commands).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -17,13 +17,15 @@
     "hand-drawn",
     "teardown",
     "slides",
-    "svg"
+    "svg",
+    "wiki",
+    "knowledge-base"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Han Skills",
     "shortDescription": "Personal skill factory and image-generation workflows",
-    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), and han-svg (editable SVG diagrams).",
+    "longDescription": "Han's Codex skill collection. Ships skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams), and llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save).",
     "developerName": "Han",
     "category": "Productivity",
     "capabilities": [
@@ -40,7 +42,8 @@
       "Draw a hand-drawn sketchnote knowledge card",
       "Make a teardown / exploded-view diagram",
       "Generate an image slide deck (PPTX/PDF)",
-      "Draw an editable SVG diagram"
+      "Draw an editable SVG diagram",
+      "Maintain a personal knowledge wiki (ingest / query / lint / card / weekly)"
     ],
     "brandColor": "#0EA5E9"
   }
