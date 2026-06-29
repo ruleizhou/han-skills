@@ -8,6 +8,7 @@
 
 | 场景 | 平台 | 模块 | 问题类型 | 子 skill 名 | 添加日期 |
 |------|------|------|----------|------------|----------|
+| debug | qualcomm | Stability | kernel-crash-analyzer | han-kernel-crash-analyzer | 2026-06-29 |
 | debug | qualcomm | recovery | storage-mount | recovery-storage-mount | 2026-06-29 |
 | debug | qualcomm | usb | usb-transfer-analyzer | usb-transfer-analyzer | 2026-06-29 |
 
@@ -15,4 +16,4 @@
 
 ## 统计
 
-- 总子 skill 数：2
+- 总子 skill 数：3

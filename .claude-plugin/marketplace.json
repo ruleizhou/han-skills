@@ -5,13 +5,13 @@
     "url": "https://github.com/YOUR_GH_USER"
   },
   "metadata": {
-    "description": "Han 个人 skills 集合：han-skill-creator-plus（自学习 skill 工厂）、han-imagen（生图引擎，OpenAI/Google 双 provider）、han-infographic（信息图）、han-hand-write-pic（手绘知识卡）、han-disassembly-diagram（拆解图）、han-slides（图片式幻灯片→PPTX/PDF）、han-svg（可编辑 SVG 图表）、han-llm-wiki（个人知识库 Wiki，9 命令维护）、han-kernel-crash-analyzer-v2（Linux 内核崩溃分析，高通/Android，反汇编优先 + 对抗验证 + 自学习）。生图类业务 skill 均带防幻觉两阶段法 + 自学习。实用工具：han-d2-diagram（D2 声明式图表，sketch 手绘风）、han-git-commit（交互式 Git 提交信息生成）、han-flash-test（UFS/eMMC 读写速率测试，规格对标）、han-util-tools（内核开发工具总路由，/han-util-tools 命令触发，按 场景→平台→模块→类型 四级引导，覆盖 Debug/器件 Bringup/功能开发，自动路由子 skill）。支持 Claude Code / Codex / OpenCode / Cursor 四平台分发。",
+    "description": "Han 个人 skills 集合：han-skill-creator-plus（自学习 skill 工厂）、han-imagen（生图引擎，OpenAI/Google 双 provider）、han-infographic（信息图）、han-hand-write-pic（手绘知识卡）、han-disassembly-diagram（拆解图）、han-slides（图片式幻灯片→PPTX/PDF）、han-svg（可编辑 SVG 图表）、han-llm-wiki（个人知识库 Wiki，9 命令维护）、han-kernel-crash-analyzer（Linux 内核崩溃分析，高通/Android，反汇编优先 + 对抗验证 + 自学习）。生图类业务 skill 均带防幻觉两阶段法 + 自学习。实用工具：han-d2-diagram（D2 声明式图表，sketch 手绘风）、han-git-commit（交互式 Git 提交信息生成）、han-flash-test（UFS/eMMC 读写速率测试，规格对标）、han-util-tools（内核开发工具总路由，/han-util-tools 命令触发，按 场景→平台→模块→类型 四级引导，覆盖 Debug/器件 Bringup/功能开发，自动路由子 skill）。支持 Claude Code / Codex / OpenCode / Cursor 四平台分发。",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "han",
-      "description": "Han's skill set — han-skill-creator-plus, han-imagen, han-infographic, han-hand-write-pic, han-disassembly-diagram, han-slides, han-svg, han-llm-wiki, han-kernel-crash-analyzer-v2, han-d2-diagram, han-git-commit, han-flash-test, han-util-tools.",
+      "description": "Han's skill set — han-skill-creator-plus, han-imagen, han-infographic, han-hand-write-pic, han-disassembly-diagram, han-slides, han-svg, han-llm-wiki, han-kernel-crash-analyzer, han-d2-diagram, han-git-commit, han-flash-test, han-util-tools.",
       "source": {
         "source": "github",
         "repo": "YOUR_GH_USER/han-skill"

@@ -1,5 +1,5 @@
 ---
-name: han-kernel-crash-analyzer-v2
+name: han-kernel-crash-analyzer
 description: >
   Two modes:
   [分析模式] Analyze Linux kernel crash dumps (NULL pointer dereference, KASAN UAF,

@@ -10,7 +10,7 @@ cat <<'EOF'
   han-llm-wiki            个人知识库 Wiki 维护 (init/ingest/query/lint/card/weekly/research/mode/think/save)
     触发:"/han-llm-wiki"、"收录到 wiki"、"wiki 健康检查"、"抽一张卡"、"写周报"、
          "研究一下"、"保存这段"、"深度思考"、"切换到 PARA"
-  han-kernel-crash-analyzer-v2  Linux 内核崩溃分析 (高通/Android: NULL 指针/KASAN UAF/SLUB/ABBA 死锁/panic/ramdump)
+  han-kernel-crash-analyzer  Linux 内核崩溃分析 (高通/Android: NULL 指针/KASAN UAF/SLUB/ABBA 死锁/panic/ramdump)
     触发:"kernel crash"、"死机"、"ramdump"、"KASAN"、"kernel panic"、
          "NULL pointer"、"deadlock"、"问题解决了"、"修好了"
   han-d2-diagram           D2 声明式图表 (流程图/架构图/ER/类图, sketch 手绘风, PNG+SVG)

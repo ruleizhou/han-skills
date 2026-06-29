@@ -92,7 +92,7 @@ han-util-tools/
 
 | 场景 | 平台 | 模块 | 问题类型 | 子 skill 名 | 添加日期 |
 |------|------|------|----------|------------|----------|
-| debug | Qualcomm | Stability | kernel-crash-analyzer | kernel-crash-analyzer-v2 | 2026-05-24 |
+| debug | Qualcomm | Stability | kernel-crash-analyzer | han-kernel-crash-analyzer | 2026-05-24 |
 | debug | Qualcomm | USB | usb-transfer-analyzer | usb-transfer-analyzer | 2026-05-24 |
 | debug | Qualcomm | Recovery | storage-mount | recovery-storage-mount | 2026-05-29 |
 | debug | Qualcomm | Recovery | storage-mount | recovery-storage-mount | 2026-05-29 |
