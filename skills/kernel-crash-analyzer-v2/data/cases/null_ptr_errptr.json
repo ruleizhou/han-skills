@@ -1,0 +1,22 @@
+{
+  "id": "null_ptr_errptr",
+  "timestamp": "2026-05-24T08:00:00Z",
+  "crash_type": "NULL 指针解引用（ERR_PTR 绕过 cbz）",
+  "fault_address": "0x000000000000005f",
+  "platform": "Qualcomm QCM6490 (YUPIKP-IOT QRD ANDESINE-BP-MC9347 EVT2)",
+  "kernel_version": "5.4.242-qgki-debug",
+  "scenario": "双屏(1517L+1717L)热插拔 TP 排线，USB disconnect 触发 sis_deinit → device_destroy 崩溃",
+  "root_cause": "sis_setup_chardev 中 class_create 因双屏共享全局变量返回 -EEXIST，错误路径未清零 sis_char_class 和 sis_char_major，mt_probe 不传播错误（仅 printk），后续 USB disconnect 时 sis_deinit_chardev 使用 ERR_PTR 调用 device_destroy → class_find_device 的 cbz 检查被绕过，LDR [x0,#0x70] 有效地址 0x5f 触发 page fault",
+  "root_cause_category": "错误路径清理",
+  "fix_summary": "(1) sis_setup_chardev: err2 标签后清零 sis_char_class=NULL, sis_char_major=0 (2) sis_deinit_chardev: 入口加 IS_ERR_OR_NULL + sis_char_major==0 哨兵 (3) mt_probe: printk 改为 dev_warn，不阻断触摸功能",
+  "pattern_keywords": ["ERR_PTR", "EEXIST", "class_create", "cbz bypass", "class_find_device", "sis_ctrl", "dual-screen", "global variable", "char device"],
+  "tools_used": ["llvm-objdump"],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": true,
+    "root_cause_falsifiable": true,
+    "init_order_verified": true,
+    "scenario_consistent": true
+  },
+  "outcome": "success"
+}

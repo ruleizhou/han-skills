@@ -1,0 +1,37 @@
+{
+  "id": "task-struct-sp-corruption",
+  "timestamp": "2026-06-09T12:00:00+08:00",
+  "crash_type": "Kernel Stack Overflow (误诊) — 实际为 task_struct.thread.cpu_context.sp 内存损坏",
+  "fault_address": "N/A (SP alignment fault, 损坏 SP: 0xffffffed15370018)",
+  "platform": "Qualcomm BENGAL IDP (SM6115)",
+  "kernel_version": "5.15.151-qki-consolidate-android13-8-g53eb597d3bff-dirty",
+  "scenario": "挂测 QMESA 设备死机，系统运行 ~65h 后复现。RegionSampling(PID 1415) 在 futex_wait 路径中睡眠，唤醒时 __switch_to 从 task_struct.thread.cpu_context.sp 恢复损坏的 SP 触发 SP alignment fault",
+  "root_cause": "task_struct.thread.cpu_context.sp 字段被外部内存损坏(UAF/slab OOB/DMA)，导致 cpu_switch_to 恢复时加载无效 SP(0xffffffed15370018)。ARM64 CONFIG_THREAD_INFO_IN_TASK=y 将 cpu_context 放在 task_struct slab 中，与内核栈(vmalloc)物理隔离，栈溢出无法写入 task_struct。内核误诊为 stack overflow 仅因异常入口检测到无效 SP",
+  "root_cause_category": "内存损坏 (UAF/Slab OOB/DMA)",
+  "fix_summary": "P0: 启用 KASAN(CONFIG_KASAN=y + CONFIG_KASAN_SW_TAGS=y)定位 task_struct 损坏源; P1: 增大 THREAD_SIZE 16KB→32KB 作为防御; P2: 启用 CONFIG_STACK_TRACER + CONFIG_DEBUG_STACK_USAGE 诊断",
+  "pattern_keywords": ["task_struct", "cpu_context", "SP corruption", "stack overflow misdiagnosis", "futex_wait", "RegionSampling", "QMESA", "bengal", "SP alignment fault", "THREAD_INFO_IN_TASK", "CONFIG_VMAP_STACK", "CONFIG_INIT_STACK_ALL_ZERO"],
+  "tools_used": ["llvm-objdump", "nm"],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": true,
+    "root_cause_falsifiable": true,
+    "init_order_verified": "N/A",
+    "scenario_consistent": true
+  },
+  "adversarial_verification": {
+    "root_cause_verdict": "DISAGREE→CONCUR_WITH_CAUTION",
+    "root_cause_challenges": [
+      "SP损坏模式(0xc0→0xed bit-flip)更像内存损坏而非栈溢出",
+      "未精确计算完整调用链总栈消耗",
+      "vendor hooks注册回调为推测无证据",
+      "SP alignment fault与VMAP_STACK guard page的translation fault机制不一致"
+    ],
+    "fix_verdict": "REJECT→采用方案1+3",
+    "fix_issues": [
+      "方案1仅修复bengal defconfig,其他平台同因crash",
+      "方案2存在futex_wait_restart悬空指针、ENOMEM ABI退化、272 bytes不足以关闭缺口"
+    ],
+    "challenges_resolved": true
+  },
+  "outcome": "success"
+}

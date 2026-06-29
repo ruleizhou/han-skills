@@ -1,0 +1,28 @@
+{
+  "workspaces": {
+    "/home1/zhourulei/code/QCM6490/LA.UM.9.14.1/kernel/msm-5.4": {
+      "tools": {
+        "llvm-objdump": true,
+        "aarch64-linux-gnu-objdump": false,
+        "nm": true
+      },
+      "cached_at": "2026-05-24T08:00:00Z"
+    },
+    "/home1/zhourulei/code/SM6115/LA.VENDOR.13.2.1/kernel_platform/msm-kernel": {
+      "tools": {
+        "llvm-objdump": true,
+        "aarch64-linux-gnu-objdump": false,
+        "nm": true
+      },
+      "cached_at": "2026-05-25T00:00:00Z"
+    },
+    "/home1/zhourulei/code/MT5825/LA.VENDOR.13.2.1/kernel_platform/msm-kernel": {
+      "tools": {
+        "llvm-objdump": true,
+        "aarch64-linux-gnu-objdump": false,
+        "nm": true
+      },
+      "cached_at": "2026-06-16T00:00:00Z"
+    }
+  }
+}

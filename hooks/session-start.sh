@@ -10,4 +10,7 @@ cat <<'EOF'
   llm-wiki            个人知识库 Wiki 维护 (init/ingest/query/lint/card/weekly/research/mode/think/save)
     触发:"/llm-wiki"、"收录到 wiki"、"wiki 健康检查"、"抽一张卡"、"写周报"、
          "研究一下"、"保存这段"、"深度思考"、"切换到 PARA"
+  kernel-crash-analyzer-v2  Linux 内核崩溃分析 (高通/Android: NULL 指针/KASAN UAF/SLUB/ABBA 死锁/panic/ramdump)
+    触发:"kernel crash"、"死机"、"ramdump"、"KASAN"、"kernel panic"、
+         "NULL pointer"、"deadlock"、"问题解决了"、"修好了"
 EOF

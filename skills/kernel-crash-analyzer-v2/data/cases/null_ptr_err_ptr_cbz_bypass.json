@@ -1,0 +1,22 @@
+{
+  "id": "null_ptr_err_ptr_cbz_bypass",
+  "timestamp": "2026-05-24T00:00:00Z",
+  "crash_type": "NULL 指针解引用 (ERR_PTR 错误码绕过 cbz 检查)",
+  "fault_address": "0x000000000000005f (ERR_PTR(-EEXIST) + 0x70 → 39-bit truncation)",
+  "platform": "QCM6490 / yupik",
+  "kernel_version": "5.4.242-qgki-debug",
+  "scenario": "特定USB接口的 Touch 插入拔出 必现死机",
+  "root_cause": "sis95xx 驱动 probe 失败时 class_create 返回 ERR_PTR(-EEXIST) 存入全局变量 sis_char_class 未清零; remove 时 device_destroy 透传 ERR_PTR 给 class_find_device, cbz 只挡 NULL 不挡 ERR_PTR, 读取 class->p (offset 0x70) 触发非法地址访问",
+  "root_cause_category": "错误路径清理",
+  "fix_summary": "1. class_find_device 入口 !class → IS_ERR_OR_NULL(class) 内核通用防护; 2. sis_setup_chardev error path 加 sis_char_class=NULL; 3. sis_deinit_chardev 入口加 IS_ERR_OR_NULL 哨兵",
+  "pattern_keywords": ["class_create", "ERR_PTR", "EEXIST", "cbz", "class->p", "offset 0x70", "39-bit VA truncation", "sis_char_class", "device_destroy", "热插拔"],
+  "tools_used": ["llvm-objdump", "llvm-nm"],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": true,
+    "root_cause_falsifiable": true,
+    "init_order_verified": "N/A (probe 错误路径，非 init 顺序问题)",
+    "scenario_consistent": true
+  },
+  "outcome": null
+}

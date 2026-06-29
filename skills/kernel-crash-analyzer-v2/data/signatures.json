@@ -1,0 +1,67 @@
+{
+  "signatures": [
+    {
+      "pattern": "Unable to handle kernel NULL pointer dereference at virtual address",
+      "type": "NULL 指针解引用",
+      "priority_items": ["ERR_PTR 检查", "错误路径返回", "调用链回溯"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "KASAN: use-after-free",
+      "type": "KASAN UAF",
+      "priority_items": ["alloc/free 时间线对比", "竞态条件检查", "kfree 后指针清零"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "KASAN: slab-out-of-bounds",
+      "type": "KASAN OOB",
+      "priority_items": ["数组边界检查", "结构体大小变化", "memcpy/memset 长度"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "SLUB: redzone",
+      "type": "SLUB 红区损坏",
+      "priority_items": ["相邻对象越界写入", "slab alloc_calls 追踪", "memset 越界检查"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "Kernel panic - not syncing: panic_on_taint",
+      "type": "Taint 触发 panic",
+      "priority_items": ["taint 来源追踪", "前置 BUG/WARNING 定位", "panic 是机制不是根因"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "Kernel panic - not syncing: Oops",
+      "type": "Oops 转 panic",
+      "priority_items": ["oops 信息提取", "调用栈重建", "寄存器分析"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "BUG: scheduling while atomic",
+      "type": "原子上下文调度",
+      "priority_items": ["mutex/sleep 调用路径", "atomic 上下文识别", "schedule() 触发点"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "mutex 交叉持有",
+      "type": "ABBA 死锁",
+      "priority_items": ["锁依赖图绘制", "错误路径 unlock 缺失", "并发路径分析"],
+      "count": 0,
+      "first_seen": null
+    },
+    {
+      "pattern": "No explicit kernel panic message in CheckForPanic, CPU hung at blocking operation in DebugImage",
+      "type": "无 panic 签名的 hang (硬件不响应/I/O 卡死)",
+      "priority_items": ["DebugImage CPU 上下文分析", "卡死指令定位 (objdump)", "中断前上下文追踪", "关机/电源路径时序检查"],
+      "count": 1,
+      "first_seen": "2026-05-25"
+    }
+  ]
+}

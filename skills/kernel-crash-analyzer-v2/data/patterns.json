@@ -1,0 +1,63 @@
+{
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "ERR_PTR 绕过 cbz 检查导致 class_find_device 崩溃",
+      "crash_type": "NULL 指针解引用",
+      "category": "错误路径清理",
+      "description": "class_create 返回 ERR_PTR 存入全局变量未清零, remove 时 device_destroy 透传给 class_find_device, cbz 放过 ERR_PTR(false≠0) 后 ldr [x0, #0x70] 访问 class->p 触发 small-offset fault (0x5f)",
+      "confidence": 1,
+      "frequency": 2,
+      "fix_template": "class_find_device: if(!class) → if(IS_ERR_OR_NULL(class)); 驱动: error path 清零全局变量 + remove 加 IS_ERR_OR_NULL 哨兵",
+      "keywords": ["class_create", "ERR_PTR", "EEXIST", "cbz bypass", "class->p offset 0x70", "39-bit truncation"],
+      "first_seen": "2026-05-24",
+      "last_seen": "2026-05-24",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "dwc3 remove 缺少 disable_irq 导致 readl hang",
+      "crash_type": "Hardware hang",
+      "category": "关机路径 IRQ 同步缺失",
+      "description": "dwc3_remove() 在 dwc3_core_exit_mode() 释放 DMA 前未 disable_irq()，pending DWC3 中断访问已释放 DMA → SMMU context fault → 嵌套 IRQ 中 readl() 卡在不可访问的硬件寄存器。synchronize_irq 虽在 dwc3_core_exit 之前，但已在 dwc3_core_exit_mode 之后，竞态窗口仍在",
+      "confidence": 3,
+      "frequency": 3,
+      "fix_template": "dwc3_remove(): dwc3_core_exit_mode() 之前加 disable_irq(dwc->irq_gadget)，删除其后冗余的 synchronize_irq。probe err5 路径同样保护",
+      "keywords": ["DWC3", "reboot", "readl", "hang", "disable_irq", "synchronize_irq", "dwc3_remove", "dwc3_core_exit_mode", "SMMU", "IRQ race", "shutdown"],
+      "first_seen": "2026-05-25",
+      "last_seen": "2026-05-26",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "task_struct.cpu_context.sp 内存损坏误诊为 kernel stack overflow",
+      "crash_type": "Kernel Stack Overflow (误诊)",
+      "category": "内存损坏",
+      "description": "ARM64 CONFIG_THREAD_INFO_IN_TASK=y 将 cpu_context 放在 task_struct slab 中，与内核栈(vmalloc)物理隔离。task_struct.thread.cpu_context.sp 被 UAF/OOB/DMA 损坏后，cpu_switch_to 恢复无效 SP 触发 SP alignment fault(ESR 0x9a000000)。内核异常入口仅检测到 SP 无效即报告 stack overflow，但实际栈未溢出。区分方法：(1) 检查 SP 损坏模式是否为字节级翻转(非算术偏移)；(2) 确认 ESR 是 alignment fault 而非 translation fault；(3) 验证 SP 来源是 task_struct.cpu_context 而非栈上 pt_regs",
+      "confidence": 1,
+      "frequency": 1,
+      "fix_template": "P0: 启用 KASAN 定位 task_struct 损坏源; P1: 增大 THREAD_SIZE 作为防御; P2: 排查 DMA 操作与进程生命周期重叠",
+      "keywords": ["task_struct", "cpu_context", "SP corruption", "stack overflow misdiagnosis", "SP alignment fault", "THREAD_INFO_IN_TASK", "futex_wait", "__switch_to"],
+      "first_seen": "2026-06-09",
+      "last_seen": "2026-06-09",
+      "outcome": "success",
+      "adversarial_verifications": [
+        {
+          "case_id": "task-struct-sp-corruption",
+          "root_cause_verdict": "DISAGREE→CONCUR_WITH_CAUTION",
+          "root_cause_challenges": [
+            "SP损坏模式(0xc0→0xed bit-flip)更像内存损坏而非栈溢出",
+            "未精确计算完整调用链总栈消耗",
+            "SP alignment fault与VMAP_STACK guard page的translation fault机制不一致"
+          ],
+          "fix_verdict": "REJECT",
+          "fix_issues": [
+            "方案1仅修复bengal defconfig",
+            "方案2存在futex_wait_restart悬空指针+ENOMEM ABI退化"
+          ],
+          "timestamp": "2026-06-09T12:00:00+08:00"
+        }
+      ]
+    }
+  ]
+}

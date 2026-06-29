@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's personal skill set: skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown skills with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams), llm-wiki (personal knowledge-base wiki with 9 commands).",
+  "description": "Han's personal skill set: skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown skills with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams), llm-wiki (personal knowledge-base wiki with 9 commands), kernel-crash-analyzer-v2 (Linux kernel crash analysis for Qualcomm/Android — NULL pointer / KASAN UAF / SLUB / deadlock, disassembly-first workflow + self-learning).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -21,7 +21,11 @@
     "slides",
     "svg",
     "wiki",
-    "knowledge-base"
+    "knowledge-base",
+    "kernel",
+    "crash-analysis",
+    "android",
+    "qualcomm"
   ],
   "skills": "./skills/"
 }

@@ -1,0 +1,23 @@
+{
+  "id": "dwc3-readl-hang",
+  "timestamp": "2026-05-26T00:00:00Z",
+  "crash_type": "无 panic 签名的硬件 hang（DWC3 readl 卡死）",
+  "fault_address": "readl+0x38 (dmb oshld after ldr w8,[x19])",
+  "platform": "Qualcomm BENGAL SM6115",
+  "kernel_version": "5.15.151-android13",
+  "scenario": "Reboot 压力测试过程中设备死机",
+  "root_cause": "dwc3_remove() 中 dwc3_core_exit_mode() 释放 DMA 缓冲区先于 synchronize_irq()，竞态窗口导致 DWC3 DMA 触发 SMMU context fault，嵌套 IRQ 中 readl() 卡死在 DWC3 硬件寄存器",
+  "root_cause_category": "竞态（remove 路径 IRQ 同步缺失）",
+  "fix_summary": "在 dwc3_core_exit_mode() 前加 disable_irq(dwc->irq_gadget)，删除其后冗余的 synchronize_irq。probe err5 路径同样加 disable_irq",
+  "pattern_id": "ptrn-002",
+  "pattern_keywords": ["DWC3", "reboot", "readl", "hang", "synchronize_irq", "dwc3_remove", "dwc3_core_exit", "SMMU", "IRQ race", "shutdown"],
+  "tools_used": ["llvm-objdump"],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": true,
+    "root_cause_falsifiable": true,
+    "init_order_verified": "N/A",
+    "scenario_consistent": true
+  },
+  "outcome": "success"
+}

@@ -5,13 +5,13 @@
     "url": "https://github.com/YOUR_GH_USER"
   },
   "metadata": {
-    "description": "Han 个人 skills 集合：skill-creator-plus（自学习 skill 工厂）、han-imagen（生图引擎，OpenAI/Google 双 provider）、han-infographic（信息图）、han-hand-write-pic（手绘知识卡）、han-disassembly-diagram（拆解图）、han-slides（图片式幻灯片→PPTX/PDF）、han-svg（可编辑 SVG 图表）、llm-wiki（个人知识库 Wiki，9 命令维护）。生图类业务 skill 均带防幻觉两阶段法 + 自学习。支持 Claude Code / Codex / OpenCode / Cursor 四平台分发。",
+    "description": "Han 个人 skills 集合：skill-creator-plus（自学习 skill 工厂）、han-imagen（生图引擎，OpenAI/Google 双 provider）、han-infographic（信息图）、han-hand-write-pic（手绘知识卡）、han-disassembly-diagram（拆解图）、han-slides（图片式幻灯片→PPTX/PDF）、han-svg（可编辑 SVG 图表）、llm-wiki（个人知识库 Wiki，9 命令维护）、kernel-crash-analyzer-v2（Linux 内核崩溃分析，高通/Android，反汇编优先 + 对抗验证 + 自学习）。生图类业务 skill 均带防幻觉两阶段法 + 自学习。支持 Claude Code / Codex / OpenCode / Cursor 四平台分发。",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "han",
-      "description": "Han's skill set — skill-creator-plus, han-imagen, han-infographic, han-hand-write-pic, han-disassembly-diagram, han-slides, han-svg, llm-wiki.",
+      "description": "Han's skill set — skill-creator-plus, han-imagen, han-infographic, han-hand-write-pic, han-disassembly-diagram, han-slides, han-svg, llm-wiki, kernel-crash-analyzer-v2.",
       "source": {
         "source": "github",
         "repo": "YOUR_GH_USER/han-skill"

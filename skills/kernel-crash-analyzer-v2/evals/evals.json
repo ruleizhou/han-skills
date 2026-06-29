@@ -1,0 +1,61 @@
+{
+  "skill_name": "kernel-crash-analyzer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "分析下这个 NULL pointer dereference 死机问题：\n- 解析输出: ~/issue/crash/QCM6490/MC9347/89137/parser_out/Small/\n- symbols: ~/issue/crash/QCM6490/MC9347/89137/symbols/vmlinux\n- 代码路径: /home1/zhourulei/code/QCM6490/LA.UM.9.14.1/kernel/msm-5.4\n\n只需要告诉我：1) 崩溃类型 2) fault address 3) 反汇编定位到的具体指令和源码行 4) 根因结论。不要生成完整报告。",
+      "expected_output": "识别 NULL pointer dereference 类型，精确提取 fault address，用 objdump 反汇编定位到崩溃指令和源码行，区分直接原因和根本原因",
+      "files": [],
+      "expectations": [
+        "正确识别 crash 类型为 NULL pointer dereference",
+        "从 crash log 中精确提取了 fault address (virtual address)",
+        "使用 objdump 对 vmlinux 进行了反汇编分析（不是仅读源码）",
+        "将 fault address 映射到了具体的汇编指令和源码行号",
+        "区分了直接原因（崩溃指令）和根本原因（底层缺陷）",
+        "没有生成用户明确说不要的完整报告",
+        "输出限定在用户要求的 4 个要点内"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "分析下这个 kernel panic 死机问题：\n- 解析输出: ~/issue/crash/SM6225/MT582/89203/parser_out/Small/\n- symbols: ~/issue/crash/SM6225/MT582/89203/symbols/vmlinux\n- 代码路径: /home1/zhourulei/code/MT5825/LA.VENDOR.13.2.1/kernel_platform\n\n只需要定位根因，不要生成完整报告。",
+      "expected_output": "识别 panic 类型（如 panic_on_taint），找到 taint 来源，定位真正触发 panic 的 BUG/Oops，完成反汇编分析并给出根因",
+      "files": [],
+      "expectations": [
+        "正确识别了 kernel panic 的具体类型（如 panic_on_taint 等）",
+        "找到了 panic 的触发来源（taint、oops、BUG 等）而非仅报告 panic 本身",
+        "使用 objdump 对 vmlinux 进行了反汇编分析",
+        "区分了 panic 机制和真正的根因（panic 是机制，根因是触发 panic 的底层问题）",
+        "没有将表面症状（如 taint 标记）误判为根因",
+        "没有生成用户明确说不要的完整报告"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "分析下这个 KASAN use-after-free 问题：\n- log: ~/issue/crash/kasan/kasan.txt\n- 代码路径: /home1/zhourulei/code/QCM6490/LA.UM.9.14.1/kernel/msm-5.4\n\n只需要定位根因，不要生成完整报告。",
+      "expected_output": "正确识别 kasan.txt 编码，提取 alloc/free 调用栈，分析 UAF 竞态窗口，给出根因",
+      "files": [],
+      "expectations": [
+        "正确检测并处理了 kasan.txt 的文件编码",
+        "从 log 中识别了 crash 类型（是否为 KASAN 报告）",
+        "如果文件不是 KASAN 报告，正确地报告了这一发现",
+        "尝试提取 alloc/free 调用栈信息（如果存在）",
+        "给出了有根据的根因分析或诚实说明了数据不足的情况",
+        "没有生成用户明确说不要的完整报告"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "分析下这个 crash 问题（未知 crash 类型）：\n- log: 包含一段之前未收录的 crash 签名 \n\n只需要定位根因，不要生成完整报告。分析完成后，如果发现是新 crash 类型，应该提示是否收录。",
+      "expected_output": "识别为未知 crash 类型，按通用流程完成反汇编和源码分析，分析结束后提示用户是否收录新类型，并将案例保存到 data/cases/",
+      "files": [],
+      "expectations": [
+        "正确识别 crash 类型为未知类型（不匹配任何已知签名）",
+        "没有因为未知类型就跳过反汇编和源码分析",
+        "按通用 crash 流程完成了分析",
+        "分析结束后提示用户是否收录新 crash 类型",
+        "将案例摘要保存到了 data/cases/ 目录"
+      ]
+    }
+  ]
+}
