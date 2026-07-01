@@ -1,100 +1,171 @@
 {
-  "patterns": [
-    {
-      "id": "ptrn-001",
-      "name": "ERR_PTR 绕过 cbz 检查导致 class_find_device 崩溃",
-      "crash_type": "NULL 指针解引用",
-      "category": "错误路径清理",
-      "description": "class_create 返回 ERR_PTR 存入全局变量未清零, remove 时 device_destroy 透传给 class_find_device, cbz 放过 ERR_PTR(false≠0) 后 ldr [x0, #0x70] 访问 class->p 触发 small-offset fault (0x5f)",
-      "confidence": 1,
-      "frequency": 2,
-      "fix_template": "class_find_device: if(!class) → if(IS_ERR_OR_NULL(class)); 驱动: error path 清零全局变量 + remove 加 IS_ERR_OR_NULL 哨兵",
-      "keywords": ["class_create", "ERR_PTR", "EEXIST", "cbz bypass", "class->p offset 0x70", "39-bit truncation"],
-      "first_seen": "2026-05-24",
-      "last_seen": "2026-05-24",
-      "outcome": "success"
-    },
-    {
-      "id": "ptrn-002",
-      "name": "dwc3 remove 缺少 disable_irq 导致 readl hang / DWC3 中断风暴 DMA 竞态",
-      "crash_type": "Hardware hang / Oops 转 panic",
-      "category": "关机路径 IRQ/DMA 同步缺失",
-      "description": "DWC3 在 reboot/shutdown 期间: (变体A) remove 路径未 disable_irq 导致 pending IRQ 访问已释放 DMA → SMMU fault → readl hang; (变体B) gadget VBUS-active 未连接状态下 'atomic' DMA 模式在中断风暴(~990/s)下 IOVA spinlock 竞争 → DMA unmap/硬件访问竞态 → SMMU context fault (FAR=0x0) → 系统资源耗尽 → 其他驱动(如 WLAN DSC)超时 chain-panic",
-      "confidence": 4,
-      "frequency": 4,
-      "fix_template": "(变体A) dwc3_remove: dwc3_core_exit_mode() 前加 disable_irq; (变体B) DT: qcom,iommu-dma=fastmap + qcom,iommu-faults=stall-disable,HUPCF,no-CFRE,non-fatal; USB 默认 mode none 避免 VBUS-active 中间态",
-      "keywords": ["DWC3", "reboot", "readl", "hang", "interrupt storm", "SMMU context fault", "FAR=0x0", "atomic DMA", "fastmap", "IOMMU_DOMAIN_DMA", "VBUS active", "gadget", "chain panic", "WLAN timeout"],
-      "first_seen": "2026-05-25",
-      "last_seen": "2026-06-27",
-      "outcome": "success"
-    },
-    {
-      "id": "ptrn-003",
-      "name": "task_struct.cpu_context.sp 内存损坏误诊为 kernel stack overflow",
-      "crash_type": "Kernel Stack Overflow (误诊)",
-      "category": "内存损坏",
-      "description": "ARM64 CONFIG_THREAD_INFO_IN_TASK=y 将 cpu_context 放在 task_struct slab 中，与内核栈(vmalloc)物理隔离。task_struct.thread.cpu_context.sp 被 UAF/OOB/DMA 损坏后，cpu_switch_to 恢复无效 SP 触发 SP alignment fault(ESR 0x9a000000)。内核异常入口仅检测到 SP 无效即报告 stack overflow，但实际栈未溢出。区分方法：(1) 检查 SP 损坏模式是否为字节级翻转(非算术偏移)；(2) 确认 ESR 是 alignment fault 而非 translation fault；(3) 验证 SP 来源是 task_struct.cpu_context 而非栈上 pt_regs",
-      "confidence": 1,
-      "frequency": 1,
-      "fix_template": "P0: 启用 KASAN 定位 task_struct 损坏源; P1: 增大 THREAD_SIZE 作为防御; P2: 排查 DMA 操作与进程生命周期重叠",
-      "keywords": ["task_struct", "cpu_context", "SP corruption", "stack overflow misdiagnosis", "SP alignment fault", "THREAD_INFO_IN_TASK", "futex_wait", "__switch_to"],
-      "first_seen": "2026-06-09",
-      "last_seen": "2026-06-09",
-      "outcome": "success",
-      "adversarial_verifications": [
+    "patterns": [
         {
-          "case_id": "task-struct-sp-corruption",
-          "root_cause_verdict": "DISAGREE→CONCUR_WITH_CAUTION",
-          "root_cause_challenges": [
-            "SP损坏模式(0xc0→0xed bit-flip)更像内存损坏而非栈溢出",
-            "未精确计算完整调用链总栈消耗",
-            "SP alignment fault与VMAP_STACK guard page的translation fault机制不一致"
-          ],
-          "fix_verdict": "REJECT",
-          "fix_issues": [
-            "方案1仅修复bengal defconfig",
-            "方案2存在futex_wait_restart悬空指针+ENOMEM ABI退化"
-          ],
-          "timestamp": "2026-06-09T12:00:00+08:00"
-        }
-      ]
-    },
-    {
-      "id": "ptrn-004",
-      "name": "WLAN DSC 状态机超时在 reboot 期间主动 BUG panic",
-      "crash_type": "Oops 转 panic",
-      "category": "shutdown 路径状态机同步缺失",
-      "description": "WLAN (qcacld-3.0) DSC watchdog timer 在 reboot 期间检测到 PSOC idle_shutdown 转换超过 60s 未完成，调用 QDF_DEBUG_PANIC → BUG() 主动 panic。调用栈: __dsc_dbg_trans_timeout[timer] → run_timer_softirq → cpuidle。通常是系统其他子系统(如 DWC3)关机异常导致 IPC 通道阻塞/WLAN FW 无响应。寄存器中的 LIST_POISON2 暗示潜在 timer data freed-memory 访问。KASAN 启用但无报告时，需考虑系统关机乱序而非单一 UAF",
-      "confidence": 1,
-      "frequency": 1,
-      "fix_template": "P0: DSC idle_shutdown/idle_restart 超时不 panic 改为 dsc_err 日志 + return; P1: reboot notifier 预取消所有挂起 DSC 转换; P2: PSOC 析构路径使用 timer_shutdown_sync + deferred work 避免死锁",
-      "keywords": ["WLAN", "DSC", "__dsc_dbg_trans_timeout", "__hdd_psoc_idle_shutdown", "qcacld-3.0", "QDF_DEBUG_PANIC", "idle shutdown timeout", "timer callback BUG", "LIST_POISON2", "chain panic", "shutdown race"],
-      "first_seen": "2026-06-27",
-      "last_seen": "2026-06-27",
-      "outcome": "success",
-      "adversarial_verifications": [
+            "id": "ptrn-001",
+            "name": "ERR_PTR 绕过 cbz 检查导致 class_find_device 崩溃",
+            "crash_type": "NULL 指针解引用",
+            "category": "错误路径清理",
+            "description": "class_create 返回 ERR_PTR 存入全局变量未清零, remove 时 device_destroy 透传给 class_find_device, cbz 放过 ERR_PTR(false≠0) 后 ldr [x0, #0x70] 访问 class->p 触发 small-offset fault (0x5f)",
+            "confidence": 1,
+            "frequency": 2,
+            "fix_template": "class_find_device: if(!class) → if(IS_ERR_OR_NULL(class)); 驱动: error path 清零全局变量 + remove 加 IS_ERR_OR_NULL 哨兵",
+            "keywords": [
+                "class_create",
+                "ERR_PTR",
+                "EEXIST",
+                "cbz bypass",
+                "class->p offset 0x70",
+                "39-bit truncation"
+            ],
+            "first_seen": "2026-05-24",
+            "last_seen": "2026-05-24",
+            "outcome": "success"
+        },
         {
-          "case_id": "dwc3-interrupt-storm-smmu-fault-reboot",
-          "root_cause_verdict": "CONCUR_WITH_CAUTION",
-          "root_cause_challenges": [
-            "x25=LIST_POISON2 是 freed memory 硬证据，被低估",
-            "损坏的 timer 数据会产生相同超时症状",
-            "经典的 del_timer_sync 缺失导致 timer 在 free 后触发",
-            "时间线关联(RCU stall→WLAN timeout)缺乏因果证据"
-          ],
-          "fix_verdict": "REJECT→已修订",
-          "fix_issues": [
-            "[HIGH] del_timer_sync 可能死锁 → deferred work",
-            "[HIGH] BUG→WARN 在内存损坏时转为静默损坏 → flag 检查",
-            "[HIGH] 遗漏 rmmod/probe 错误路径 → 移到析构函数",
-            "[MEDIUM] timer 武装-取消-触发竞态窗口 → reboot notifier",
-            "[MEDIUM] 应使用 QDF 封装 API",
-            "[MEDIUM] 60s shutdown 阻塞未解决 → reboot notifier 提前取消"
-          ],
-          "challenges_resolved": true,
-          "timestamp": "2026-06-27T18:00:00+08:00"
+            "id": "ptrn-002",
+            "name": "dwc3 remove 缺少 disable_irq 导致 readl hang / DWC3 中断风暴 DMA 竞态",
+            "crash_type": "Hardware hang / Oops 转 panic",
+            "category": "关机路径 IRQ/DMA 同步缺失",
+            "description": "DWC3 在 reboot/shutdown 期间: (变体A) remove 路径未 disable_irq 导致 pending IRQ 访问已释放 DMA → SMMU fault → readl hang; (变体B) gadget VBUS-active 未连接状态下 'atomic' DMA 模式在中断风暴(~990/s)下 IOVA spinlock 竞争 → DMA unmap/硬件访问竞态 → SMMU context fault (FAR=0x0) → 系统资源耗尽 → 其他驱动(如 WLAN DSC)超时 chain-panic",
+            "confidence": 4,
+            "frequency": 4,
+            "fix_template": "(变体A) dwc3_remove: dwc3_core_exit_mode() 前加 disable_irq; (变体B) DT: qcom,iommu-dma=fastmap + qcom,iommu-faults=stall-disable,HUPCF,no-CFRE,non-fatal; USB 默认 mode none 避免 VBUS-active 中间态",
+            "keywords": [
+                "DWC3",
+                "reboot",
+                "readl",
+                "hang",
+                "interrupt storm",
+                "SMMU context fault",
+                "FAR=0x0",
+                "atomic DMA",
+                "fastmap",
+                "IOMMU_DOMAIN_DMA",
+                "VBUS active",
+                "gadget",
+                "chain panic",
+                "WLAN timeout"
+            ],
+            "first_seen": "2026-05-25",
+            "last_seen": "2026-06-27",
+            "outcome": "success"
+        },
+        {
+            "id": "ptrn-003",
+            "name": "task_struct.cpu_context.sp 内存损坏误诊为 kernel stack overflow",
+            "crash_type": "Kernel Stack Overflow (误诊)",
+            "category": "内存损坏",
+            "description": "ARM64 CONFIG_THREAD_INFO_IN_TASK=y 将 cpu_context 放在 task_struct slab 中，与内核栈(vmalloc)物理隔离。task_struct.thread.cpu_context.sp 被 UAF/OOB/DMA 损坏后，cpu_switch_to 恢复无效 SP 触发 SP alignment fault(ESR 0x9a000000)。内核异常入口仅检测到 SP 无效即报告 stack overflow，但实际栈未溢出。区分方法：(1) 检查 SP 损坏模式是否为字节级翻转(非算术偏移)；(2) 确认 ESR 是 alignment fault 而非 translation fault；(3) 验证 SP 来源是 task_struct.cpu_context 而非栈上 pt_regs",
+            "confidence": 1,
+            "frequency": 1,
+            "fix_template": "P0: 启用 KASAN 定位 task_struct 损坏源; P1: 增大 THREAD_SIZE 作为防御; P2: 排查 DMA 操作与进程生命周期重叠",
+            "keywords": [
+                "task_struct",
+                "cpu_context",
+                "SP corruption",
+                "stack overflow misdiagnosis",
+                "SP alignment fault",
+                "THREAD_INFO_IN_TASK",
+                "futex_wait",
+                "__switch_to"
+            ],
+            "first_seen": "2026-06-09",
+            "last_seen": "2026-06-09",
+            "outcome": "success",
+            "adversarial_verifications": [
+                {
+                    "case_id": "task-struct-sp-corruption",
+                    "root_cause_verdict": "DISAGREE→CONCUR_WITH_CAUTION",
+                    "root_cause_challenges": [
+                        "SP损坏模式(0xc0→0xed bit-flip)更像内存损坏而非栈溢出",
+                        "未精确计算完整调用链总栈消耗",
+                        "SP alignment fault与VMAP_STACK guard page的translation fault机制不一致"
+                    ],
+                    "fix_verdict": "REJECT",
+                    "fix_issues": [
+                        "方案1仅修复bengal defconfig",
+                        "方案2存在futex_wait_restart悬空指针+ENOMEM ABI退化"
+                    ],
+                    "timestamp": "2026-06-09T12:00:00+08:00"
+                }
+            ]
+        },
+        {
+            "id": "ptrn-004",
+            "name": "WLAN DSC 状态机超时在 reboot 期间主动 BUG panic",
+            "crash_type": "Oops 转 panic",
+            "category": "shutdown 路径状态机同步缺失",
+            "description": "WLAN (qcacld-3.0) DSC watchdog timer 在 reboot 期间检测到 PSOC idle_shutdown 转换超过 60s 未完成，调用 QDF_DEBUG_PANIC → BUG() 主动 panic。调用栈: __dsc_dbg_trans_timeout[timer] → run_timer_softirq → cpuidle。通常是系统其他子系统(如 DWC3)关机异常导致 IPC 通道阻塞/WLAN FW 无响应。寄存器中的 LIST_POISON2 暗示潜在 timer data freed-memory 访问。KASAN 启用但无报告时，需考虑系统关机乱序而非单一 UAF",
+            "confidence": 1,
+            "frequency": 1,
+            "fix_template": "P0: DSC idle_shutdown/idle_restart 超时不 panic 改为 dsc_err 日志 + return; P1: reboot notifier 预取消所有挂起 DSC 转换; P2: PSOC 析构路径使用 timer_shutdown_sync + deferred work 避免死锁",
+            "keywords": [
+                "WLAN",
+                "DSC",
+                "__dsc_dbg_trans_timeout",
+                "__hdd_psoc_idle_shutdown",
+                "qcacld-3.0",
+                "QDF_DEBUG_PANIC",
+                "idle shutdown timeout",
+                "timer callback BUG",
+                "LIST_POISON2",
+                "chain panic",
+                "shutdown race"
+            ],
+            "first_seen": "2026-06-27",
+            "last_seen": "2026-06-27",
+            "outcome": "success",
+            "adversarial_verifications": [
+                {
+                    "case_id": "dwc3-interrupt-storm-smmu-fault-reboot",
+                    "root_cause_verdict": "CONCUR_WITH_CAUTION",
+                    "root_cause_challenges": [
+                        "x25=LIST_POISON2 是 freed memory 硬证据，被低估",
+                        "损坏的 timer 数据会产生相同超时症状",
+                        "经典的 del_timer_sync 缺失导致 timer 在 free 后触发",
+                        "时间线关联(RCU stall→WLAN timeout)缺乏因果证据"
+                    ],
+                    "fix_verdict": "REJECT→已修订",
+                    "fix_issues": [
+                        "[HIGH] del_timer_sync 可能死锁 → deferred work",
+                        "[HIGH] BUG→WARN 在内存损坏时转为静默损坏 → flag 检查",
+                        "[HIGH] 遗漏 rmmod/probe 错误路径 → 移到析构函数",
+                        "[MEDIUM] timer 武装-取消-触发竞态窗口 → reboot notifier",
+                        "[MEDIUM] 应使用 QDF 封装 API",
+                        "[MEDIUM] 60s shutdown 阻塞未解决 → reboot notifier 提前取消"
+                    ],
+                    "challenges_resolved": true,
+                    "timestamp": "2026-06-27T18:00:00+08:00"
+                }
+            ]
+        },
+        {
+            "id": "ptrn-005",
+            "name": "dwc3 ep0 kzalloc未INIT_LIST_HEAD->list_del corruption(90918)",
+            "crash_type": "list_del corruption (CONFIG_DEBUG_LIST BUG->panic)",
+            "category": "list_head初始化缺失/dwc3 gadget disconnect竞态",
+            "description": "ep_alloc_request kzalloc不INIT_LIST_HEAD->never-queued zombie req。拔USB+ep0 SETUP timeout->ep_disable->remove_requests->giveback->del_and_unmap->list_del(&req->list)对NULL节点触发BUG。kmem -s硬证ALLOCATED(非UAF);struct坐实epnum=0/全零字段。",
+            "confidence": 4,
+            "frequency": 1,
+            "fix_template": "P0: ep_alloc_request kzalloc后INIT_LIST_HEAD(req->list+req->request.list); P1: del_and_unmap list_del->list_del_init; P2: remove_requests while->list_for_each_entry_safe",
+            "keywords": [
+                "dwc3",
+                "list_del corruption",
+                "kzalloc",
+                "INIT_LIST_HEAD",
+                "ep0",
+                "SETUP timeout",
+                "kmalloc-256",
+                "ALLOCATED",
+                "ffs_ep0_complete",
+                "list_del_init",
+                "list_for_each_entry_safe",
+                "crash",
+                "kmem -s"
+            ],
+            "first_seen": "2026-07-01",
+            "last_seen": "2026-07-01",
+            "outcome": "success"
         }
-      ]
-    }
-  ]
+    ]
 }

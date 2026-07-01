@@ -17,3 +17,9 @@
 - Android event log 通常为 UTF-16LE 编码
 - ramdump 解析后目录结构：parser_out/ + symbols/ (或 SymbolTable/)
 - `Code:` 行包含崩溃指令的 hex dump，括号内为崩溃指令
+
+## QCM6490 crash加载（KBA-231023010743）
+- KASLR: OCIMEM.BIN搜0xdead4ead后5字节
+- crash命令: crash vmlinux "DDRCS@addr,..." --kaslr=X --no_data_debug --machdep vabits_actual=39 --no_panic
+- DDRCS物理地址: 源自dump_info.txt中DDR CS Memo行
+- 关键命令: kmem -s判UAF, struct看字段, vtop VA→PA, rd读内存

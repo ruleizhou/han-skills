@@ -1,28 +1,44 @@
 {
-  "workspaces": {
-    "/home1/zhourulei/code/QCM6490/LA.UM.9.14.1/kernel/msm-5.4": {
-      "tools": {
-        "llvm-objdump": true,
-        "aarch64-linux-gnu-objdump": false,
-        "nm": true
-      },
-      "cached_at": "2026-05-24T08:00:00Z"
-    },
-    "/home1/zhourulei/code/SM6115/LA.VENDOR.13.2.1/kernel_platform/msm-kernel": {
-      "tools": {
-        "llvm-objdump": true,
-        "aarch64-linux-gnu-objdump": false,
-        "nm": true
-      },
-      "cached_at": "2026-05-25T00:00:00Z"
-    },
-    "/home1/zhourulei/code/MT5825/LA.VENDOR.13.2.1/kernel_platform/msm-kernel": {
-      "tools": {
-        "llvm-objdump": true,
-        "aarch64-linux-gnu-objdump": false,
-        "nm": true
-      },
-      "cached_at": "2026-06-16T00:00:00Z"
+    "workspaces": {
+        "/home1/zhourulei/code/QCM6490/LA.UM.9.14.1/kernel/msm-5.4": {
+            "tools": {
+                "llvm-objdump": true,
+                "aarch64-linux-gnu-objdump": false,
+                "nm": true
+            },
+            "cached_at": "2026-05-24T08:00:00Z"
+        },
+        "/home1/zhourulei/code/SM6115/LA.VENDOR.13.2.1/kernel_platform/msm-kernel": {
+            "tools": {
+                "llvm-objdump": true,
+                "aarch64-linux-gnu-objdump": false,
+                "nm": true
+            },
+            "cached_at": "2026-05-25T00:00:00Z"
+        },
+        "/home1/zhourulei/code/MT5825/LA.VENDOR.13.2.1/kernel_platform/msm-kernel": {
+            "tools": {
+                "llvm-objdump": true,
+                "aarch64-linux-gnu-objdump": false,
+                "nm": true
+            },
+            "cached_at": "2026-06-16T00:00:00Z"
+        },
+        "/home5/zhourulei/code/MT912/LA.UM.9.14.1/kernel/msm-5.4": {
+            "tools": {
+                "llvm-objdump": true,
+                "aarch64-linux-gnu-objdump": false,
+                "nm": true,
+                "addr2line": true
+            },
+            "crash": {
+                "binary": "/home5/zhourulei/.local/bin/crash",
+                "vabits_actual": 39,
+                "kaslr_method": "OCIMEM_0xdead4ead",
+                "extra_flags": "--no_data_debug --no_panic",
+                "ddr_segments": "DDRCS0_0.BIN@0x80000000,DDRCS0_1.BIN@0x100000000,DDRCS1_0.BIN@0x180000000,DDRCS1_1.BIN@0x200000000"
+            },
+            "cached_at": "2026-07-01T17:45:00Z"
+        }
     }
-  }
 }

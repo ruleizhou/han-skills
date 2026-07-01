@@ -75,6 +75,8 @@ description: >
 - 自学习签名库：`data/signatures.json`（运行时优先查询此文件）
 - 根因模式库：`data/patterns.json`（历史分析模式累积）
 - 工具链缓存：`data/tool_cache.json`（按工作区缓存可用工具）
+- **vmlinux 匹配（禅道 ramdump）**：Skill `zentao-bug-log-fetch` §「vmlinux 匹配」— 检索范围仅 `aosp-log-analysis-workspace/`，`Linux version` 整行 EXACT MATCH
+- **vmlinux 匹配（禅道 ramdump）**：Skill `zentao-bug-log-fetch` §「vmlinux 匹配」— 检索范围仅 `aosp-log-analysis-workspace/`，`Linux version` 整行 EXACT MATCH
 
 ## 崩溃类型速览
 

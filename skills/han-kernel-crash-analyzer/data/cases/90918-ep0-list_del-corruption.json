@@ -1,0 +1,38 @@
+{
+  "issue": "90918",
+  "title": "dwc3 ep0 list_del corruption 拔USB死机",
+  "platform": "QCM6490 (MT912)",
+  "kernel": "5.4.242-qgki-debug",
+  "date": "2026-06-02",
+  "crash_type": "list_del corruption (CONFIG_DEBUG_LIST BUG@lib/list_debug.c:49)",
+  "root_cause": "dwc3_gadget_ep_alloc_request() kzalloc后未INIT_LIST_HEAD→从未queue的僵尸req list.next==NULL→拔USB+SETUP phase timeout→ep0 disable清理→giveback→list_del(&req->list)→BUG",
+  "direct_cause": "dwc3_gadget_del_and_unmap_request(gadget.c:276)无条件list_del，对next==NULL节点触发BUG",
+  "evidence": {
+    "panic": "list_del corruption, ffffffbc8358a560->next is NULL",
+    "crash_ramdump": "kmem -s ffffffbc8358a500 = kmalloc-256, ALLOCATED(非UAF); struct dwc3_request: all fields zero, epnum=0, status=UNKNOWN, complete=ffs_ep0_complete",
+    "WARN_match": "gadget.c:3651 WARN_ON_ONCE(ret) → End Transfer command timeout",
+    "timeline": "2041s路径A断开→2045s重连→2050s路径B断开crash",
+    "kaslr": "0x25afe00000 (OCIMEM 0xdead4ead read)"
+  },
+  "fix_patch": "patches/90918-v4-final-fix.patch",
+  "fix_summary": "P0: ep_alloc_request INIT_LIST_HEAD×2; P1: del_and_unmap list_del→list_del_init; P2: remove_requests list_for_each_entry_safe",
+  "report": "90918-dwc3拔USB死机-list_del-corruption根因分析报告.md",
+  "verifications": {
+    "A_round1": "CONCUR_WITH_CAUTION (functionfs complete不破坏链表, 并发→顺序)",
+    "A_round2": "CONCUR_WITH_CAUTION (flags=0→next==NULL因果跳跃)",
+    "B_round": "REJECT (P0跳list_del→二次giveback/UAF死结)",
+    "crash_closure": "kmem -s 排除UAF; struct 坐实ep0僵尸req; kzalloc原始NULL定源"
+  },
+  "keywords": [
+    "dwc3",
+    "list_del corruption",
+    "kzalloc",
+    "INIT_LIST_HEAD",
+    "ep0",
+    "kmalloc-256",
+    "ALLOCATED",
+    "crash",
+    "OCIMEM",
+    "KASLR"
+  ]
+}
