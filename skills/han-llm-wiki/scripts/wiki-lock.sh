@@ -45,6 +45,9 @@ lock() {
   local lockdir
   lockdir=$(_lock_dir "$target")
 
+  # 确保父目录 .locks/ 存在（幂等）；缺失时下面的 mkdir（不带 -p）会必然失败导致超时
+  mkdir -p "$(dirname "$lockdir")"
+
   # mkdir 是原子操作：成功 = 获取锁，失败 = 锁已被占用
   local waited=0
   while ! mkdir "$lockdir" 2>/dev/null; do
