@@ -259,7 +259,7 @@ folders:
    - **D2**：读 `han-d2-diagram/assets/templates/<type>.d2` 作骨架，写 `<页面slug>-<短码>.d2` → 编译 SVG
    - **han-svg**：写 spec.json → `render --svg <绝对路径>_diagrams/<slug>-svg-<code>.svg`（直出，无需 --download）
    - **AI 三件套**：跑对应 skill 的 workflow 生成 prompt → 调 `han-imagen --json` 拿 output_path → `cp` 到 `_diagrams/<slug>-<code>.png`
-   - 在正文相应章节嵌入：`![图 N: 标题](_diagrams/xxx.svg|.png)` + 图号 + **图后 2-5 句说明**
+   - 按图类型嵌入（位置规则见 diagram-guide §5）：信息图前置到引言下方，结构图入对应章节；`![图 N: 标题](_diagrams/xxx.svg|.png)` + 图号 + **图后 2-5 句说明**
 4. **验证门（必须执行）**：对每张图 `ls -lh _diagrams/<name>` 确认文件存在且非空；确认嵌入的相对路径正确（指向页面同目录的 `_diagrams/`）
 5. **自学习回写**：配图成功后回写 `data/patterns.json`（命中条目 frequency+1，新组合追加 confidence=1；降级记 outcome=degraded）
 6. **完成本步后**：更新 source 页面的 `ingest_progress: 4.6/10`
