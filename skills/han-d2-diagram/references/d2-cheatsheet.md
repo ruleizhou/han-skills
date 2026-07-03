@@ -91,6 +91,8 @@ frontend.web -> backend.api
 
 ## Connections
 
+> 连线形态由引擎决定：`layout: elk` → 正交折线。颜色、虚线等样式在此形态基础上叠加。
+
 ```d2
 # Basic connection
 a -> b
@@ -152,34 +154,30 @@ server: Server {
 ## Layout Options
 
 ```d2
-direction: right  # Flow direction
-
-# Layout engines:
-# - dagre (default, good for flowcharts)
-# - elk (good for complex diagrams)
-# - tala (premium, best layouts)
+layout: elk         # 唯一布局引擎（正交折线）
+direction: right    # Flow direction
 ```
 
 ## CLI Commands
 
 ```bash
-# Basic compilation
-d2 input.d2 output.png
+# Basic compilation（默认 ELK → 折线）
+d2 -l elk input.d2 output.png
 
 # Sketch style
-d2 --sketch input.d2 output.png
+d2 -l elk --sketch input.d2 output.png
 
 # Choose theme
-d2 --theme neutral input.d2 output.png
+d2 -l elk --theme neutral input.d2 output.png
 
 # SVG output
-d2 input.d2 output.svg
+d2 -l elk input.d2 output.svg
 
 # PDF output
-d2 input.d2 output.pdf
+d2 -l elk input.d2 output.pdf
 
 # Watch mode (auto-regenerate)
-d2 --watch input.d2 output.png
+d2 -l elk --watch input.d2 output.png
 ```
 
 ## Common Patterns

@@ -9,8 +9,7 @@
 问题：节点重叠、连接交叉、布局不均衡
 
 方法：
-1. 更换布局引擎：复杂架构图 → `elk`，简单流程图 → `dagre`
-2. 调整方向：层级结构 → `direction: down`，时序 → `direction: right`
+1. 调整方向：层级结构 → `direction: down`，时序 → `direction: right`
 3. 添加容器分组：
 ```d2
 frontend: {

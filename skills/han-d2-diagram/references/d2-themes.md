@@ -3,8 +3,8 @@
 ## CLI 主题参数
 
 ```bash
-d2 --theme=<ID> input.d2 output.png
-d2 --theme=<ID> --dark-theme=<ID> input.d2 output.svg
+d2 -l elk --theme=<ID> input.d2 output.png
+d2 -l elk --theme=<ID> --dark-theme=<ID> input.d2 output.svg
 ```
 
 ## 推荐主题
