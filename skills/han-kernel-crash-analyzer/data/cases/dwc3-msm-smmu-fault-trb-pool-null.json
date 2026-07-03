@@ -1,0 +1,24 @@
+{
+  "id": "dwc3_msm_smmu_fault_trb_pool_null",
+  "timestamp": "2026-07-02T00:00:00Z",
+  "crash_type": "NULL 指针解引用 (SMMU fault handler 内调试代码访问已释放的 trb_pool)",
+  "fault_address": "0x0000000000000000 (dep->trb_pool==NULL, &trb_pool[enqueue]=0)",
+  "platform": "SM6115 / BENGAL IDP nopmi (MC5612)",
+  "kernel_version": "5.15.151-qki-consolidate-android13-8-g178e02483184-dirty",
+  "scenario": "重启压测，USB gadget(adb/RNDIS) 反复断连/composition 切换",
+  "root_cause": "DOTEMG-132 'DEBUG ONLY' 调试补丁 dwc3_msm_debug_smmu_fault() (dwc3-msm-core.c:5805) 在 SMMU fault handler 里遍历 active EP，执行 trb=&dep->trb_pool[dep->trb_enqueue] 后访问 trb->bpl/bph/size/ctrl，但只过滤 flags/started_list/pending_list，漏检 dep->trb_pool==NULL。teardown/composition 切换窗口(dwc3-msm-core.c:696 等注释明示 'from previous composition')将 trb_pool 释放置 NULL 但 dep 仍被判活跃；残留 DMA(iova=0x0) 触发 SMMU fault 中断 → 调试函数命中该 EP → NULL deref → panic → panic=5 重启被阻塞 → watchdog 硬咬。原始 handler 仅 return -ENOSYS 不碰 trb_pool，该 SMMU fault 本可容忍，是调试代码将其升级为 panic。",
+  "root_cause_category": "调试代码引入 (DEBUG ONLY 补丁缺 NULL 检查)",
+  "fix_summary": "A(推荐): 移除或 CONFIG 化整套 DOTEMG-132 补丁(ep0.c:48/gadget.c:1255/dwc3-msm-core.c:5804,5813)，恢复原始 fault handler; B: 给 dwc3_msm_debug_smmu_fault 遍历加 dep->trb_pool NULL 检查(含 ep0 分支); C(治本可选): teardown 时先停 DWC3 DMA 再释放 buffer，消除 iova=0 残留 fault",
+  "pattern_keywords": ["DOTEMG-132", "DEBUG ONLY", "dwc3_msm_smmu_fault_handler", "trb_pool", "composition switch", "SMMU fault iova=0x0", "gadget teardown", "NULL deref in fault handler", "重启压测", "+0x10c", "ldp w8,w10,[x9]"],
+  "tools_used": ["llvm-objdump", "addr2line (GKI DWARF 兼容失败,改用反汇编语义+源码双重印证)"],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": true,
+    "root_cause_falsifiable": true,
+    "init_order_verified": "N/A (fault handler 调试代码，非 init/probe 顺序问题)",
+    "scenario_consistent": true,
+    "adversarial_verify": "手动回退(Agent 模型不可用): 反汇编语义确认 dep+0x88=trb_pool 不受 RANDSTRUCT 影响; 修正标准 disable 不 free trb_pool, 释放点在 msm 层 composition/GSI 路径, 强化根因"
+  },
+  "outcome": null,
+  "report_path": "/home5/zhourulei/issue/crash/SM6115/MC5612/reboot/0630-tengqi/ISSUE-2026-0702-dwc3-msm-smmu-fault-NULL-deref.md"
+}
