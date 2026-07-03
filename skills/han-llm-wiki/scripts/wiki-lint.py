@@ -48,6 +48,8 @@ WIKILINK_RE = re.compile(r"\[\[([^\]\n]+)\]\]")
 MD_IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
 HTML_IMG_RE = re.compile(r"""<img\s+[^>]*src=["']([^"']+)["']""")
 DIAGRAM_DIR = "_diagrams/"
+# 疑似漏 ! 的图片引用：[alt](_diagrams/...) 但 [ 前无 !（渲染成链接而非图，MD_IMAGE_RE 查不到）
+SUSPECT_IMG_RE = re.compile(r"(?<!\!)\[[^\]]*\]\(([^)]*_diagrams/[^)]+)\)")
 
 
 def image_exists(path: str, page_rel: str, wiki_dir: Path) -> bool:
@@ -168,6 +170,7 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
     dead_links: List[Dict[str, Any]] = []
     name_mismatches: List[Dict[str, Any]] = []
     broken_images: List[Dict[str, Any]] = []
+    suspect_images: List[Dict[str, Any]] = []
     ambiguities: List[str] = []
 
     for rel in sorted(pages):
@@ -208,6 +211,14 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
                     "path": path,
                 })
 
+        # P0-3b: 疑似漏 ! 的图片引用（[alt](_diagrams/...) 缺前导 !，渲染成链接而非图）
+        for m in SUSPECT_IMG_RE.finditer(masked):
+            suspect_images.append({
+                "file": rel,
+                "line": line_of(masked, m.start()),
+                "path": m.group(1).strip(),
+            })
+
         # P0-2: filename == title (skip infra pages, templates, + pages without title)
         if rel in NAME_SKIP_PATTERNS or rel.startswith(tuple(NAME_SKIP_DIRS)):
             continue
@@ -227,6 +238,7 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
         "dead_links": dead_links,
         "name_mismatches": name_mismatches,
         "broken_images": broken_images,
+        "suspect_images": suspect_images,
         "ambiguities": ambiguities,
     }
 
@@ -236,6 +248,7 @@ def report(result: Dict[str, Any]) -> int:
     nd = len(result["dead_links"])
     nn = len(result["name_mismatches"])
     ni = len(result["broken_images"])
+    ns = len(result["suspect_images"])
     na = len(result["ambiguities"])
 
     print(f"\n扫描 {result['checked']} 个 .md 页面", file=sys.stderr)
@@ -258,14 +271,20 @@ def report(result: Dict[str, Any]) -> int:
     if ni == 0:
         print("  ✅ 图片引用完整", file=sys.stderr)
 
+    print(f"\nP0 疑似漏 ! 图片引用 ({ns}):", file=sys.stderr)
+    for s in result["suspect_images"]:
+        print(f"  ⚠️ {s['file']}:{s['line']}  [{s['path']}] → 应写 ![](path)", file=sys.stderr)
+    if ns == 0:
+        print("  ✅ 无漏 ! 的图片引用", file=sys.stderr)
+
     if na:
         print(f"\nP2 链接歧义 ({na}, 提示, 不影响退出码):", file=sys.stderr)
         for a in result["ambiguities"]:
             print(f"  ⚠️ {a}", file=sys.stderr)
 
-    status = "issues" if (nd or nn or ni) else "ok"
-    print(f"\n结果: {status}（死链={nd}, 命名不一致={nn}, 图片缺失={ni}, 歧义={na}）", file=sys.stderr)
-    return 1 if (nd or nn or ni) else 0
+    status = "issues" if (nd or nn or ni or ns) else "ok"
+    print(f"\n结果: {status}（死链={nd}, 命名不一致={nn}, 图片缺失={ni}, 漏!图片={ns}, 歧义={na}）", file=sys.stderr)
+    return 1 if (nd or nn or ni or ns) else 0
 
 
 # ─── CLI ──────────────────────────────────────────────────
@@ -303,6 +322,7 @@ def main() -> None:
         "dead_links": result["dead_links"],
         "name_mismatches": result["name_mismatches"],
         "broken_images": result["broken_images"],
+        "suspect_images": result["suspect_images"],
         "ambiguities": result["ambiguities"],
     }
     print(json.dumps(out, ensure_ascii=False))
