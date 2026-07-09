@@ -91,7 +91,7 @@ frontend.web -> backend.api
 
 ## Connections
 
-> 连线形态由引擎决定：`layout: elk` → 正交折线。颜色、虚线等样式在此形态基础上叠加。
+> 连线形态由引擎决定：编译 `-l elk` → 正交折线。颜色、虚线等样式在此形态基础上叠加。
 
 ```d2
 # Basic connection
@@ -154,7 +154,7 @@ server: Server {
 ## Layout Options
 
 ```d2
-layout: elk         # 唯一布局引擎（正交折线）
+# 布局引擎由命令行 -l elk 指定（源里切勿写 layout:elk，写了会被当成节点渲染出 "ELK"）
 direction: right    # Flow direction
 ```
 

@@ -58,11 +58,11 @@
 | 内容特征 | 引擎 | 类型/模式 | 布局/产物 | 适用场景 |
 |---------|------|----------|----------|---------|
 | 模块/组件/分层/依赖拓扑 | **D2** | `system-architecture` | `elk`→`.svg` | 概念页架构；来源概览；架构选型 |
-| 步骤/决策/处理流程 | **D2** | `flowchart` | `dagre`→`.svg` | 处理流程；推理链；主流程 |
-| 状态流转/生命周期 | **D2** | `state-machine` | `dagre`→`.svg` | 状态管理 |
-| 跨模块交互/调用顺序 | **D2** | `sequence-diagram` | `dagre`→`.svg` | 调用序列、协议握手 |
+| 步骤/决策/处理流程 | **D2** | `flowchart` | `elk`→`.svg` | 处理流程；推理链；主流程 |
+| 状态流转/生命周期 | **D2** | `state-machine` | `elk`→`.svg` | 状态管理 |
+| 跨模块交互/调用顺序 | **D2** | `sequence-diagram` | `elk`→`.svg` | 调用序列、协议握手 |
 | 数据表结构/字段关系 | **D2** | `er-diagram` | `elk`→`.svg` | 数据模型（较少用） |
-| 接口继承/组合关系 | **D2** | `class-diagram` | `dagre`→`.svg` | OO 设计（较少用） |
+| 接口继承/组合关系 | **D2** | `class-diagram` | `elk`→`.svg` | OO 设计（较少用） |
 | 部署/设备连接 | **D2** | `network-topology` | `elk`→`.svg` | 部署架构 |
 | 计划/阶段/里程碑 | **D2** | `gantt-chart` | `elk`→`.svg` | 实施计划（较少用） |
 | **对比表/日程/周计划/分组卡** | **han-svg** | `matrix` | JSON spec→`.svg` | 对比、选型、日程、矩阵卡 |
@@ -129,7 +129,7 @@ d2 --theme=300 --dark-theme=200 -l <engine> _diagrams/<name>.d2 _diagrams/<name>
 
 - `--theme=300`：Terminal 蓝灰色系（亮色），**技术文档统一主题**
 - `--dark-theme=200`：暗色主题——d2 把亮/暗两套配色嵌入同一 SVG，查看器按系统主题（`prefers-color-scheme`）自动切换
-- `-l <engine>`：`elk`（架构/ER/网络/甘特）或 `dagre`（流程/时序/状态/类），按第 2.1 映射表选
+- `-l elk`：**一律 ELK**（正交折线）——han-d2-diagram skill 强制只用 ELK 引擎（SKILL.md:17），不按图表类型切换。⚠️ d2 不指定 `-l` 时默认 dagre，故命令行必须显式 `-l elk`
 - **不加 `--sketch`**（技术文档需正式风格）
 
 > 可选 PNG（仅当需要位图）：`d2 ... .png`。PNG 光栅化依赖 Playwright/Chromium，未安装会失败——用 SVG 即可，**不要因 PNG 失败而中断**。
@@ -225,7 +225,7 @@ cp "$SRC" "<page-dir>/_diagrams/<slug>-<code>.png"
 **编译失败处理**：
 - 语法错误 → 对照 `d2-cheatsheet.md` 修正后重试
 - 中文显示异常 → 确认系统字体支持中文，必要时英文标签兜底
-- 布局重叠 → 尝试换布局引擎（`elk` ↔ `dagre`），或调整 direction
+- 布局重叠 → `--pad` 加间距 / 调整 `direction` / 拆分子图（han-d2-diagram 强制 elk，**不切换引擎**）
 - PNG 的 `failed to install Playwright` → 改用 SVG，不算失败
 
 ---
