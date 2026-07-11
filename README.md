@@ -138,12 +138,19 @@ python3 scripts/gen_cursor_rules.py --check   # 只校验 cursor rules 是否过
 | `han-hand-write-pic` | 手绘知识卡：暖色手账/sketchnote，normal/high 双密度 + 自学习 |
 | `han-disassembly-diagram` | 拆解图：hybrid/exploded/cutaway 模式，材料标注 + 原理流程 + 自学习 |
 | `han-slides` | 图片式幻灯片：每页出图 → 合并 PPTX/PDF（纯标准库） |
-| `han-svg` | 可编辑 SVG 图表：matrix/flowchart/timeline/architecture，确定性 Python 渲染（非生图模型） |
 | `han-llm-wiki` | 个人知识库 Wiki 维护：9 命令（init/ingest/query/lint/card/weekly/research/mode/think/save），BM25 检索 + 方法论模式（PARA/LYT/Zettelkasten）+ D2 配图 |
 | `han-kernel-crash-analyzer` | Linux 内核崩溃分析（高通/Android）：NULL 指针 / KASAN UAF / SLUB / ABBA 死锁 / panic / ramdump；反汇编优先 + 对抗验证 + 案例自学习 |
 | `han-d2-diagram` | D2 声明式图表：流程图/架构图/ER/类图，sketch 手绘风，双格式输出（PNG+SVG）+ 自学习 |
 | `han-git-commit` | 交互式 Git 提交信息生成器：基于 `~/.git-template`，交互收集 Module/Project/Bug-ID，AI 分析 diff 填充摘要/根因/方案 |
 | `han-flash-test` | UFS/eMMC 读写速率测试：fio 直接读写裸块设备，顺序/随机多档取中位数，规格对标 + 自学习闭环 |
+
+## 已弃用 Skill
+
+| Skill | 说明 | 替代 |
+| --- | --- | --- |
+| `han-svg` | 可编辑 SVG 图表（matrix/flowchart/timeline/architecture） | `han-d2-diagram`（D2 声明式图表，输出 SVG） |
+
+源码保留于 `skills/Deprecated/han-svg/`，不参与安装与分发。
 
 ## 附带的 MCP Server
 

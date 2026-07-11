@@ -1,6 +1,7 @@
 ---
 name: han-svg
 description: >
+  [DEPRECATED — 已弃用，不参与安装。可编辑图表请用 han-d2-diagram。]
   从结构化 JSON 规范生成干净、可编辑的 SVG 图表。确定性 Python 渲染(非生图模型),
   支持 matrix(日程/对比表/周计划/分组卡片)、flowchart(流程步骤与决策)、
   timeline(时间事件)、architecture(系统/服务/数据流/分层图)。输出独立 .svg 文件,
@@ -10,6 +11,8 @@ description: >
 ---
 
 # Han SVG
+
+> **已弃用（2026-07-11）**：本 skill 已移至 `skills/Deprecated/`，不再安装或分发。可编辑 SVG 图表请改用 **`han-d2-diagram`**。
 
 从紧凑的 JSON 规范生成独立、可编辑的 SVG 图表。用确定性 Python 渲染器:准备结构化 spec,脚本负责渲染、校验、(可选)导出。纯标准库,无需第三方包。
 

@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = ROOT / "skills"
 RULES_DIR = ROOT / ".cursor" / "rules"
+DEPRECATED_DIR_NAME = "Deprecated"
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n?(.*)$", re.DOTALL)
 
@@ -87,10 +88,25 @@ def _discover_skill_mds() -> list[Path]:
     for skill_dir in sorted(SKILLS_DIR.iterdir()):
         if not skill_dir.is_dir():
             continue
+        if skill_dir.name == DEPRECATED_DIR_NAME:
+            continue
         skill_md = skill_dir / "SKILL.md"
         if skill_md.is_file():
             out.append(skill_md)
     return out
+
+
+def _prune_orphan_rules(rules_dir: Path, active_names: set[str]) -> int:
+    """Remove .mdc files for skills no longer in the active set."""
+    if not rules_dir.is_dir():
+        return 0
+    removed = 0
+    for mdc in sorted(rules_dir.glob("*.mdc")):
+        if mdc.stem not in active_names:
+            mdc.unlink()
+            removed += 1
+            print(f"removed orphan {_rel_or_abs(mdc)}")
+    return removed
 
 
 def _rel_or_abs(path: Path) -> str:
@@ -105,12 +121,15 @@ def generate(output_dir: Path | None = None) -> int:
     rules_dir = output_dir if output_dir is not None else RULES_DIR
     rules_dir.mkdir(parents=True, exist_ok=True)
     skill_mds = _discover_skill_mds()
+    active_names = {skill_md.parent.name for skill_md in skill_mds}
     written = 0
     for skill_md in skill_mds:
         mdc = rules_dir / f"{skill_md.parent.name}.mdc"
         mdc.write_text(render_mdc(skill_md), encoding="utf-8")
         written += 1
         print(f"wrote {_rel_or_abs(mdc)}")
+    if output_dir is None:
+        _prune_orphan_rules(rules_dir, active_names)
     print(f"\nDone: {written} cursor rule(s) under {_rel_or_abs(rules_dir)}/")
     return 0
 

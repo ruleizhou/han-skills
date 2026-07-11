@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides, svg) + han-llm-wiki (personal knowledge-base wiki with 9 commands) + han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android) + han-d2-diagram (D2 declarative diagrams) + han-git-commit (interactive git commit message generator) + han-flash-test (UFS/eMMC read/write benchmark) + han-util-tools (kernel dev toolkit router, /han-util-tools command).",
+  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides) + han-llm-wiki (personal knowledge-base wiki with 9 commands) + han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android) + han-d2-diagram (D2 declarative diagrams) + han-git-commit (interactive git commit message generator) + han-flash-test (UFS/eMMC read/write benchmark) + han-util-tools (kernel dev toolkit router, /han-util-tools command).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -17,7 +17,6 @@
     "hand-drawn",
     "teardown",
     "slides",
-    "svg",
     "wiki",
     "knowledge-base",
     "kernel",
@@ -39,7 +38,7 @@
   "interface": {
     "displayName": "Han Skills",
     "shortDescription": "Personal skill factory and image-generation workflows",
-    "longDescription": "Han's Codex skill collection. Ships han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-svg (editable SVG diagrams), and han-llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save). Includes han-kernel-crash-analyzer (Linux kernel crash analysis — NULL pointer / KASAN UAF / SLUB / deadlock — with disassembly-first workflow + self-learning). Also ships han-d2-diagram (D2 declarative diagrams), han-git-commit (interactive git commit message generator), and han-flash-test (UFS/eMMC read/write benchmark). Also ships han-util-tools (kernel dev toolkit router — /han-util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type; new sub-skills created on demand via han-skill-creator-plus).",
+    "longDescription": "Han's Codex skill collection. Ships han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), and han-llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save). Includes han-kernel-crash-analyzer (Linux kernel crash analysis — NULL pointer / KASAN UAF / SLUB / deadlock — with disassembly-first workflow + self-learning). Also ships han-d2-diagram (D2 declarative diagrams), han-git-commit (interactive git commit message generator), and han-flash-test (UFS/eMMC read/write benchmark). Also ships han-util-tools (kernel dev toolkit router — /han-util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type; new sub-skills created on demand via han-skill-creator-plus).",
     "developerName": "Han",
     "category": "Productivity",
     "capabilities": [
@@ -56,7 +55,6 @@
       "Draw a hand-drawn sketchnote knowledge card",
       "Make a teardown / exploded-view diagram",
       "Generate an image slide deck (PPTX/PDF)",
-      "Draw an editable SVG diagram",
       "Maintain a personal knowledge wiki (ingest / query / lint / card / weekly)",
       "Analyze a Linux kernel crash dump (NULL pointer / KASAN / SLUB / deadlock) on Qualcomm/Android",
       "Draw a D2 declarative diagram (flowchart / architecture / ER / class)",

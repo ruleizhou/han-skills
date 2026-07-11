@@ -7,7 +7,7 @@ description: >
   ~/Downloads/han-skill-imagen/。具备自学习:沉淀「内容类型→布局/风格/密度」经验,越用越准。
   当用户说「手绘图、手写风图片、手绘知识图、sketchnote、手绘教育信息图、高密度手绘大图、
   把内容画成一页知识卡、暖色手账风总结」时使用本 skill。
-  想要品牌角色信息图用 han-infographic;想要可编辑图表用 han-svg。
+  想要品牌角色信息图用 han-infographic;想要可编辑图表用 han-d2-diagram。
 ---
 
 # Han Hand Write Pic

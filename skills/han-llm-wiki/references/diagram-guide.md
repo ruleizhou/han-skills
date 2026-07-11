@@ -4,12 +4,12 @@
 >
 > **核心原则**：图是信息的骨架，文是图的展开。**不加说明的图等于没放**——每张图后必须紧跟 2-5 句解释。配图服务于理解，不为配图而配图。
 >
-> **引擎总览**（两确定性 + 三 AI，共五引擎）：
-> - **确定性引擎**（可编辑、自包含、零 API key，**优先**）：`D2`（han-d2-diagram，技术拓扑/流程/状态/时序等结构图）、`han-svg`（对比表/日程/时间线/更易读架构流程）
+> **引擎总览**（一确定性 + 三 AI，共四引擎）：
+> - **确定性引擎**（可编辑、自包含、零 API key，**优先**）：`D2`（han-d2-diagram，技术拓扑/流程/状态/时序/对比/时间线等结构图）
 > - **AI 生成引擎**（高表达力、依赖 han 作用域 key、产物 PNG）：`han-infographic`（高密度信息总览/知识卡）、`han-hand-write-pic`（暖色手绘学习总结）、`han-disassembly-diagram`（物体内部结构/拆解）
 > - `han-imagen` 是三个 AI 引擎的生图底座，被自动复用，不在映射表单列
 >
-> **格式选型**：确定性引擎默认生成 **SVG**（可缩放无损、单文件内嵌亮/暗双主题、Obsidian/VS Code/GitHub 原生支持、零额外依赖、git diff 友好）。AI 引擎产物是 **PNG**（位图、不可编辑、体积大、无亮/暗双主题），仅在高表达力视觉化场景使用。**技术文档默认走确定性引擎出 SVG**。
+> **格式选型**：确定性引擎默认生成 **SVG**（可缩放无损、单文件内嵌亮/暗双主题、Obsidian/VS Code/GitHub 原生支持、零额外依赖、git diff 友好）。AI 引擎产物是 **PNG**（位图、不可编辑、体积大、无亮/暗双主题），仅在高表达力视觉化场景使用。**技术文档默认走 D2 出 SVG**。
 
 ---
 
@@ -44,14 +44,13 @@
 
 **能确定性就不用 AI**。逐级判定：
 
-1. 内容是「模块/分层/依赖/流程/状态/时序/ER/类/网络/甘特」结构 → **D2**（自包含、git diff 友好、亮/暗双主题，技术文档首选）
-2. 内容是「对比表/日程/时间线/矩阵/分组卡」或要更易读的架构流程 → **han-svg**（确定性、可编辑、纯标准库）
-3. 内容是「高密度信息总览/知识卡片图」且确定性引擎表达不够 → **han-infographic**（委托 han-imagen 出 PNG）
-4. 内容是「暖色学习总结/手账风知识卡」→ **han-hand-write-pic**
-5. 内容是「物体内部结构/爆炸/剖面/拆解」→ **han-disassembly-diagram**
-6. AI 引擎无 key / 失败 → **降级到 1 或 2 的确定性引擎**；再不行 → D2 源码块嵌入（见第 7 节，不中断流程）
+1. 内容是「模块/分层/依赖/流程/状态/时序/ER/类/网络/甘特/对比/时间线」结构 → **D2**（自包含、git diff 友好、亮/暗双主题，技术文档首选）
+2. 内容是「高密度信息总览/知识卡片图」且 D2 表达不够 → **han-infographic**（委托 han-imagen 出 PNG）
+3. 内容是「暖色学习总结/手账风知识卡」→ **han-hand-write-pic**
+4. 内容是「物体内部结构/爆炸/剖面/拆解」→ **han-disassembly-diagram**
+5. AI 引擎无 key / 失败 → **降级到 D2**；再不行 → D2 源码块嵌入（见第 7 节，不中断流程）
 
-> 技术 wiki 默认走确定性引擎（1、2）；AI 引擎（3-5）只在内容明确是"高表达力视觉化"或用户明示要某风格时用，且**先查 patterns.json**（第 8 节）。
+> 技术 wiki 默认走 D2；AI 引擎（2-4）只在内容明确是"高表达力视觉化"或用户明示要某风格时用，且**先查 patterns.json**（第 8 节）。
 
 ### 2.1 内容特征 → 引擎 + 类型 映射表
 
@@ -64,19 +63,16 @@
 | 数据表结构/字段关系 | **D2** | `er-diagram` | `elk`→`.svg` | 数据模型（较少用） |
 | 接口继承/组合关系 | **D2** | `class-diagram` | `elk`→`.svg` | OO 设计（较少用） |
 | 部署/设备连接 | **D2** | `network-topology` | `elk`→`.svg` | 部署架构 |
-| 计划/阶段/里程碑 | **D2** | `gantt-chart` | `elk`→`.svg` | 实施计划（较少用） |
-| **对比表/日程/周计划/分组卡** | **han-svg** | `matrix` | JSON spec→`.svg` | 对比、选型、日程、矩阵卡 |
-| **时间事件/路线图** | **han-svg** | `timeline` | JSON spec→`.svg` | 时间线、发布节奏 |
-| **更易读的系统/数据流/分层** | **han-svg** | `architecture` | JSON spec→`.svg` | 系统/服务/数据流（替代 D2 的"易读"场景） |
+| 计划/阶段/里程碑/时间线 | **D2** | `gantt-chart` | `elk`→`.svg` | 实施计划；发布节奏；路线图 |
+| A/B 对比/选型/决策分支 | **D2** | `flowchart` | `elk`→`.svg` | 对比、选型、方案权衡 |
 | 高密度信息总览/知识卡片图/可视化摘要 | **han-infographic** | layout×style | han-imagen→`.png` | 信息密度高、需视觉化总结 |
 | 暖色手账/手绘学习总结/sketchnote | **han-hand-write-pic** | hand-drawn-edu × normal/high | han-imagen→`.png` | 学习总结、知识卡 |
 | 物体内部结构/爆炸/剖面/产品解剖 | **han-disassembly-diagram** | hybrid/exploded/cutaway | han-imagen→`.png` | 实物拆解科普 |
 
-**选择优先级**：优先 `system-architecture`（架构）和 `flowchart`（流程）覆盖绝大多数概念/分析场景；对比/日程/时间线走 han-svg；只有内容明确是状态机/时序/数据表时才用对应 D2 专项图；只有"高表达力视觉化"才上 AI 引擎。
+**选择优先级**：优先 `system-architecture`（架构）和 `flowchart`（流程）覆盖绝大多数概念/分析场景；对比/时间线/甘特也走 D2；只有内容明确是状态机/时序/数据表时才用对应 D2 专项图；只有"高表达力视觉化"才上 AI 引擎。
 
 **类型短码**（用于文件命名）：
 - D2：`arch` / `flow` / `state` / `seq` / `er` / `class` / `net` / `gantt`
-- han-svg：`svg-matrix` / `svg-timeline` / `svg-arch` / `svg-flow`
 - AI 三件套：`info` / `hand` / `disasm`
 
 ### 2.2 先查 patterns.json（自学习命中）
@@ -94,16 +90,14 @@ wiki/concepts/DMA 控制器.md              ← 页面
 wiki/concepts/_diagrams/                  ← 该目录下所有概念页的图（共享）
 ├── DMA 控制器-arch.d2                    ← D2 源
 ├── DMA 控制器-arch.svg                   ← 正文内联（自动适配亮/暗主题）
-├── DMA 控制器-svg-arch.svg               ← han-svg 直出
 ├── DMA 控制器-info.png                   ← AI 引擎产物（已从 ~/Downloads 搬入）
-├── DMA 控制器-info-prompt.md             ← AI 引擎 prompt（配图后保留用于复现）
-└── DMA 控制器-svg-matrix-spec.json       ← han-svg spec（保留用于复现）
+└── DMA 控制器-info-prompt.md             ← AI 引擎 prompt（配图后保留用于复现）
 ```
 
-**命名规则**：`<页面slug>-<类型短码>.{d2,svg,png,json,md}`
+**命名规则**：`<页面slug>-<类型短码>.{d2,svg,png,md}`
 - `slug` = 页面文件名去 `.md`（如 `DMA 控制器`）
 - 多张图用不同类型短码区分（如 `DMA 控制器-arch.svg` + `DMA 控制器-flow.svg`）
-- han-svg 的 `spec.json` + AI 引擎的 prompt `.md` 也入 `_diagrams/`，用 `-spec` / `-prompt` 后缀与本页绑定
+- AI 引擎的 prompt `.md` 也入 `_diagrams/`，用 `-prompt` 后缀与本页绑定
 - **禁止在 vault 根目录创建 `svg/` 临时工作目录**——所有工作文件统一放 `_diagrams/`，避免破坏目录架构
 
 **模式感知**：`_diagrams/` 始终建在页面**实际所在目录**下（随 engineering/generic/lyt/para/zettelkasten 模式而变，由 mode 路由表解析的实际路径决定）。例如 lyt 模式页面在 `wiki/notes/`，图就在 `wiki/notes/_diagrams/`。
@@ -115,7 +109,6 @@ wiki/concepts/_diagrams/                  ← 该目录下所有概念页的图�
 配图前先**一次性检测引擎可用性**：
 ```bash
 which d2 && d2 --version                                    # D2
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/han-svg/scripts/main.py" --help   # han-svg（纯标准库，几乎必有）
 # AI 引擎：检查 .han-skills/.env 是否有 han 作用域 key（OPENAI/GOOGLE/DATAAI_API_KEY）；无 key 则标记 AI 不可用
 ```
 
@@ -124,7 +117,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/han-svg/scripts/main.py" --help   # han-sv
 写 `.d2` 源（规范见第 6 节）后编译（在**页面所在目录**执行，使 `_diagrams/` 相对路径正确）：
 
 ```bash
-d2 --theme=300 --dark-theme=200 -l <engine> _diagrams/<name>.d2 _diagrams/<name>.svg
+d2 --theme=300 --dark-theme=200 -l elk _diagrams/<name>.d2 _diagrams/<name>.svg
 ```
 
 - `--theme=300`：Terminal 蓝灰色系（亮色），**技术文档统一主题**
@@ -134,26 +127,7 @@ d2 --theme=300 --dark-theme=200 -l <engine> _diagrams/<name>.d2 _diagrams/<name>
 
 > 可选 PNG（仅当需要位图）：`d2 ... .png`。PNG 光栅化依赖 Playwright/Chromium，未安装会失败——用 SVG 即可，**不要因 PNG 失败而中断**。
 
-### 4.2 han-svg（确定性，直出绝对路径到 _diagrams）
-
-先写 `spec.json`（用 `template` 生成起点，再按 `han-svg/references/spec-schema.md` 与类型专属参考填充）。spec 文件直接放 `_diagrams/`，用 `-spec` 后缀：
-
-```bash
-# 1. 生成起始 spec，直接写入 _diagrams/
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/han-svg/scripts/main.py" template \
-  --type matrix --output "<page-dir>/_diagrams/<slug>-svg-<code>-spec.json"
-# 2. 编辑 spec.json 填充数据后渲染 —— --svg 给绝对路径，直出 SVG
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/han-svg/scripts/main.py" render \
-  --spec "<page-dir>/_diagrams/<slug>-svg-<code>-spec.json" \
-  --svg "<page-dir>/_diagrams/<slug>-svg-<code>.svg" \
-  --theme dark-tech --json
-```
-
-- 技术架构用 `dark-tech` 主题；教育/家庭类用 `han-light`
-- `architecture` 类型渲染后，按 `han-svg/references/architecture.md` 的折线优化规则手动优化 SVG 边路由（直线→折线、消重叠）
-- 纯标准库，无第三方依赖
-
-### 4.3 AI 三件套（委托 workflow + 搬运 PNG 到 _diagrams）
+### 4.2 AI 三件套（委托 workflow + 搬运 PNG 到 _diagrams）
 
 三个 AI 引擎**没有 CLI 入口**（只有 `workflows/`），需**委托**执行其防幻觉两阶段流程，再调 han-imagen 底座出图、搬运产物。**Prompt 文件直接写入 `_diagrams/`，用 `-prompt` 后缀，不额外创建临时目录**：
 
@@ -172,7 +146,7 @@ cp "$SRC" "<page-dir>/_diagrams/<slug>-<code>.png"
 - provider 由 han-imagen 自动检测（按可用 key），可 `--provider openai|google|dataeyes` 强制
 - 各引擎默认参数：han-infographic（`dense-modules` + `lab-notes` + `landscape`）、han-hand-write-pic（`hand-drawn-edu` + `normal`）、han-disassembly-diagram（`hybrid`）
 - **han-disassembly-diagram 铁律**：不确定的内部结构必须标注为「示意图」而非精确工程拆解
-- **无 key / 失败 → 降级**到 han-svg 或 D2（见第 7 节），不中断
+- **无 key / 失败 → 降级**到 D2（见第 7 节），不中断
 
 ---
 
@@ -192,7 +166,7 @@ cp "$SRC" "<page-dir>/_diagrams/<slug>-<code>.png"
 
 **嵌入位置**（按图类型决定放哪）：
 - **信息图 / 高密度全景图**（han-infographic 的 `*-info.png`、han-hand-write-pic 整页总结）→ **前置到文档开头**：`# H1` → `> 一句话引言` → 🖼️ 信息图 → `## 第一个章节`。信息图是文档的"视觉门面"，放引言下方打开即见，**不要埋在中间章节**。
-- **结构图**（D2 的 `arch/flow/state/seq`、han-svg 的 `svg-*` 等）→ 嵌入**对应说明章节内**（概念页"核心要素"后、来源页"摘要"后、分析页对应维度后），与解释文字紧邻。
+- **结构图**（D2 的 `arch/flow/state/seq/gantt` 等）→ 嵌入**对应说明章节内**（概念页"核心要素"后、来源页"摘要"后、分析页对应维度后），与解释文字紧邻。
 - **一页多图**：信息图前置先编号（图 1），结构图留章节内顺延（图 2、图 3…），图号按最终出现顺序递增。
 
 **规范**：
@@ -205,7 +179,7 @@ cp "$SRC" "<page-dir>/_diagrams/<slug>-<code>.png"
 
 ## 6. D2 编写规范
 
-1. **读模板作骨架**：若已安装 `han-d2-diagram` skill，读取其 `assets/templates/<type>.d2` 作为起点；未安装则跳过本步，直接手写 D2 或用第 4.2 节 han-svg 降级
+1. **读模板作骨架**：若已安装 `han-d2-diagram` skill，读取其 `assets/templates/<type>.d2` 作为起点；未安装则跳过本步，直接手写 D2
    - 例：`han-d2-diagram/assets/templates/system-architecture.d2`（路径相对该 skill 根目录）
 2. **节点标签用中文，技术术语保留英文**（如 `DMA 控制器`、`scatter-gather`）
 3. **连接线标注关键操作/数据**（如 `控制器 -> 内存: 发起传输`）
@@ -236,11 +210,9 @@ cp "$SRC" "<page-dir>/_diagrams/<slug>-<code>.png"
 
 ```
 首选引擎（按第 2 节映射）
-  ├─ 确定性引擎（D2/han-svg）失败
-  │     → 换另一个确定性引擎（D2 ↔ han-svg）
-  │     → 仍失败 → D2 源码块嵌入（见下方）
+  ├─ D2 失败 → D2 源码块嵌入（见下方）
   └─ AI 引擎（info/hand/disasm）无 key 或出图失败
-        → 降级到确定性引擎（结构→D2，对比/时间线→han-svg）
+        → 降级到 D2
         → 仍失败 → D2 源码块嵌入
 ```
 
@@ -270,7 +242,7 @@ direction: down
 
 **写时机**（配图完成后）：
 - **成功**：命中已有条目 → `frequency += 1`、`last_seen` 更新（**不自动 +confidence**，避免自吹捧，留给用户反馈）；新组合 → 追加一条 `confidence: 1`
-- **降级**（AI 无 key/失败 → 改用确定性）：原 AI 条目 `confidence -= 1`、`outcome: degraded`；降级用的确定性兜底条目 `frequency += 1`
+- **降级**（AI 无 key/失败 → 改用 D2）：原 AI 条目 `confidence -= 1`、`outcome: degraded`；降级用的 D2 兜底条目 `frequency += 1`
 - **彻底失败**（产物为空/嵌入死链）：`outcome: failed`、`confidence -= 1`
 - `confidence < 0` → 从 `patterns` 移除
 

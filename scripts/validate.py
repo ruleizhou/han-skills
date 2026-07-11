@@ -29,6 +29,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 errors: list[str] = []
+DEPRECATED_DIR_NAME = "Deprecated"
 
 # gen_cursor_rules lives next to this file; import its renderer for sync checks.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -75,6 +76,8 @@ def check_skills() -> int:
     count = 0
     for skill_dir in sorted(skills_dir.iterdir()):
         if not skill_dir.is_dir():
+            continue
+        if skill_dir.name == DEPRECATED_DIR_NAME:
             continue
         count += 1
         skill_md = skill_dir / "SKILL.md"
@@ -165,6 +168,8 @@ def check_cursor_rules_sync() -> int:
     synced = 0
     for skill_dir in sorted(skills_dir.iterdir()):
         if not skill_dir.is_dir():
+            continue
+        if skill_dir.name == DEPRECATED_DIR_NAME:
             continue
         skill_md = skill_dir / "SKILL.md"
         if not skill_md.is_file():

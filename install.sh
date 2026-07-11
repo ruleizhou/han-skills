@@ -92,6 +92,9 @@ discover_skills() {
     SKILL_SOURCES=()
     for skill_dir in "$SKILLS_ROOT"/*; do
         [[ -d "$skill_dir" ]] || continue
+        if [[ "$(basename "$skill_dir")" == "Deprecated" ]]; then
+            continue
+        fi
         if ! has_valid_frontmatter "$skill_dir"; then
             warn "跳过 $(basename "$skill_dir")（SKILL.md frontmatter 无效）"
             continue
@@ -476,6 +479,11 @@ cleanup_stale_links() {
             [[ -L "$link" ]] || continue
             current="$(readlink "$link")"
             case "$current" in
+                "$SKILLS_ROOT"/Deprecated/*)
+                    echo -e "  ${RED}rm deprecated:${NC} $(basename "$link") -> $current"
+                    $DRY_RUN || rm "$link"
+                    removed=$((removed+1))
+                    ;;
                 "$SKILLS_ROOT"/*)
                     if [[ ! -d "$current" || ! -f "$current/SKILL.md" ]]; then
                         echo -e "  ${RED}rm stale:${NC} $(basename "$link") -> $current"

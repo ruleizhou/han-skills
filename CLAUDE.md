@@ -5,6 +5,7 @@ Han 个人 Skills 仓库。单一真源在 `skills/`，四平台（Claude Code /
 ## Project Structure
 
 - `skills/<name>/SKILL.md` —— 每个 skill 的入口，frontmatter 必含 `name` + `description`。
+- `skills/Deprecated/<name>/` —— 已弃用 skill，**不参与**安装、校验与 cursor rules 生成。
 - `.claude-plugin/` —— Claude Code marketplace（plugin.json + marketplace.json）。
 - `.codex-plugin/` —— OpenAI Codex plugin（plugin.json，含 interface）。
 - `.cursor/rules/*.mdc` —— Cursor Project Rules，**生成产物**，由 `scripts/gen_cursor_rules.py` 从 `skills/*/SKILL.md` 生成。

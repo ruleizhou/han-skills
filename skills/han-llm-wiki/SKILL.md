@@ -138,5 +138,5 @@ sources: [[来源1]], [[来源2]]
 
 - `references/cmd-<命令名>.md`——各命令的详细流程（执行对应命令时读取该文件）
 - `references/page-templates.md`——页面模板（创建页面时读取）
-- `references/diagram-guide.md`——图文并茂配图指南（多引擎：D2 / han-svg / han-infographic / han-hand-write-pic / han-disassembly-diagram，ingest/save 配图时读取）
+- `references/diagram-guide.md`——图文并茂配图指南（多引擎：D2 / han-infographic / han-hand-write-pic / han-disassembly-diagram，ingest/save 配图时读取）
 - `references/schema-guide.md`——AGENTS.md 配置指南（初始化时读取）
