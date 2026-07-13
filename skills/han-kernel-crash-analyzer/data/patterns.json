@@ -166,6 +166,50 @@
             "first_seen": "2026-07-01",
             "last_seen": "2026-07-01",
             "outcome": "success"
+        },
+        {
+            "id": "ptrn-006",
+            "name": "Modem(MPSS) RF 校准数据缺失 ERR_FATAL 触发 HLOS panic",
+            "crash_type": "Kernel panic（子系统 crash 主动触发；非 HLOS 内存 fault）",
+            "category": "子系统 firmware/校准数据问题 → PIL crash handler → panic",
+            "description": "modem firmware 在某些 RF 路径(如 rf_nr5g_rx.c)检测到校准数据缺失/错配时上抛 ERR_FATAL（经 smp2p 'q6v5 fatal' 通知 HLOS），qcom_q6v5_pas 收到后调度 qcom_q6v5_crash_handler_work，该 work 直接 panic('Panicking, remoteproc <node> crashed') → machine_restart → qcom_wdt_trigger_bite 重启 + 抓 ramdump。关键鉴别：(1) ramparse CheckForPanic 段会为空（漏检此格式），须 grep 'remoteproc.*crashed' / 'fatal error received'；(2) HLOS 无内存 fault——vcpu esr_el1=0x56000000(EC=0x15 SVC) 而非 data abort，isr_el1=0；(3) 看门狗 bite 在 panic 之后(约0.5s)，是重启手段非原因；(4) fatal 消息常含子系统的 file:line 和诱因(如 CAL data not available)，且可能自称 report-only 却走 fatal(错误分级疑点)。录像/编码(msm_video v4l2 dqbuf)等用户活动仅为被打断的并发上下文，非因果。修复在 modem 侧(NV/QCN 校准 + 固件错误分级 + 量产 crash 策略)，HLOS 侧不改。",
+            "confidence": 2,
+            "frequency": 2,
+            "fix_template": "【P0 已验证有效·案 92355】核查/补全设备 NV/QCN RF 校准表(针对 fatal 消息点名的 band/频率)——补全 SUB6 band12 @866.5MHz 校准数据后不再复现; P1: 提 case 给高通 modem 固件团队评估该 ERR_FATAL 的错误分级(report-only→fatal 疑不当); P2: 确认目标版本 modem crash 策略(本 build=panic+dump，量产 user build 通常改 SSR 不 panic); HLOS 侧: 不改 q6v5 crash handler(收 fatal→panic 是 PIL 设计)",
+            "keywords": [
+                "remoteproc-mss crashed",
+                "rf_nr5g_rx.c",
+                "CAL data not available",
+                "ERR_FATAL",
+                "qcom_q6v5_crash_handler_work",
+                "MPSS SSR",
+                "smp2p q6v5 fatal",
+                "Panicking remoteproc",
+                "CheckForPanic empty",
+                "ramparse miss",
+                "NV QCN calibration",
+                "esr_el1 0x56000000 SVC",
+                "gh_set_wdt_bite",
+                "ravelin QCM4490"
+            ],
+            "first_seen": "2026-07-13",
+            "last_seen": "2026-07-13",
+            "outcome": "success",
+            "adversarial_verifications": [
+                {
+                    "case_id": "92355-modem-ssr-rf-cal-fatal-panic",
+                    "root_cause_verdict": "CONCUR",
+                    "root_cause_challenges": [
+                        "HLOS 自身 fault 嫌疑 → 驳回(esr_el1=SVC 非 abort，全文无 KASAN/OOM)",
+                        "录像线程野指针嫌疑 → 驳回(x11=dead000000000122 是 mutex magic)",
+                        "看门狗元凶嫌疑 → 驳回(bite 在 panic 后 0.55s)",
+                        "ADSP/CDSP/WLAN 嫌疑 → 驳回(无 crash 迹象)"
+                    ],
+                    "fix_verdict": "APPROVE_WITH_NOTES（未单独派 fix 对抗 Agent；修复在 modem 侧非 HLOS，风险低）",
+                    "challenges_resolved": true,
+                    "timestamp": "2026-07-13T11:00:00+08:00"
+                }
+            ]
         }
     ]
 }

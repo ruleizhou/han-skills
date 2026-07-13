@@ -1,0 +1,43 @@
+{
+  "id": "92355-modem-ssr-rf-cal-fatal-panic",
+  "timestamp": "2026-07-13T11:00:00+08:00",
+  "crash_type": "Kernel panic（HLOS 主动 panic，由 Modem/MPSS 子系统 crash 触发；非内存 fault）",
+  "fault_address": "N/A（非内存 dereference fault）。panic 主动调用点：qcom_q6v5.ko:qcom_q6v5_crash_handler_work+0xe8 → bl panic 的返回点 @0xba4（反汇编印证：0xb94 adrp x0=格式串, 0xb9c ldr x1=[rproc+0x18]=name, 0xba0 bl panic, 0xba4 返回点）",
+  "platform": "Qualcomm Montague Moselle IDP / QCM4490 MC9041（ravelin, 8 核 0-5 Silver + 6-7 Gold）",
+  "kernel_version": "5.10.226-android12-9-g3766f7ae0c16 #1 SMP PREEMPT Mon May 11 02:23:34 UTC 2026（kvm-arm.mode=protected / pKVM, kpti=0, kasan=off）",
+  "scenario": "视频录制过程中设备 dump 重启（uptime ~90027s）。CPU4 正跑 msm_video H.264 编码线程 poll_avcE_19 的 v4l2 DQBUF；同期 modem(MPSS) crash 上报 ERR_FATAL 触发 HLOS panic。录像为并发活动，非因果。",
+  "root_cause": "直接原因: modem 射频固件 rf_nr5g_rx.c:2444 上报 ERR_FATAL（SUB6 band:12 @866500kHz 缺 CAL 校准数据；消息自称 'REPORT ONLY IF ISSUE IS SEEN WHEN BUILD QCN OR CALIBRATE QCN IS USED' 却走 fatal 通道，疑错误分级不当）→ smp2p 'q6v5 fatal' 通知 HLOS → qcom_q6v5_crash_handler_work 调 panic('Panicking, remoteproc 4080000.remoteproc-mss crashed') → machine_restart → qcom_wdt_trigger_bite 重启 + 抓 ramdump。根本诱因: 设备 SUB6 band12 @866.5MHz RF 校准数据缺失/错配（band12 本应 700MHz 段，866.5MHz 对应异常，疑 NV/QCN 校准表 gap 或产线漏校准）。HLOS 侧无 fault：vcpu0 esr_el1=0x56000000(EC=0x15 SVC，非 data abort)、elr_el1 为用户态、isr_el1=0；看门狗未超时（gh-watchdog bite@90028.486 在 panic@90027.937 之后 0.55s，是重启手段非原因）；ramparse CheckForPanic 段为空（漏检此 panic 格式），需 grep 全文。",
+  "root_cause_category": "子系统(Modem/MPSS) crash → HLOS 主动 panic；根在 modem RF 校准数据缺失/固件错误分级",
+  "fix_summary": "P0[校准数据]: 核查并补全设备 NV/QCN RF 校准表，确保 NR SUB6 band12 @866.5MHz 有 CAL data；P1[modem固件]: 提 case 给高通 modem 团队，确认 rf_nr5g_rx.c:2444 fatal 上报策略（report-only 却走 ERR_FATAL，疑分级不当）；P2[量产策略]: 确认目标版本 modem crash 策略（本 build=crash→panic+dump，疑 userdebug；量产 user build 通常改 SSR 不 panic）；HLOS 侧不改（q6v5 收 fatal→panic 是 PIL 设计行为，强行降级会静默 modem crash）",
+  "pattern_keywords": ["remoteproc-mss crashed", "rf_nr5g_rx.c", "CAL data not available", "ERR_FATAL", "qcom_q6v5_crash_handler_work", "MPSS SSR", "SUB6 band12", "866500", "smp2p q6v5 fatal", "q6v5 wdog", "gh_set_wdt_bite", "Panicking remoteproc", "CheckForPanic empty", "ramparse miss", "QCN", "NV calibration", "ravelin", "QCM4490", "Montague Moselle", "msm_video", "v4l2 dqbuf", "pKVM protected"],
+  "tools_used": ["llvm-objdump", "nm", "addr2line"],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": "panic 调用点已反汇编定位(0xba4=bl panic 返回点)；本案无内存 fault address",
+    "root_cause_falsifiable": true,
+    "init_order_verified": "N/A",
+    "scenario_consistent": true,
+    "hlos_fault_excluded": true,
+    "watchdog_excluded": true,
+    "ramparse_checkforpanic_caveat": "ramparse --check-for-panic 段为空，漏检此 panic；必须 grep 全文 'remoteproc.*crashed' / 'fatal error received'"
+  },
+  "adversarial_verification": {
+    "root_cause_verdict": "CONCUR",
+    "root_cause_challenges": [
+      "HLOS 自身 fault 嫌疑 → 驳回：vcpu0 esr_el1=0x56000000(EC=SVC 非 data abort)，全文无 Unable to handle/KASAN/OOM",
+      "录像线程野指针嫌疑 → 驳回：CPU4 x11=0xdead000000000122 是 mutex 解锁后正常 magic，栈为 IPI 打断的正常 dqbuf",
+      "看门狗才是元凶 → 驳回：gh-watchdog bite@90028.486 在 panic@90027.937 之后 0.55s，是 panic 重启手段",
+      "ADSP/CDSP/WLAN 嫌疑 → 驳回：仅 qca6750 info 级 action frame 日志，无 crash 迹象",
+      "CAL 缺失是否真会触发 panic → 成立：panic 直接调用者即 q6v5_crash_handler_work+0xe8，fatal error received→SSR→panic 链完整"
+    ],
+    "fix_verdict": "APPROVE_WITH_NOTES（fix 对抗未单独派 Agent：修复方向为 modem 侧校准数据/固件，非 HLOS 代码改动，风险低）",
+    "challenges_resolved": true,
+    "agent_additions": [
+      "ERR_FATAL 消息自称 report-only 却走 fatal 通道 → modem 固件错误分级疑点",
+      "band12 本应 700MHz，报 866.5MHz → 频段-频率对应异常，强指 NV/QCN 校准 gap",
+      "本平台 crash=panic+dump 疑 userdebug 策略，量产 user build 通常 SSR 不 panic"
+    ]
+  },
+  "outcome": "success",
+  "fix_confirmed": "2026-07-13 用户确认：补全/修正 RF 校准数据(NV/QCN, 针对 SUB6 band12 @866.5MHz)后不再复现；P0 修复方向验证有效，闭环"
+}

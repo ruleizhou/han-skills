@@ -124,6 +124,33 @@
             ],
             "count": 1,
             "first_seen": "2026-07-01"
+        },
+        {
+            "pattern": "Panicking, remoteproc .* crashed",
+            "type": "子系统(remoteproc) crash 触发 HLOS 主动 panic",
+            "priority_items": [
+                "ramparse CheckForPanic 段为空不代表无 panic（漏检），grep 全文 'remoteproc.*crashed' / 'fatal error received'",
+                "区分 HLOS 主动 panic vs 内存 fault：查 esr_el1(EC=SVC 0x15 vs data abort 0x24/0x25) + isr_el1",
+                "定位哪个 remoteproc：节点名 remoteproc-mss=Modem, -adsp, -cdsp",
+                "读 fatal error 原文（子系统上报 file:line + 原因）找真正诱因",
+                "子系统 crash 多为 firmware/NV 校准问题，HLOS 无 bug，勿改 q6v5 crash handler",
+                "看门狗 bite 在 panic 之后→重启手段非原因，排除 WDT 超时"
+            ],
+            "count": 1,
+            "first_seen": "2026-07-13"
+        },
+        {
+            "pattern": "qcom_q6v5_pas.*fatal error received:",
+            "type": "子系统(remoteproc PAS) ERR_FATAL 上报 → SSR → panic",
+            "priority_items": [
+                "fatal 消息含子系统源码 file:line + 原因(如 rf_nr5g_rx.c CAL 数据缺失)",
+                "确认消息是否自称 report-only 却走 fatal(错误分级疑点)",
+                "核对子系统侧校准/配置数据(NV/QCN/EFS)是否缺失",
+                "追 smp2p 'q6v5 fatal' / 'q6v5 wdog' 通知时序",
+                "确认目标版本 crash 策略(panic+dump vs SSR)"
+            ],
+            "count": 1,
+            "first_seen": "2026-07-13"
         }
     ]
 }

@@ -23,3 +23,11 @@
 - crash命令: crash vmlinux "DDRCS@addr,..." --kaslr=X --no_data_debug --machdep vabits_actual=39 --no_panic
 - DDRCS物理地址: 源自dump_info.txt中DDR CS Memo行
 - 关键命令: kmem -s判UAF, struct看字段, vtop VA→PA, rd读内存
+
+## QCM4490 / MC9041 (ravelin) / kernel 5.10.226-android12
+- vmlinux: symbols/vmlinux (~441M)；模块 symbols/modules/*.ko
+- KASLR: ramparse 从 OCIMEM 0xdead4ead 确定（案 92355: kaslr_offset=0x2cb6c00000, kimage_vaddr=0xffffffecbec00000）
+- **pKVM (kvm-arm.mode=protected)**：host(coreX_regs.cmm) 与 guest(corevcpuX_regs.cmm) 两套上下文；fault 分析看 corevcpuX
+- **怪癖：ramparse `--check-for-panic` 段可能为空（漏检 remoteproc/子系统 crash 触发的 panic）**——必须手动 grep dmesg_TZ.txt 全文：`remoteproc.*crashed` / `fatal error received` / `Kernel panic - not syncing`
+- 区分 HLOS 主动 panic vs 内存 fault：看 corevcpu 寄存器 esr_el1（EC=0x15 SVC=系统调用上下文，非 data abort 0x24/0x25）+ isr_el1（=0 无 pending abort）
+- modem(MPSS) crash 路径：smp2p 'q6v5 fatal' 通知 HLOS → qcom_q6v5_crash_handler_work → panic → qcom_wdt_trigger_bite 重启；看门狗 bite 在 panic 之后（是手段非原因）
