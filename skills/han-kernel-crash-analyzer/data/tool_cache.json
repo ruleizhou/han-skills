@@ -39,6 +39,33 @@
                 "ddr_segments": "DDRCS0_0.BIN@0x80000000,DDRCS0_1.BIN@0x100000000,DDRCS1_0.BIN@0x180000000,DDRCS1_1.BIN@0x200000000"
             },
             "cached_at": "2026-07-01T17:45:00Z"
+        },
+        "/home5/zhourulei/code/MC5612/LA.VENDOR.13.2.1/kernel_platform/common": {
+            "tools": {
+                "llvm-objdump": true,
+                "llvm-objdump_version": "6.0.0",
+                "aarch64-linux-gnu-objdump": false,
+                "nm": false,
+                "addr2line": false,
+                "addr2line_note": "system addr2line is x86-only (cannot read aarch64 ELF)",
+                "llvm-symbolizer": true,
+                "llvm-symbolizer_usage": "echo 0xADDR | llvm-symbolizer --obj=vmlinux (reads stdin)",
+                "system_objdump_aarch64": false
+            },
+            "vmlinux": {
+                "crash_vmlinux": "/home5/zhourulei/issue/crash/SM6115/MC5612/115706/symbols/ap_symbol/vmlinux",
+                "crash_vmlinux_buildid": "d2b50295f3c7971a42614a69be094749c6bb0e9f",
+                "source_built_vmlinux": "/home5/zhourulei/code/MC5612/LA.VENDOR.13.2.1/kernel_platform/out/msm-kernel-bengal-gki/gki_kernel/common/vmlinux",
+                "source_built_vmlinux_buildid": "63ee8f0339c624a4fc53111cf0a793e2589c0738",
+                "note": "BuildID mismatch: source tree rebuilt Jul 10, crash image built Jul 2 (dirty). Use crash_vmlinux as authoritative for disasm; source tree for source-line reference only.",
+                "system_map": "/home5/zhourulei/issue/crash/SM6115/MC5612/115706/symbols/ap_symbol/System.map",
+                "kaslr": "Kernel Offset 0x2617200000 from 0xffffffc008000000 (symbol+offset in call trace already KASLR-resolved; use System.map base + offset for static addr)"
+            },
+            "kaslr": {
+                "kernel_offset": "0x2617200000",
+                "runtime_base": "0xffffffe621720000"
+            },
+            "cached_at": "2026-07-13T14:30:00Z"
         }
     }
 }
