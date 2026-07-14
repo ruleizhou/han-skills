@@ -8,7 +8,7 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 - **han 生图体系** —— `han-imagen` 生图底座（OpenAI/Google 双 provider，纯 Python 标准库）+ 5 个业务 skill（信息图 / 手绘知识卡 / 拆解图 / 幻灯片 / SVG 图表）。业务 skill 均带防幻觉两阶段法 + 自学习，套底座出图；幻灯片/SVG 是纯标准库 CLI 工具。
 - **han-llm-wiki** —— 个人知识库 Wiki 维护技能，9 个命令（init/ingest/query/lint/card/weekly/research/mode/think/save），BM25 检索 + 方法论模式（PARA/LYT/Zettelkasten）+ D2 配图。
 - **han-kernel-crash-analyzer** —— Linux 内核崩溃分析（高通/Android），覆盖 NULL 指针 / KASAN UAF / SLUB 损坏 / ABBA 死锁 / panic / ramdump。反汇编优先 + Agent 对抗验证 + 案例自学习闭环。
-- **实用工具** —— `han-d2-diagram`（D2 声明式图表，sketch 手绘风）+ `han-git-commit`（交互式 Git 提交信息生成，基于 `~/.git-template`）+ `han-flash-test`（UFS/eMMC 读写速率测试，规格对标 + 自学习闭环）。
+- **实用工具** —— `han-d2-diagram`（D2 声明式图表，sketch 手绘风）+ `han-git-commit`（交互式 Git 提交信息生成，基于 `~/.git-template`）+ `han-flash-test`（UFS/eMMC 读写速率测试，规格对标 + 自学习闭环）+ `han-tech-doc-writer`（技术文档写作，D2 图表 + 信息图双轨视觉，7 步工作流 + 自学习反馈闭环）+ `han-util-tools`（内核工具总路由，按 场景→平台→模块→类型 四级引导）。
 
 ## 目录结构
 
@@ -31,7 +31,7 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 │   ├── validate.py              # 四平台校验
 │   └── gen_cursor_rules.py      # SKILL.md → .cursor/rules/*.mdc 转换器
 ├── skills/
-│   └── <name>/                  # 每个 skill 一个目录（han-skill-creator-plus + han-* 生图体系 + han-llm-wiki + han-kernel-crash-analyzer + han-d2-diagram + han-git-commit + han-flash-test），单一真源
+│   └── <name>/                  # 每个 skill 一个目录（han-skill-creator-plus + han-* 生图体系 + han-llm-wiki + han-kernel-crash-analyzer + han-d2-diagram + han-git-commit + han-flash-test + han-tech-doc-writer + han-util-tools），单一真源
 ├── mcp/                          # 附带的 MCP Server（非 skill）
 │   └── windows-remote/           #   Windows 远程控制（adb/fastboot/UART）
 ├── install.sh                   # 软链接安装（三目标）
@@ -143,6 +143,8 @@ python3 scripts/gen_cursor_rules.py --check   # 只校验 cursor rules 是否过
 | `han-d2-diagram` | D2 声明式图表：流程图/架构图/ER/类图，sketch 手绘风，双格式输出（PNG+SVG）+ 自学习 |
 | `han-git-commit` | 交互式 Git 提交信息生成器：基于 `~/.git-template`，交互收集 Module/Project/Bug-ID，AI 分析 diff 填充摘要/根因/方案 |
 | `han-flash-test` | UFS/eMMC 读写速率测试：fio 直接读写裸块设备，顺序/随机多档取中位数，规格对标 + 自学习闭环 |
+| `han-tech-doc-writer` | 技术文档写作：D2 图表 + 信息图（han-infographic）双轨视觉，7 步工作流（诊断→源→大纲→图表+信息图→写作→审核→输出），自学习反馈闭环 |
+| `han-util-tools` | 内核工具总路由：/han-util-tools 命令触发，按 场景→平台→模块→类型 四级引导，覆盖 Debug/器件 Bringup/功能开发 |
 
 ## 已弃用 Skill
 
