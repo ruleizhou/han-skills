@@ -1,0 +1,107 @@
+---
+description: >
+  [写作模式] 读取技术文档内容后，整理并输出图文并茂的高质量中文技术文档。
+  输入可以是 URL 链接、本地文件或对话中粘贴的内容；输出为本地 .md 文件，
+  每个核心概念配有 D2 图表，关键概念配有信息图（han-infographic）。
+  自动识别文档类型（架构文档/API文档/排障指南/设计文档/知识库文章），
+  生成结构化大纲，D2 覆盖技术细节，信息图放在显眼位置做视觉亮点。
+alwaysApply: false
+globs:
+---
+# Han Tech Doc Writer
+
+阅读技术文档 → 输出图文并茂的高质量中文技术文档。
+
+## 核心原则
+
+1. **先诊断再动手** — 必须先确定文档类型、目标受众和深度，再开始写作
+2. **每章必图** — D2 图表覆盖技术细节（架构/流程/时序/ER/类图）
+3. **关键概念配信息图** — 1-3 张 Hero/章节信息图，放在显眼位置，做视觉亮点
+4. **先画图再写文** — Step 3 完成所有图（D2+信息图），Step 4 写正文嵌入
+5. **中文优先，术语保留** — 正文全中文，技术术语保留英文原词
+6. **不重复造轮子** — D2 知识从 han-d2-diagram 运行时读取，信息图委托 han-infographic 生成
+
+## 视觉元素分工
+
+| 视觉元素 | 负责 Skill | 用途 | 放置位置 | 风格 |
+|----------|-----------|------|---------|------|
+| D2 图表 | han-d2-diagram | 架构图/流程图/时序图/ER图/类图/状态机/拓扑图/甘特图 | 对应章节内，正文引用"如图 N 所示" | 正式技术风格，theme=300 |
+| 信息图 | han-infographic | 文档概念总览/模块全景/对比矩阵/关键数据摘要 | 文档开篇(hero)、章节开篇、总结区域 | 醒目突出，视觉亮点 |
+
+## 模式判断
+
+| 触发信号 | 模式 | 动作 |
+|----------|------|------|
+| "整理技术文档"、"写技术文档"、"技术笔记"、"帮我整理" + 内容/URL/文件 | 完整写作 | Step 0 → 1 → 2 → 3 → 4 → 5 → 6 |
+| "加个图"、"画个架构图"、"给这段配个图"、"画个流程图" | D2 图表补充 | 跳过 Step 0-2，直接进入 Step 3（D2 部分） |
+| "加个信息图"、"配张概念图"、"画个全景图"、"画个信息图总结" | 信息图补充 | 跳过 Step 0-2，直接进入 Step 3.5（信息图部分） |
+| "搞定了"、"写好了"、"完成了"、"文档不错" | 反馈闭环 | 读取 workflows/feedback-loop.md |
+| 输入 URL 或文件路径 + "整理"/"总结" | 快速写作 | Step 0 可跳过交互，直接进入 Step 1 |
+| 直接粘贴大段技术内容 | 智能识别 | 诊断内容类型后从 Step 0 开始 |
+
+## 预检清单
+
+- 用户是否已提供源内容？是 → 可跳过输入来源询问，直接问文档类型
+- 用户是否指定了文档类型？是 → 跳过文档类型询问
+- 用户是否说"加个图"？是 → 直接进入 Step 3（D2 部分）
+- 用户是否说"加个信息图"？是 → 直接进入 Step 3.5（信息图部分）
+- 用户是否说"搞定了"？是 → 直接读取 feedback-loop.md
+
+## Workflow
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+| 0 | `workflows/step-00-diagnose.md` | 交互诊断：输入来源、文档类型、受众深度、输出路径、输出文件名 |
+| 1 | `workflows/step-01-source.md` | 读取源内容：URL 抓取/文件读取/粘贴解析 |
+| 2 | `workflows/step-02-outline.md` | 结构化：生成大纲 + 标记 D2 图表需求 + 标记信息图候选 |
+| 3 | `workflows/step-03-diagram.md` | 图表与信息图生成：D2 图表（3.1-3.4）+ 信息图（3.5） |
+| 4 | `workflows/step-04-write.md` | 写作：信息图嵌入（醒目位置）+ 正文 + D2 图表嵌入 |
+| 5 | `workflows/step-05-review.md` | 质量审核：完整性/准确性/格式/D2 图表质量/信息图质量 |
+| 6 | `workflows/step-06-output.md` | 输出：写 .md 文件 + D2+信息图统计 + 归档案例 + 模式学习 |
+
+反馈闭环由用户主动触发（"搞定了"等信号词），触发后读取 `workflows/feedback-loop.md`。
+
+## 参考资料速查
+
+| 文件 | 用途 |
+|------|------|
+| `references/doc-structure-guide.md` | 5 种文档类型结构模板 + 信息图机会 |
+| `references/diagram-placement-guide.md` | D2 图表类型选择 + 信息图 vs D2 分工 |
+| `references/infographic-placement-guide.md` | 信息图使用指南：判定、放置、嵌入格式 |
+| `references/writing-style-guide.md` | 中文技术写作规范 + 信息图标注规范 |
+| `data/patterns.json` | 自学习模式库（D2 + 信息图） |
+| `data/cases/` | 历史案例存档 |
+
+## D2 知识复用
+
+本 skill 不内嵌 D2 语法知识。画图时按需读取 han-d2-diagram skill 的资源：
+- 模板：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/<type>.d2`
+- Shape 选择：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-shapes-guide.md`
+- 语法速查：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-cheatsheet.md`
+- 主题参数：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-themes.md`（技术文档统一 `--theme=300`）
+
+## 信息图集成
+
+本 skill 在 Step 3.5 中调用 sibling skill `han-infographic` 生成信息图。
+
+### 调用方式
+
+```
+Skill(skill="han-infographic", args="<根据内容组装的信息图生成请求>")
+```
+
+### 信息图候选判定
+
+以下内容适合生成信息图（而非 D2）：
+- 文档核心概念全景（Hero infographic，放在标题后第一屏）
+- 多模块关系总览（一眼看清全局）
+- 关键数据/指标对比
+- 流程的"一图看懂"版本（与 D2 流程图互补）
+- 章节开篇的概念导览
+
+### 产物管理
+
+han-infographic 输出到 `~/Downloads/han-skill-imagen/{slug}-infographic.png`，
+han-tech-doc-writer 将其复制到 `_diagrams/` 目录统一管理。
+
+**开始执行时，首先读取 `workflows/step-00-diagnose.md`。**

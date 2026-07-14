@@ -24,4 +24,7 @@ cat <<'EOF'
   han-util-tools           内核工具总路由 (/han-util-tools 命令触发, Debug/器件 Bringup/功能开发三场景)
     触发:"/han-util-tools"、"看下这个死机 log"、"bringup 一个 I2C sensor"、
          "实现一个 sysfs 接口"、"分析 USB 拷贝速度"、"问题解决了"
+  han-tech-doc-writer      技术文档写作 (7步工作流: D2图表+信息图双轨视觉, 自学习反馈闭环)
+    触发:"整理技术文档"、"写技术文档"、"技术笔记"、"帮我整理" + 内容/URL/文件、
+         "加个图"、"加个信息图"、"画个架构图"、"搞定了"、"写好了"
 EOF
