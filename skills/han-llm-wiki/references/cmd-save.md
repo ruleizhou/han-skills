@@ -39,7 +39,7 @@
 | `concept` | `wiki/concepts/` | 解释/定义了一个概念、模式、框架 |
 | `source` | `wiki/sources/` | 讨论了外部资料（文章/论文/网页），含 URL |
 | `decision` | `wiki/analyses/` | 做了架构/策略决策，含理由和上下文 |
-| `session` | `*会话保存目录*`（如 `10-Notes/` 或 `sessions/`） | 整段对话摘要，覆盖多个主题 |
+| `session` | `*会话保存目录*`（如 `80-Notes/` 或 `sessions/`） | 整段对话摘要，覆盖多个主题 |
 
 不确定时默认 `synthesis`。
 

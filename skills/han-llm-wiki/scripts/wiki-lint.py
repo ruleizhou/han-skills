@@ -39,7 +39,7 @@ NAME_SKIP_PATTERNS = [
 # (driver/component templates created by init step C3), not real knowledge
 # pages whose filename must mirror a concrete `title:`. Dead-link scan still
 # runs on them (templates may contain real wikilinks).
-NAME_SKIP_DIRS = ["templates/"]
+NAME_SKIP_DIRS = ["90-templates/"]
 
 WIKILINK_RE = re.compile(r"\[\[([^\]\n]+)\]\]")
 
@@ -219,7 +219,7 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
                 "path": m.group(1).strip(),
             })
 
-        # P0-2: filename == title (skip infra pages, templates, + pages without title)
+        # P0-2: filename == title (skip infra pages, 90-templates/, + pages without title)
         if rel in NAME_SKIP_PATTERNS or rel.startswith(tuple(NAME_SKIP_DIRS)):
             continue
         title = parse_title(text)

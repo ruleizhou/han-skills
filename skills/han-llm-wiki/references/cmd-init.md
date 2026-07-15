@@ -92,12 +92,13 @@ ls -1 build/ 2>/dev/null && ls -1 scripts/ 2>/dev/null | head -5
 | 构建系统 | `06-Build-System/` |
 | 设备树 | `07-Device-Tree/` |
 | 任何项目 | `08-Debug/`, `09-Bringup/`（工程师总有调试和 bringup 需求） |
-| 通用笔记 | `10-Notes/`（轻量笔记区） |
+| 通用笔记 | `80-Notes/`（用户笔记源，init 默认预注册为收录源，新增即收） |
 
 ### 命名规范
 
-- 目录编号从 `01-` 开始，按逻辑层次排列（架构 → 子系统 → 驱动 → 平台 → SoC → 构建 → DT → 调试 → Bringup → 笔记）
+- 目录编号从 `01-` 开始，按逻辑层次排列（架构 → 子系统 → 驱动 → 平台 → SoC → 构建 → DT → 调试 → Bringup → 笔记 → 模板）
 - **编号的作用是排序**，让目录在 Obsidian 文件列表中按逻辑顺序排列
+- **编号分段**：业务/项目相关目录占 `01–79` 区间；`Notes`（笔记区）、`templates`（模板区）等通用辅助目录固定钉在 `80`/`90` 尾部，使业务目录增删不漂移辅助目录编号
 - 页面用英文 kebab-case 命名（与 Wiki 内部中文铁律不同——顶层结构页可以英文，因为反映的是技术术语）
 - **总览页文件名用领域名（目录名去掉 `NN-` 前缀），不用 `Overview.md`**：如 `01-Architecture/` → `Architecture.md`、`03-Drivers/` → `Drivers.md`、`00-Home/` → `Home.md`。理由：Obsidian 关系图谱按文件名显示节点，统一用 `Overview.md` 会产生一堆同名节点无法区分；领域名让图谱一目了然。铁律「文件名=title」不变（`Architecture.md` → `title: Architecture`）。
 
@@ -204,7 +205,7 @@ tags: [moc, home]
 
 ## 📝 笔记
 
-- [[10-Notes/Index|笔记索引]] — 按时间或主题整理的工作笔记
+- [[80-Notes/Index|笔记索引]] — 按时间或主题整理的工作笔记
 
 ## 🔧 工具
 
@@ -249,11 +250,11 @@ status: seed
 - Seed 页面的 `status: seed` 标记表示"骨架，待填充"——lint 时跳过此类页面的"内容过短"警告
 - Seed 页面的标题和 tags 应该反映该领域的核心术语
 - 不要编造内容！只写从目录名/文件名能合理推断的一行概述
-- 对于没有明确子页面的目录（如 `10-Notes/`），可以不创建 seed 页面，或只创建 `Index.md`
+- 对于没有明确子页面的目录（如 `80-Notes/`），可以不创建 seed 页面，或只创建 `Index.md`
 
 ### C3. 创建领域模板（可选）
 
-如果检测到特定项目类型，创建一个 `templates/` 目录并放入 1-3 个针对性模板：
+如果检测到特定项目类型，创建一个 `90-templates/` 目录（vault 根，与 `00-Home/` 同级）并放入 1-3 个针对性模板：
 
 | 项目类型 | 建议模板 |
 |---------|---------|
@@ -264,7 +265,7 @@ status: seed
 
 模板只需一个——用户可以根据需要复制修改。不要像旧版那样强制复制 7 个。
 
-> **lint 说明**：`templates/` 下的模板用描述性 `title`（如 `title: 驱动开发模板`），与文件名不必一致——`wiki-lint.py` 的 `NAME_SKIP_DIRS` 会自动豁免 `templates/` 目录的 P0-2 命名一致性检查（死链扫描仍覆盖，故模板里的真实 `[[链接]]` 照常校验）。
+> **lint 说明**：`90-templates/` 下的模板用描述性 `title`（如 `title: 驱动开发模板`），与文件名不必一致——`wiki-lint.py` 的 `NAME_SKIP_DIRS` 会自动豁免 `90-templates/` 目录的 P0-2 命名一致性检查（死链扫描仍覆盖，故模板里的真实 `[[链接]]` 照常校验）。
 
 ---
 
@@ -308,13 +309,15 @@ session_count: 0
 
    > **注意**：`.raw/` 已被注册到 `.ingest-folders.yaml`，后续运行无参数 `/han-llm-wiki ingest` 时会自动收录其中的新文档到 `wiki/sources/`。已在 wiki 目录中的文件自动算作已收录。
 
+   > **`80-Notes/` 同样默认预注册**：`80-Notes/`（步骤 C 创建的用户笔记区）也注册到 `.ingest-folders.yaml` 作为笔记收录源。无参数 ingest 按「新增即收」增量——只收其中尚无来源页（`wiki/sources/`）的新笔记；已收录笔记的修改需手动 `/han-llm-wiki ingest 80-Notes` 触发重收。**单向闸**：ingest 只读 `80-Notes/` 提炼，产物只写 `wiki/`，绝不回写原始笔记（详见 SKILL.md「绝对禁止」）。
+
 8. **`wiki/scripts/wiki-lock.sh`** — 从 skill 自带脚本复制（位于 skill 根目录的 `scripts/wiki-lock.sh`）：
    `cp <skill-dir>/scripts/wiki-lock.sh wiki/scripts/`
 9. **`wiki/scripts/wiki-search.py`** — 同上（`<skill-dir>/scripts/wiki-search.py`，纯 Python stdlib，零依赖）
    > skill 目录 = 加载本 SKILL.md 的目录（含 `references/`、`scripts/`、`SKILL.md`）。若 `.claude/skills/han-llm-wiki` 是软链接，用 `realpath` 解析确认真实路径后再 `cp`，避免软链导致 `cp: cannot stat`。
 10. **`wiki/scripts/wiki-lint.py`** — 同上（`<skill-dir>/scripts/wiki-lint.py`，纯 stdlib）；P0 链接自检脚本（死链 + 文件名=title 一致性），init/ingest/lint 收尾复用，取代手写 grep。
 
-> **注意**：scripts 等基础设施放在 `wiki/` 下，不污染项目顶层。唯一例外是 `.search_index.json`——由 `wiki-search.py` 写入 `--wiki` 指定目录(即 vault 根，`--wiki .`)，与 `00-Home/`~`10-Notes/` 同级；它是隐藏文件，Obsidian 默认不显示。用户的 Obsidian 文件浏览器主要看到 `00-Home/` ~ `10-Notes/` 和 `wiki/` 目录。
+> **注意**：scripts 等基础设施放在 `wiki/` 下，不污染项目顶层。唯一例外是 `.search_index.json`——由 `wiki-search.py` 写入 `--wiki` 指定目录(即 vault 根，`--wiki .`)，与 `00-Home/`~`80-Notes/` 同级；它是隐藏文件，Obsidian 默认不显示。用户的 Obsidian 文件浏览器主要看到 `00-Home/` ~ `80-Notes/` 和 `wiki/` 目录。
 
 11. **`AGENTS.md`**（vault 根目录，与 `00-Home/` 同级）—— 跨工具通用维护约定（Claude Code / Cursor / Copilot 均识别）。schema-guide.md 是其配置指南，init 时应一并创建。必含：
    - wiki 基本信息 + **只读源码路径**（用户通过 `/add-dir` 加入的路径必须列出并标注「只读,绝不修改」）
@@ -342,7 +345,7 @@ init 创建了大量带 `[[交叉链接]]` 的页面，收尾必须验证链接�
 如果目录已部分存在，只补建缺失部分：
 - 目录缺失 → 创建
 - Seed 页面缺失 → 创建（不覆盖已有页面！用户可能已经填充了内容）
-- `templates/` 已存在 → 不覆盖（用户可能已自定义模板）
+- `90-templates/` 已存在 → 不覆盖（用户可能已自定义模板）
 - 基础设施文件缺失 → 创建（不覆盖已有，特别是 hot.md/index.md/log.md 可能已有内容）
 - `wiki/.mode.json` 已存在 → 不覆盖
 - `.raw/` 已存在 → 不覆盖，注册条目已存在则跳过

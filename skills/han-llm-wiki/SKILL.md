@@ -82,9 +82,9 @@ wiki/                          # AI 维护的知识层 + 全部基础设施
 └── .mode.json                 # 方法论模式配置
 ```
 
-> **`.search_index.json` 位于 vault 根目录**(与 `00-Home/`~`10-Notes/` 同级，即 `wiki-search.py --wiki .` 指定的 wiki_dir)，由引擎写入/读取；它是隐藏文件，Obsidian 默认不显示。其余基础设施均在 `wiki/` 下。
+> **`.search_index.json` 位于 vault 根目录**(与 `00-Home/`~`80-Notes/` 同级，即 `wiki-search.py --wiki .` 指定的 wiki_dir)，由引擎写入/读取；它是隐藏文件，Obsidian 默认不显示。其余基础设施均在 `wiki/` 下。
 
-**分工**：用户编写原始笔记，Claude 维护 wiki/ 层。已 ingest 的文件夹记录在 `wiki/.ingest-folders.yaml`。
+**分工**：用户编写原始笔记，Claude 维护 wiki/ 层。已 ingest 的文件夹记录在 `wiki/.ingest-folders.yaml`。`80-Notes/`（用户笔记区）与 `.raw/`（原始收件箱）由 init 默认预注册为收录源（前者「新增即收」，后者收件箱式收录）。
 
 ---
 
@@ -129,6 +129,7 @@ sources: [[来源1]], [[来源2]]
 - **绝不修改 note/ 下的原始文件**——只读不改
 - **绝不覆盖已有页面中的有价值内容**——整合不是替换
 - **绝不跳过链接自检**——收录完必须验证死链
+- **绝不回写收录源（`80-Notes/`、`.raw/`）的原始文件**——只读提炼，产物只写 `wiki/`，笔记区保持用户原味；要连进图谱由用户自加 `[[链接]]` 或经 `wiki/` 概念页反向引用
 
 ---
 
