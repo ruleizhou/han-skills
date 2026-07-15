@@ -2,6 +2,15 @@
 
 **这是整个分析最关键的一步，不能跳过。**
 
+## KASLR 校验（反汇编前必做，否则符号全错位）
+
+把运行时地址转链接地址喂 objdump/symbolizer **之前**，必须先拿到正确 KASLR 偏移并校验，否则符号定位全错：
+
+1. **取偏移**：python 搜 `OCIMEM.BIN` 的 `0xdead4ead` magic，其后 u64 小端即 kaslr offset（见 `workflows/crash-parse-raw.md` C1）。
+2. **校验 2MB 对齐**：`kaslr % 0x200000 == 0` 必须成立。ARM64 KASLR 强制 2MB 对齐——**非对齐值一定是算错**（典型错误：拿 pc 减某函数链接地址反推出非对齐值，还继续用）。
+3. **优先信 ramparse 自带符号化**：`dmesg_TZ.txt` 里 ramparse 已用正确 kaslr 符号化调用栈（如 `Core 5 PC: __delay+c4 <runtime_addr>`）——**直接信它，别手动算地址喂 llvm-symbolizer**。手动算易错位，而 symbolizer 对错误地址会"巧合命中"附近函数造成误判（本案例曾因此把 `__delay` 误判成 `delayed_put_task_struct`，根因全错）。
+4. 手动换算时：`链接地址 = 运行时地址 − kaslr`，再校验结果落在 `readelf -S` 的 `.text` 段内。
+
 ## 工具链缓存
 
 在执行 `which` 检查之前，先读取 `data/tool_cache.json`。如果当前内核源码路径已有缓存，直接使用缓存的工具名，跳过 `which` 步骤。分析结束后更新缓存。

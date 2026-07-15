@@ -66,6 +66,33 @@
                 "runtime_base": "0xffffffe621720000"
             },
             "cached_at": "2026-07-13T14:30:00Z"
+        },
+        "/home5/zhourulei/code/MT5825/LA.VENDOR.13.2.1": {
+            "tools": {
+                "llvm-objdump": true,
+                "llvm-objdump_path": "/home5/zhourulei/code/MT5825/LA.VENDOR.13.2.1/kernel_platform/prebuilts/clang/host/linux-x86/clang-r450784e/bin/llvm-objdump",
+                "llvm-symbolizer": true,
+                "aarch64-linux-gnu-objdump": false,
+                "system_llvm-objdump": "6.0.0-too-old",
+                "crash": "/home5/zhourulei/.local/bin/crash"
+            },
+            "vmlinux": {
+                "crash_vmlinux": "/home5/zhourulei/issue/crash/SM6225/MT5825/93520/symbols/vmlinux",
+                "kaslr_offset": "0x25c4c00000",
+                "runtime_base": "0xffffffe5ccc00000",
+                "link_base": "0xffffffc008000000"
+            },
+            "crash": {
+                "binary": "/home5/zhourulei/.local/bin/crash",
+                "vabits_actual": 39,
+                "kaslr_method": "OCIMEM_0xdead4ead",
+                "kaslr_offset": "0x25c4c00000",
+                "must_flags": "--kaslr=<offset> 必带, 否则报 kimage_voffset cannot be determined 直接退出",
+                "extra_flags": "--no_data_debug --no_panic",
+                "ddr_segments": "DDRCS0_0.BIN@0x40000000,DDRCS0_1.BIN@0xc0000000",
+                "verified_cmd": "crash <vmlinux> \"DDRCS0_0.BIN@0x40000000,DDRCS0_1.BIN@0xc0000000\" --kaslr=0x25c4c00000 --no_data_debug --machdep vabits_actual=39 --no_panic"
+            },
+            "cached_at": "2026-07-15T04:41:40Z"
         }
     }
 }
