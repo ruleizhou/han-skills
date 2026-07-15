@@ -104,19 +104,22 @@
 - D2 图编号：图 1、图 2、图 3... 按出现顺序递增
 - 信息图**不参与编号**，使用描述性标题
 - 正文引用格式：`如图 N 所示，...`
-- 图片嵌入格式：
+- **D2 SVG 嵌入格式（Obsidian wikilink）**：
   ```markdown
-  ![图 N: 标题名称](_diagrams/<name>.png)
+  如图 1 所示，…
 
-  *图 N: 标题名称*
+  ![[<页面 slug>-arch.svg]]
+
+  *图 1: 标题名称*
   ```
-- 如果有 SVG 版本，用 HTML details 折叠提供：
-  ```html
-  <details>
-  <summary>SVG 版本（支持暗色主题）</summary>
-  <img src="_diagrams/<name>.svg" alt="图 N: 标题名称">
-  </details>
+- **信息图 PNG 嵌入格式（Markdown）**：
+  ```markdown
+  ![文档核心概念全景](_diagrams/<页面 slug>-info.png)
+
+  *文档核心概念全景 — 主题总览*
   ```
+- D2 编译首选 SVG（`--theme=300 --dark-theme=200 -l elk`），Obsidian 原生支持亮/暗主题
+- **禁止** HTML `<details>` 折叠 SVG；**禁止** `<div align="center">`
 
 ## 颜色语义（Material Design）
 

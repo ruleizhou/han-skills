@@ -97,6 +97,71 @@ WebFetch(url="<url>", prompt="提取这篇技术文章的完整内容，包括�
 
 如果源内容为单一主题（章节内聚、术语无明显聚类），传递 `single_area: true` 给 Step 2，Step 2 直接走原有单文档流程，不弹出分拆询问。
 
-将提取结果和领域识别结果作为上下文传递给 Step 2。
+## 1.6 按内容确定 Notes 输出子路径
+
+读取完源并完成领域识别后，确定最终写入路径。详见 `references/obsidian-guide.md` §6。
+
+### a. 扫描 Notes 已有结构
+
+```bash
+# notes_root 来自 Step 0.4（80-Notes 或已检测到的 NN-Notes）
+find "<notes_root>" -type d -maxdepth 3 2>/dev/null | head -80
+```
+
+同时可参考 vault 顶层领域目录名（如 `03-Kernel/`、`06-Debug/`、`05-Hardware/`）作为子路径命名提示。
+
+### b. 提出推荐子路径
+
+根据标题、术语聚类、领域名，生成推荐，例如：
+
+| 内容特征 | 推荐子路径（相对 notes_root） |
+|---------|------------------------------|
+| MMU / 页表 / TLB | `Kernel/MMU/` |
+| DMA / IOMMU | `Kernel/DMA/` |
+| GPIO / pinctrl | `Drivers/GPIO/` 或 `Hardware/GPIO/` |
+| KASAN / crash / panic | `Debug/` |
+| I2C / SPI / UART | `Hardware/I2C/` 等 |
+
+向用户确认推荐路径：
+
+```
+question: "建议输出到「80-Notes/Kernel/MMU/」，是否采用？"
+header: "输出子路径"
+options:
+  - label: "采用推荐路径"
+    description: "写入 80-Notes/Kernel/MMU/<标题>.md"
+  - label: "改用已有目录"
+    description: "从 Notes 下已有子目录中选"
+  - label: "自定义子路径"
+    description: "相对 Notes 根输入子路径，如 Drivers/USB/"
+```
+
+若 Step 0.5 标题已定，最终文件为 `<notes_root>/<子路径>/<标题>.md`。
+
+### c. 目录不存在 → 必须交互（禁止静默创建）
+
+推荐或自定义子路径中，任一缺失层级：
+
+```
+question: "目录「80-Notes/Kernel/DMA/」不存在，如何处理？"
+header: "创建目录"
+options:
+  - label: "创建该目录"
+    description: "mkdir -p 后继续"
+  - label: "改用已有目录"
+    description: "选一个已存在的 Notes 子目录"
+  - label: "自定义路径"
+    description: "重新指定子路径"
+```
+
+**仅在用户选择「创建该目录」或选定已有/有效自定义路径后**，才 `mkdir -p` 并继续。用户拒绝创建且未给替代路径 → 停在本步，不写文件。
+
+### d. 多领域 / 多文档
+
+若 Step 1.5 识别多领域且后续拆分为多篇：为**每一篇**独立跑 b→c，各自确认子路径。
+
+将最终 `output_dir`（含 notes_root + 子路径）传给 Step 2–6。
+
+将提取结果、领域识别结果和 `output_dir` 作为上下文传递给 Step 2。
 
 **完成后，读取 `workflows/step-02-outline.md` 继续。**

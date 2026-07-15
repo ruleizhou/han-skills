@@ -1,32 +1,36 @@
 ---
 description: >
   [写作模式] 读取技术文档内容后，整理并输出图文并茂的高质量中文技术文档。
-  输入可以是 URL 链接、本地文件或对话中粘贴的内容；输出为本地 .md 文件，
-  每个核心概念配有 D2 图表，关键概念配有信息图（han-infographic）。
+  输入可以是 URL 链接、本地文件或对话中粘贴的内容；输出为 Obsidian 原生 .md 文件
+  （YAML frontmatter、[[wikilink]]、_diagrams/ 配图），每个核心概念配有 D2 图表（SVG），
+  关键概念配有信息图（han-infographic）。
   自动识别文档类型（架构文档/API文档/排障指南/设计文档/知识库文章），
   生成结构化大纲，D2 覆盖技术细节，信息图放在显眼位置做视觉亮点。
+  输出规范与 han-llm-wiki 对齐，可直接放入 vault 或由 ingest 收录。
 alwaysApply: false
 globs:
 ---
 # Han Tech Doc Writer
 
-阅读技术文档 → 输出图文并茂的高质量中文技术文档。
+阅读技术文档 → 输出 Obsidian 原生、图文并茂的中文技术文档。
 
 ## 核心原则
 
-1. **先诊断再动手** — 必须先确定文档类型、目标受众和深度，再开始写作
-2. **每章必图** — D2 图表覆盖技术细节（架构/流程/时序/ER/类图）
-3. **关键概念配信息图** — 1-3 张 Hero/章节信息图，放在显眼位置，做视觉亮点
-4. **先画图再写文** — Step 3 完成所有图（D2+信息图），Step 4 写正文嵌入
-5. **中文优先，术语保留** — 正文全中文，技术术语保留英文原词
-6. **不重复造轮子** — D2 知识从 han-d2-diagram 运行时读取，信息图委托 han-infographic 生成
+1. **Obsidian 原生** — YAML frontmatter、`[[wikilink]]`、文件名=链接名=title、`_diagrams/` 配图；规范见 `references/obsidian-guide.md`
+2. **先诊断再动手** — 必须先确定文档类型、目标受众、Notes 根（`80-Notes`），再开始写作
+3. **按内容落 Notes 子目录** — 读完源后匹配 `80-Notes/<主题>/`；目录不存在须交互确认后才创建
+4. **每章必图** — D2 图表覆盖技术细节（架构/流程/时序/ER/类图），**默认 SVG**
+5. **关键概念配信息图** — 1-3 张 Hero/章节信息图，放在显眼位置，做视觉亮点
+6. **先画图再写文** — Step 3 完成所有图（D2+信息图），Step 4 写正文嵌入
+7. **中文优先，术语保留** — 正文全中文，技术术语保留英文原词
+8. **不重复造轮子** — D2 知识从 han-d2-diagram 运行时读取，信息图委托 han-infographic 生成；Obsidian 规范对齐 han-llm-wiki
 
 ## 视觉元素分工
 
-| 视觉元素 | 负责 Skill | 用途 | 放置位置 | 风格 |
+| 视觉元素 | 负责 Skill | 用途 | 放置位置 | 产物 |
 |----------|-----------|------|---------|------|
-| D2 图表 | han-d2-diagram | 架构图/流程图/时序图/ER图/类图/状态机/拓扑图/甘特图 | 对应章节内，正文引用"如图 N 所示" | 正式技术风格，theme=300 |
-| 信息图 | han-infographic | 文档概念总览/模块全景/对比矩阵/关键数据摘要 | 文档开篇(hero)、章节开篇、总结区域 | 醒目突出，视觉亮点 |
+| D2 图表 | han-d2-diagram | 架构图/流程图/时序图/ER图/类图/状态机/拓扑图/甘特图 | 对应章节内，正文引用"如图 N 所示" | `.svg`（首选） |
+| 信息图 | han-infographic | 文档概念总览/模块全景/对比矩阵/关键数据摘要 | 文档开篇(hero)、章节开篇 | `.png` |
 
 ## 模式判断
 
@@ -43,6 +47,7 @@ globs:
 
 - 用户是否已提供源内容？是 → 可跳过输入来源询问，直接问文档类型
 - 用户是否指定了文档类型？是 → 跳过文档类型询问
+- 工作区是否有 `80-Notes/` 或其他 `NN-Notes/`？→ Step 0 锁定 Notes 根；无则询问是否创建 `80-Notes/`
 - 用户是否说"加个图"？是 → 直接进入 Step 3（D2 部分）
 - 用户是否说"加个信息图"？是 → 直接进入 Step 3.5（信息图部分）
 - 用户是否说"搞定了"？是 → 直接读取 feedback-loop.md
@@ -51,13 +56,13 @@ globs:
 
 | Step | 文件 | 做什么 |
 |------|------|--------|
-| 0 | `workflows/step-00-diagnose.md` | 交互诊断：输入来源、文档类型、受众深度、输出路径、输出文件名 |
-| 1 | `workflows/step-01-source.md` | 读取源内容：URL 抓取/文件读取/粘贴解析 |
-| 2 | `workflows/step-02-outline.md` | 结构化：生成大纲 + 标记 D2 图表需求 + 标记信息图候选 |
-| 3 | `workflows/step-03-diagram.md` | 图表与信息图生成：D2 图表（3.1-3.4）+ 信息图（3.5） |
-| 4 | `workflows/step-04-write.md` | 写作：信息图嵌入（醒目位置）+ 正文 + D2 图表嵌入 |
-| 5 | `workflows/step-05-review.md` | 质量审核：完整性/准确性/格式/D2 图表质量/信息图质量 |
-| 6 | `workflows/step-06-output.md` | 输出：写 .md 文件 + D2+信息图统计 + 归档案例 + 模式学习 |
+| 0 | `workflows/step-00-diagnose.md` | 交互诊断：输入来源、文档类型、受众深度、锁定 Notes 根（`80-Notes`）、Obsidian 文件名 |
+| 1 | `workflows/step-01-source.md` | 读取源内容 + 领域识别 + **按内容确认 Notes 子路径**（缺失目录须交互确认） |
+| 2 | `workflows/step-02-outline.md` | 结构化：生成大纲 + wikilink 规划 + 标记 D2/信息图需求 |
+| 3 | `workflows/step-03-diagram.md` | 图表与信息图生成：D2→SVG + 信息图 PNG |
+| 4 | `workflows/step-04-write.md` | 写作：frontmatter + wikilink + 信息图/D2 嵌入 |
+| 5 | `workflows/step-05-review.md` | 质量审核：Obsidian 规范 + 完整性/格式/图表 |
+| 6 | `workflows/step-06-output.md` | 输出：写入 `80-Notes/<主题>/` + 统计 + 可选 ingest 提示 |
 
 反馈闭环由用户主动触发（"搞定了"等信号词），触发后读取 `workflows/feedback-loop.md`。
 
@@ -65,10 +70,11 @@ globs:
 
 | 文件 | 用途 |
 |------|------|
+| `references/obsidian-guide.md` | **Obsidian 原生规范**（frontmatter/wikilink/命名/配图） |
 | `references/doc-structure-guide.md` | 5 种文档类型结构模板 + 信息图机会 |
-| `references/diagram-placement-guide.md` | D2 图表类型选择 + 信息图 vs D2 分工 |
+| `references/diagram-placement-guide.md` | D2 图表类型选择 + SVG 嵌入 |
 | `references/infographic-placement-guide.md` | 信息图使用指南：判定、放置、嵌入格式 |
-| `references/writing-style-guide.md` | 中文技术写作规范 + 信息图标注规范 |
+| `references/writing-style-guide.md` | 中文技术写作规范 + Obsidian 页面结构 |
 | `data/patterns.json` | 自学习模式库（D2 + 信息图） |
 | `data/cases/` | 历史案例存档 |
 
@@ -78,7 +84,7 @@ globs:
 - 模板：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/<type>.d2`
 - Shape 选择：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-shapes-guide.md`
 - 语法速查：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-cheatsheet.md`
-- 主题参数：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-themes.md`（技术文档统一 `--theme=300`）
+- 主题参数：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-themes.md`（技术文档统一 `--theme=300 --dark-theme=200 -l elk`，输出 SVG）
 
 ## 信息图集成
 
@@ -102,6 +108,6 @@ Skill(skill="han-infographic", args="<根据内容组装的信息图生成请求
 ### 产物管理
 
 han-infographic 输出到 `~/Downloads/han-skill-imagen/{slug}-infographic.png`，
-han-tech-doc-writer 将其复制到 `_diagrams/` 目录统一管理。
+复制到 `<输出目录>/_diagrams/<页面 slug>-info.png`（命名见 obsidian-guide.md）。
 
-**开始执行时，首先读取 `workflows/step-00-diagnose.md`。**
+**开始执行时，首先读取 `workflows/step-00-diagnose.md` 与 `references/obsidian-guide.md`。**

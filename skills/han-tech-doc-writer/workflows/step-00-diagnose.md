@@ -2,6 +2,8 @@
 
 在开始写作前，收集必要的输入信息。根据上下文灵活跳过已有信息的询问。
 
+**开始前读取** `references/obsidian-guide.md`，后续所有输出按 Obsidian 原生规范执行。
+
 ## 0.1 输入来源
 
 如果用户消息中已包含文档内容或明确提供了文件路径/URL，跳过此步。
@@ -56,42 +58,59 @@ options:
     description: "面向专家，包括实现细节和源码分析 (3000+ 字)"
 ```
 
-## 0.4 输出路径
+## 0.4 Notes 根目录（固定策略，不选 wiki/）
 
-如果用户已指定输出目录，跳过此步。
+**默认输出到 Notes 区**（首选 `80-Notes/`），**不**输出到 `wiki/analyses|concepts|sources/`。
+
+### 解析 Notes 根
+
+按顺序检测（cwd / vault 根）：
+
+1. 存在 `80-Notes/` → 使用，记为 `notes_root=80-Notes`
+2. 否则存在任一 `NN-Notes/`（如 `08-Notes/`、`10-Notes/`）→ **复用**，告知「检测到已有 Notes 根 `08-Notes/`，将写入其下」
+3. 都不存在 → 必须交互：
 
 ```
-question: "文档输出到哪个目录？"
-header: "输出路径"
+question: "未找到 Notes 目录，如何处理？"
+header: "Notes 根目录"
 options:
-  - label: "当前目录（推荐）"
-    description: "输出到当前工作目录"
-  - label: "自定义目录"
-    description: "指定一个本地目录路径"
+  - label: "创建 80-Notes/（推荐）"
+    description: "在 vault 根新建 80-Notes 作为笔记输出区"
+  - label: "自定义路径"
+    description: "用户指定 Notes 根目录"
+  - label: "当前目录"
+    description: "不建 Notes，直接写到 cwd（仍为 Obsidian 格式）"
 ```
 
-如果用户选择"自定义目录"，让用户输入目录路径（绝对路径或相对于当前目录的路径）。路径不存在时，输出前自动创建。
+若用户已显式指定完整输出目录，跳过本步。
 
-## 0.5 输出文件名
+### 子路径延后
 
-如果用户未指定文件名，从文档标题或主题推导一个合适的文件名。
+具体子目录（如 `80-Notes/Kernel/MMU/`）在 **Step 1.6** 读完源内容后按主题匹配；目录缺失时再交互确认是否创建。Step 0 只锁定 `notes_root`。
+
+frontmatter `type` 仍按文档类型映射（见 obsidian-guide.md），与物理路径解耦。
+## 0.5 Obsidian 页面标题与文件名
+
+**铁律：文件名 = 链接名 = frontmatter `title`**（见 obsidian-guide.md）
+
+如果用户未指定标题，从文档主题推导**中文或英文可读标题**（禁止 kebab-case slug 作文件名）。
 
 ```
-question: "输出文件名？"
-header: "文件名"
+question: "Obsidian 页面标题（= 文件名）？"
+header: "页面标题"
 options:
-  - label: "<自动推导>"
-    description: "从文档内容自动生成文件名"
+  - label: "<自动推导，如「Qualcomm DMA 架构」>"
+    description: "从文档内容生成可读标题，文件名与之完全一致"
   - label: "自定义"
-    description: "让用户输入文件名"
+    description: "用户输入标题，文件名 = 标题 + .md"
 ```
+
+多文档模式（Step 2 拆分）时，每篇文档独立标题，各自 `filename: "<标题>.md"`。
 
 ## 0.6 确认汇总
 
 汇总所有诊断结果，一句话确认：
 
-> 好的，我会将 [来源] 中的技术内容整理为一份 [文档类型]，面向 [受众]，输出到 `[输出路径]/[文件名].md`。D2 图表展示技术细节，信息图展示概念全景。现在开始。
-
-输出路径默认为当前工作目录（`<cwd>`），如用户选了自定义目录则使用用户指定的路径。
+> 好的，我会将 [来源] 中的技术内容整理为一份 [文档类型] Obsidian 页面，面向 [受众]，Notes 根为 `[notes_root]/`，子路径将根据内容在读取源后确认（缺失目录会先问你是否创建）。输出为 `[notes_root]/[主题子路径]/[标题].md`。D2→SVG，信息图→PNG，正文使用 `[[wikilink]]`。现在开始。
 
 **完成后，读取 `workflows/step-01-source.md` 继续。**

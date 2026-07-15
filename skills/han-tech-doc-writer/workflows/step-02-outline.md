@@ -76,11 +76,11 @@ options:
     description: "每个领域可以选不同的文档类型"
 ```
 
-- 设置 `multi_doc_mode: true`，`docs` 列表：
+- 设置 `multi_doc_mode: true`，`docs` 列表（**Obsidian 命名：filename = title + .md**）：
   ```
   docs: [
-    { title: "GPIO 子系统", filename: "gpio-subsystem", area: "GPIO", doc_type: "architecture-doc" },
-    { title: "I2C 总线",   filename: "i2c-bus",       area: "I2C",  doc_type: "architecture-doc" },
+    { title: "GPIO 子系统", filename: "GPIO 子系统.md", area: "GPIO", doc_type: "architecture-doc", output_dir: "80-Notes/Drivers/GPIO/" },
+    { title: "I2C 总线",   filename: "I2C 总线.md",   area: "I2C",  doc_type: "architecture-doc", output_dir: "80-Notes/Hardware/I2C/" },
     ...
   ]
   ```
@@ -101,14 +101,15 @@ docs: [{title, filename, area, doc_type}, ...]
 ```
 
 后续 Step 适配规则：
-- **Step 3**: 为每篇文档独立创建图表目录 `_diagrams/<doc-slug>/`，信息图同理
+- **Step 3**: 每篇文档在各自 `output_dir/_diagrams/` 下生成图（或同 Notes 子目录共享 `_diagrams/`，用 slug 前缀区分）
 - **Step 4**: 逐篇写作，第 i 篇完成后继续第 i+1 篇
 - **Step 5**: 逐篇审核
-- **Step 6**: 逐篇输出到对应路径
+- **Step 6**: 逐篇输出到各自 `output_dir`（来自 Step 1.6）
 
+> 若 Step 1.6 尚未为某领域确认子路径，分拆确认后须补跑缺失目录的交互确认。
 ## 2.1 读取结构模板
 
-先读取 `references/doc-structure-guide.md`，找到对应文档类型的推荐结构模板，了解该类型的**信息图机会**。
+先读取 `references/doc-structure-guide.md` 与 `references/obsidian-guide.md`，找到对应文档类型的推荐结构模板，了解该类型的**信息图机会**与 **wikilink 规划**。
 
 ## 2.2 生成大纲
 
@@ -160,7 +161,19 @@ docs: [{title, filename, area, doc_type}, ...]
 
 信息图候选限制：每个文档 1-3 张（Hero 1 张 + 关键章节 0-2 张）。
 
-## 2.3 图表与信息图需求统计
+## 2.3 wikilink 规划
+
+列出正文中将出现的关键 `[[链接]]`（见 obsidian-guide.md §3）：
+
+| 链接目标 | 首次出现章节 | 角色 |
+|---------|-------------|------|
+| [[核心模块 A]] | 2. 整体架构 | 模块 |
+| [[相关概念 B]] | 1. 概述 | 背景概念 |
+
+- 链接名必须与预期 Obsidian 页面标题一致（= 文件名去 `.md`）
+- 文末「相关链接」章节汇总全部 wikilink
+
+## 2.4 图表与信息图需求统计
 
 汇总所有标记了 📊 和 🎨 的视觉需求。
 
@@ -182,11 +195,11 @@ docs: [{title, filename, area, doc_type}, ...]
 
 信息图布局/风格建议可参考 `data/patterns.json` 中 `category: "infographic-layout-style"` 的经验条目。
 
-## 2.4 展示确认
+## 2.5 展示确认
 
-将大纲简要展示给用户（标题 + 图表清单 + 信息图清单），询问：
+将大纲简要展示给用户（标题 + wikilink 清单 + 图表清单 + 信息图清单），询问：
 
-> 大纲如上，预计生成 N 张 D2 图表 + M 张信息图。是否 OK？需要调整章节、图表或信息图吗？
+> 大纲如上，Obsidian 页面标题 `[标题].md`，预计 N 个 wikilink、N 张 D2 SVG + M 张信息图。是否 OK？需要调整章节、链接或图表吗？
 
 如果用户要求调整，修改后重新确认。如果不需调整，直接进入 Step 3。
 

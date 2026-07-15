@@ -1,19 +1,21 @@
 # Step 6: 输出与学习
 
-将文档写入本地文件，可选归档案例，自动学习模式。
+将 Obsidian 页面写入 vault，可选归档案例，自动学习模式。
 
 ## 6.1 写文件
 
-使用 `Write` 工具将完整文档写入 Step 0 确定的输出路径：
+使用 `Write` 工具将完整文档写入 **Step 1.6 确认的** `output_dir`：
 
 ```
-Write: <输出路径>/<文件名>.md
+Write: <notes_root>/<子路径>/<标题>.md
 ```
 
-- **输出路径**：来自 Step 0.4 的选择（当前工作目录或用户自定义目录）
-- **文件名**：来自 Step 0.5 的选择（自动推导或用户指定）
-- `_diagrams/` 图片目录同样在输出路径下创建
-- 如果输出路径不存在，先 `mkdir -p` 创建
+例如：`80-Notes/Kernel/MMU/Qualcomm MMU 架构.md`
+
+- **output_dir**：来自 Step 1.6（Notes 根 + 按内容匹配的子目录，用户已确认）
+- **文件名**：`<标题>.md`，**标题 = frontmatter title = wikilink 名**（禁止 kebab-case slug）
+- `_diagrams/` 与 `.md` **同目录**
+- 目录须已在 Step 1.6 经用户确认创建；**禁止**在本步对未确认路径静默 `mkdir -p`
 
 ### 多文档模式
 
@@ -21,25 +23,31 @@ Write: <输出路径>/<文件名>.md
 
 ```
 对 docs 中的每篇文档:
-  1. Write: <输出路径>/<doc.filename>.md
-  2. 告知用户: "[i/N] <doc.title> → <输出路径>/<doc.filename>.md"
+  1. Write: <doc.output_dir>/<doc.filename>     # 如 "80-Notes/Drivers/GPIO/GPIO 子系统.md"
+  2. _diagrams/ 使用 <doc.title> 作为 slug 前缀（与 .md 同目录）
+  3. 告知用户: "[i/N] [[doc.title]] → <doc.output_dir>/<doc.filename>"
 ```
 
-每篇文档的 `_diagrams/` 放在各自子目录 `<输出路径>/_diagrams/<doc-slug>/`，避免图片冲突。
+每篇可有不同 `output_dir`（不同主题子目录）。
 
 ## 6.2 确认输出
 
 输出完成后，告知用户：
 
 ```
-文档已输出到: <cwd>/<文件名>.md
-共 N 章, ~M 字, K 张 D2 图表, I 张信息图。
+Obsidian 页面已输出到: <notes_root>/<子路径>/<标题>.md
+frontmatter type: analysis | concept | source
+共 N 章, ~M 字, K 张 D2 SVG, I 张信息图, L 个 wikilink。
 
-图表源文件在 _diagrams/ 目录:
-- _diagrams/*.d2  (D2 源代码, 可二次编辑)
-- _diagrams/*.png (位图, D2 图表 + 信息图)
-- _diagrams/*.svg (矢量图, 仅 D2, 支持暗色主题)
+图表源文件在同目录 _diagrams/:
+- _diagrams/<slug>-*.d2   (D2 源代码, 可二次编辑)
+- _diagrams/<slug>-*.svg  (矢量图, Obsidian 内联, 亮/暗双主题)
+- _diagrams/<slug>-info.png (信息图)
 ```
+
+提示：
+
+> Notes 页可用 `/han-llm-wiki ingest` 收录进 `wiki/` 知识层并更新索引。
 
 ## 6.3 案例归档（可选）
 
@@ -50,7 +58,7 @@ question: "是否将此文档归档为案例，供未来参考？"
 header: "案例归档"
 options:
   - label: "归档"
-    description: "保存文档类型、结构模板、图表和信息图使用模式到模式库"
+    description: "保存文档类型、Obsidian 结构、图表和信息图使用模式到模式库"
   - label: "跳过"
     description: "不归档，仅输出文档"
 ```
@@ -61,9 +69,13 @@ options:
 {
   "id": "<YYYYMMDD-HHMMSS>-<short-name>",
   "date": "YYYY-MM-DD",
-  "title": "文档标题",
+  "title": "Obsidian 页面标题",
+  "filename": "Qualcomm DMA 架构.md",
+  "vault_path": "80-Notes/Kernel/MMU/",
+  "frontmatter_type": "analysis",
   "doc_type": "architecture-doc|api-doc|troubleshooting-guide|design-doc|kb-article",
   "source_type": "paste|url|file",
+  "wikilink_count": 5,
   "total_sections": 6,
   "total_d2_diagrams": 3,
   "total_infographics": 2,

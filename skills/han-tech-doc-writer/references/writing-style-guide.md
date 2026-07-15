@@ -76,12 +76,14 @@ static int dwc3_remove(struct platform_device *pdev)
 - 列对齐整齐
 - 字段/类型用反引号包裹
 
-### D2 图表标注
+### D2 图表标注（Obsidian 原生，SVG 首选）
 
 ```markdown
-![图 1: 系统整体架构图](_diagrams/arch-overview.png)
+如图 1 所示，系统分为三层。
 
-*图 1: 系统整体架构图*
+![[Qualcomm DMA 架构-arch.svg]]
+
+*图 1: 系统整体架构*
 ```
 
 - 图编号从 1 开始递增
@@ -89,24 +91,22 @@ static int dwc3_remove(struct platform_device *pdev)
 - 图标题在图片下方，用斜体
 - 正文先引用再放图："如图 1 所示，系统分为三层..."
 - 图后紧跟 2-5 句说明
+- **正文嵌入 D2 图用 Obsidian wikilink 语法 `![[...svg]]`**
+- SVG 内嵌亮/暗双主题，Obsidian 自动适配，无需 HTML 折叠
 
 ### 信息图标注（区别于 D2 图表）
 
-信息图不使用图号，使用描述性标题居中展示：
+信息图不使用图号，使用描述性标题：
 
 ```markdown
-<div align="center">
-
-![文档核心概念全景](_diagrams/info-overview.png)
+![文档核心概念全景](_diagrams/Qualcomm DMA 架构-info.png)
 
 *文档核心概念全景 — [主题] 模块关系与数据流总览*
-
-</div>
 ```
 
 规则：
 - 信息图标题不编号，用"X 全景"或"一图看懂 Y"等语句
-- 信息图居中全宽展示
+- **禁止** `<div align="center">` 等 HTML 包裹（Obsidian 渲染不一致）
 - 信息图后可选 1-2 句引导文字，然后进入正文
 - D2 图表和信息图在文档中交替出现时，D2 图表编号独立（图 1, 图 2...），不包含信息图
 
@@ -117,24 +117,48 @@ static int dwc3_remove(struct platform_device *pdev)
 - `反引号` 用于代码/命令/文件名
 - 不使用下划线（markdown 中容易和链接混淆）
 
-## 文档元信息
+## 文档元信息（Obsidian frontmatter）
 
-### 头部（推荐）
+### 头部（必填 YAML）
 
-```markdown
-# 文档标题
+详见 `references/obsidian-guide.md`。示例：
 
-> 整理自: [来源描述]
-> 日期: YYYY-MM-DD
+```yaml
+---
+title: Qualcomm DMA 架构
+type: analysis
+tags: [架构, DMA]
+created: 2026-07-15
+updated: 2026-07-15
+sources: [[原始来源]]
+doc_type: architecture-doc
+source_type: url
+---
+
+# Qualcomm DMA 架构
+
+> 一句话概括
 ```
 
-### 尾部（可选）
+- **禁止**用 blockquote 代替 frontmatter 存元信息
+- `title` 必须与文件名（去 `.md`）完全一致
+
+### 双向链接
+
+- 核心概念/模块首次出现：`[[页面名]]`
+- 来源：`> 来源：[[来源页面]]`
+- 文末汇总：`## 相关链接`
+
+### 尾部
 
 ```markdown
+## 相关链接
+
+- [[相关概念 A]]
+
 ## 参考资料
 
 - [标题](URL)
-- [相关文档](path)
 ```
 
 ## 常见反模式

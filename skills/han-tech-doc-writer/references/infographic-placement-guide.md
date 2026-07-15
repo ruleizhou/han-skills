@@ -45,26 +45,23 @@
 | 1500-3000 字 | 1-2 张 | 2-4 张 |
 | > 3000 字 | 2 张 | 3+ 张 |
 
-## 嵌入格式
+## 嵌入格式（Obsidian 原生）
 
-信息图**不使用图号**，使用描述性标题居中展示：
+信息图**不使用图号**，PNG 用 Markdown 语法嵌入：
 
 ```markdown
-<div align="center">
-
-![文档核心概念全景](_diagrams/info-overview.png)
+![文档核心概念全景](_diagrams/<页面 slug>-info.png)
 
 *文档核心概念全景 — [主题] 模块关系与数据流总览*
-
-</div>
 ```
 
 规则：
 - 信息图标题不编号，用"X 全景"或"一图看懂 Y"等语句
-- 信息图居中全宽展示
+- **禁止** `<div align="center">`（Obsidian 渲染不一致）
 - 信息图后可选 1-2 句引导文字，然后进入正文
 - D2 图表和信息图在文档中交替出现时，D2 图表编号独立（图 1, 图 2...），不包含信息图
-- 信息图与 D2 图表互补而非重复：信息图展示"是什么"的全景，D2 图展示"怎么运作"的细节
+- 信息图与 D2 图表互补而非重复：信息图展示"是什么"的全观，D2 图展示"怎么运作"的细节
+- 命名与目录见 `references/obsidian-guide.md` §4
 
 ## 调用方式
 
@@ -74,4 +71,4 @@
 Skill(skill="han-infographic", args="根据以下内容生成信息图：[章节概要+关键数据点]")
 ```
 
-产物位于 `~/Downloads/han-skill-imagen/{slug}-infographic.png`，复制到 `_diagrams/` 目录统一管理。
+产物位于 `~/Downloads/han-skill-imagen/{slug}-infographic.png`，复制到 `<输出目录>/_diagrams/<页面 slug>-info.png`（见 `references/obsidian-guide.md`）。
