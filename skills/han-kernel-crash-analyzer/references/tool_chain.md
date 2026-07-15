@@ -40,6 +40,19 @@ crash <vmlinux> "<DDRCS0_0.BIN@phys0>,<DDRCS0_1.BIN@phys1>" \
 | `struct <type> <addr>` | 用**正确 DWARF 布局**解析对象字段（别手动猜偏移，含 dep_map 会错位） |
 | `search -p <pattern>` | 全物理内存搜破坏指纹（如改坏的 magic 值）分布，看是否周期性→越界 |
 
+### SLUB poison 速查（区分"正常填充" vs "真破坏"）
+
+看 slab 对象内存时，先对照下表（源：`include/linux/poison.h`），别把正常 fill 误判为破坏：
+
+| 值 | 宏 | 含义 |
+|---|---|---|
+| `0x6b` | `POISON_FREE` | free 对象 poison（**UAF 残留就是它**） |
+| `0x5a` | `POISON_INUSE` | 分配但未初始化（新对象常见） |
+| `0xcc` | `SLUB_RED_ACTIVE` | 活动对象红区 |
+| `0xbb` | `SLUB_RED_INACTIVE` | 非活动对象红区 |
+
+> 铁律：`0x5a/0xcc/0xbb` 多是**正常 SLUB fill**（新分配未初始化 / 红区），**不是破坏**。只有**非标准 poison**（如被改写的锁 magic `0xdead0620`、`0xdeaf1eed`、随机大值）才是真破坏。本案例曾把后一对象的 `0x5a/0xcc` 误判为"批量踩踏"，对照表后修正为正常 fill。
+
 ### 已知坑
 
 - `CONFIG_KASAN_HW_TAGS` 需 MTE 硬件，无 MTE 则运行时不激活——不能靠「无 KASAN 报告」推断无 UAF；要抓写入者改用 `CONFIG_KASAN_GENERIC`。
