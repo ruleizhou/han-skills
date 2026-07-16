@@ -1,0 +1,90 @@
+{
+  "_schema": "1.0",
+  "_confidence_rules": {
+    "HIGH": "≥3 次同样参数触发且修复成功",
+    "MEDIUM": "1-2 次确认有效",
+    "LOW": "推测但未验证"
+  },
+  "_fields": {
+    "error_code": "boot_error_if.h 中的错误码",
+    "trigger": "直接触发函数或机制（如 small_eye_abort）",
+    "phase": "具体训练阶段（RD_DQDQS_DCC / WR_DQDQS / RCW / WRLVL / DCC 等）",
+    "param": "需调整的参数名",
+    "threshold_default": "默认阈值",
+    "confidence": "置信度"
+  },
+  "patterns": [
+    {
+      "error_code": 84,
+      "trigger": "small_eye_abort",
+      "causes": [
+        {
+          "phase": "RD_DQDQS_DCC",
+          "description": "Read DQS/DQ Duty Cycle Correction 校准值超限",
+          "param": "max_rd_dqs_dcc",
+          "threshold_default": 14,
+          "code_file": "ddr_training_params.c",
+          "code_line": 136,
+          "symptom": "UART 日志中出现 SMALL_EYE_ABORT: RD_DQDQS_DCC",
+          "typical_solution": "放宽 max_rd_dqs_dcc 至 24（留 4-6 步余量）",
+          "risk": "PCB 信号占空比失真偏高，建议高低温验证",
+          "confidence": "MEDIUM",
+          "first_seen": "2026-07-16",
+          "last_seen": "2026-07-16",
+          "platform": "MT582_DivarPkgLAA"
+        },
+        {
+          "phase": "RD_DQDQS_EYE_WIDTH",
+          "description": "Read 眼图最小宽度不达标",
+          "param": "min_rd_eye_width",
+          "threshold_default": 10,
+          "code_file": "ddr_training_params.c",
+          "code_line": 138,
+          "symptom": "SMALL_EYE_ABORT: RD_DQDQS_EYE_WIDTH",
+          "typical_solution": "降低 min_rd_eye_width 或排查 DQ 走线信号完整性",
+          "risk": "眼宽不够可能导致读数据误码率升高",
+          "confidence": "LOW",
+          "first_seen": null,
+          "last_seen": null,
+          "platform": null
+        },
+        {
+          "phase": "WR_DQDQS",
+          "description": "Write DQ-DQS 训练阶段任意维度不达标",
+          "param": "min_wr_eye_width / min_wr_setup / min_wr_hold / min_wr_eye_height",
+          "threshold_default": "10 / 3 / 3 / 28",
+          "code_file": "ddr_training_params.c",
+          "code_line": "151-162",
+          "symptom": "SMALL_EYE_ABORT: WR_DQDQS",
+          "typical_solution": "根据子分类放宽对应阈值，排查写方向信号质量",
+          "risk": "写眼图差可能导致写数据丢失",
+          "confidence": "LOW",
+          "first_seen": null,
+          "last_seen": null,
+          "platform": null
+        }
+      ]
+    },
+    {
+      "error_code": "其他",
+      "trigger": "ddr_abort (直接调用，非 small_eye_abort)",
+      "causes": [
+        {
+          "phase": "RD_DQDQS (hard abort)",
+          "description": "Read 训练发现零眼宽或不可恢复错误，直接调用 ddr_abort()",
+          "param": "N/A",
+          "threshold_default": "N/A",
+          "code_file": "ddrss_rd_dqdqs_lpddr4.c",
+          "code_line": "511, 895",
+          "symptom": "无 SMALL_EYE_ABORT 日志，直接 Error code 84",
+          "typical_solution": "检查 DDR 颗粒是否损坏、VDDQ 电压是否正常、时钟是否存在",
+          "risk": "硬件故障可能性高，先确认电源和时钟",
+          "confidence": "LOW",
+          "first_seen": null,
+          "last_seen": null,
+          "platform": null
+        }
+      ]
+    }
+  ]
+}
