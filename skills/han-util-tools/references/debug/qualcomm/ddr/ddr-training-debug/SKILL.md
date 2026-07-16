@@ -32,6 +32,7 @@ Qualcomm SBL1/DDI 阶段 DDR PHY 训练调试导航。系统化定位 small_eye_
 - 用户是否提供了 UART 日志？没有 → 必须从 Step 0 开始收集
 - 日志中是否有 `Error code` 行？有 → 直接跳到 Step 1 解析
 - 用户是否已确认具体平台（如 MT582/DivarPkg）？没有 → Step 0 确认
+- **用户是否已提供 `{boot_images}` 源码根目录路径？** 没有 → Step 0 收集（源码路径用于读取 `boot_error_if.h`、`ddr_external_api.c`、`ddr_training_params.c` 等）
 
 ## Workflow
 

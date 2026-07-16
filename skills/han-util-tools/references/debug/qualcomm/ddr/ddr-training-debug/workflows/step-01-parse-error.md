@@ -12,10 +12,10 @@ B -  XXXXXXXX - Error code 84 at ddr_external_api.c Line 335
 
 ## 1.2 查找错误码定义
 
-读取 `boot_error_if.h`，搜索对应错误码：
+读取 `{boot_images}/QcomPkg/Include/api/boot/boot_error_if.h`，搜索对应错误码：
 
 ```bash
-grep -n "0X0084\|BL_ERR_CORE_VERIFY" boot_images/QcomPkg/Include/api/boot/boot_error_if.h
+grep -n "0X0084\|BL_ERR_CORE_VERIFY" {boot_images}/QcomPkg/Include/api/boot/boot_error_if.h
 ```
 
 常见映射：

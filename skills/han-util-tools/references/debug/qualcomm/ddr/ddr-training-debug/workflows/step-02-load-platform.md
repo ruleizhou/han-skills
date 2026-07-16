@@ -1,5 +1,16 @@
 # Step 2: 加载平台代码
 
+## 2.0 前置检查：确认源码路径
+
+Step 0 收集的 `{boot_images}` 路径，检查该目录是否存在：
+
+```bash
+ls {boot_images}/QcomPkg/SocPkg/
+```
+
+- **存在** → 继续 2.1
+- **不存在或未收集** → 用 AskUserQuestion 追问用户（header: "源码路径"），问题："boot_images 源码根目录路径？"
+
 ## 2.1 识别平台
 
 从 UART 日志提取 `IMAGE_VARIANT_STRING`：
@@ -17,14 +28,14 @@ S - IMAGE_VARIANT_STRING=DivarPkgLAA
 根据平台名称，加载以下文件（用 `Read` 工具）：
 
 ### 必读文件
-1. **错误触发点**：`SocPkg/{Platform}Pkg/Library/DDRTargetLib/ddr_external_api.c`
-2. **阈值配置**：`SocPkg/{Platform}Pkg/Settings/DSF/boot/common/ddr_training_params.c`
-3. **DSF 开关**：`SocPkg/{Platform}Pkg/Settings/DSF/boot/lpddr4/target_config_lpddr4.h`
+1. **错误触发点**：`{boot_images}/QcomPkg/SocPkg/{Platform}Pkg/Library/DDRTargetLib/ddr_external_api.c`
+2. **阈值配置**：`{boot_images}/QcomPkg/SocPkg/{Platform}Pkg/Settings/DSF/boot/common/ddr_training_params.c`
+3. **DSF 开关**：`{boot_images}/QcomPkg/SocPkg/{Platform}Pkg/Settings/DSF/boot/lpddr4/target_config_lpddr4.h`
 
 ### 按需读取（取决于错误类型）
-4. **训练入口**：`SocPkg/Library/XBLLoaderLib/sbl1_hw.c` — `sbl1_do_ddr_training()` 函数
-5. **训练桥接**：`SocPkg/Library/XBLLoaderLib/sbl1_ddr_training.c`
-6. **诊断日志宏**：`Library/DDRLib/common/ddr_log.h`
+4. **训练入口**：`{boot_images}/QcomPkg/SocPkg/Library/XBLLoaderLib/sbl1_hw.c` — `sbl1_do_ddr_training()` 函数
+5. **训练桥接**：`{boot_images}/QcomPkg/SocPkg/Library/XBLLoaderLib/sbl1_ddr_training.c`
+6. **诊断日志宏**：`{boot_images}/QcomPkg/Library/DDRLib/common/ddr_log.h`
 
 ## 2.3 确认代码版本
 
