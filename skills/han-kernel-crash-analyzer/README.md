@@ -50,7 +50,8 @@ han-kernel-crash-analyzer/
 │   └── tool_cache.json        # 工具链缓存
 ├── evals/                     # 评估用例
 │   └── evals.json
-└── scripts/                   # 预留
+└── scripts/                   # 分析脚本
+    └── slub_pa_extract.py     # SLUB overwrite 提取 + 算 PA + 判 DRAM/CPU/DMA（对齐 ptrn-007）
 ```
 
 ## 自学习机制

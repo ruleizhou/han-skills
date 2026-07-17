@@ -210,6 +210,56 @@
                     "timestamp": "2026-07-13T11:00:00+08:00"
                 }
             ]
+        },
+        {
+            "id": "ptrn-007",
+            "name": "SLUB padding/poison overwritten + 红区完整 + bit 一致 → DRAM SEU(易误判为软件越界)",
+            "crash_type": "SLUB Object padding/poison overwritten → panic_on_taint(BAD_PAGE)",
+            "category": "硬件(DRAM SEU/位线缺陷)误判为内存损坏",
+            "description": "slub_debug=FZP + panic_on_taint=0x20 环境下，SLUB 在分配时检测到空闲对象的 poison(0x6b)/padding(0x5a) 区字节变化 → add_taint(BAD_PAGE) → panic。判别真假损坏的关键：(1)红区(0xbb)完整 → 排除 CPU 线性越界/UAF(越界必先踩红区)；(2)翻转 bit 跨样本一致(如总 bit1) + 地址飘移 + 不同对象/栈/进程 → DRAM 位线(DQ)缺陷/SEU，非软件；(3)损坏扎堆同一物理 slab page → 该物理 DRAM 区域 marginal。SLUB 检测到的 poison/padding 是'静态填充区'，正是 SEU 最易暴露处(活跃对象 SEU 被正常写覆盖)。常见误判：初始易押'相邻对象越界/UAF'，需红区完整性反证推翻。",
+            "confidence": 1,
+            "frequency": 1,
+            "fix_template": "判别(零成本)：不改 panic_on_taint 直接压测，抠每次 'First byte 0x?? instead of 0x??' 算翻转 bit(XOR)——bit 固定 + 地址飘移 = DRAM 位线；PA 固定同一 cell = marginal cell。确认硬件后：memtester 锁区域 / DDR margin retrain / 查 LPDDR4x ECC / 换 DDR 颗粒或主板 / 换设备对比。软件侧不改。KASAN_GENERIC 仅在判别指向 CPU 时才上(红区完整+bit 一致时不适用，KASAN 抓不到 SEU)。注意：KASAN_HW_TAGS 需 MTE，无 MTE 平台(A73/A53 等 ARMv8.0)是'未启用'非'空转'。",
+            "keywords": [
+                "SLUB padding overwritten",
+                "SLUB poison overwritten",
+                "panic_on_taint",
+                "BAD_PAGE",
+                "kmalloc-1k",
+                "红区完整",
+                "redzone intact",
+                "bit翻转",
+                "bit一致性",
+                "DRAM SEU",
+                "marginal cell",
+                "位线",
+                "DQ",
+                "KASAN_HW_TAGS",
+                "无MTE",
+                "断电开关机压测",
+                "check_bytes_and_report"
+            ],
+            "first_seen": "2026-07-17",
+            "last_seen": "2026-07-17",
+            "outcome": "partial",
+            "adversarial_verifications": [
+                {
+                    "case_id": "slub-poison-overwrite-dram-seu",
+                    "root_cause_verdict": "CONCUR_WITH_CAUTION",
+                    "root_cause_challenges": [
+                        "红区完整排除 CPU 线性越界(推翻初始'相邻越界/UAF'判断)",
+                        "bit1 翻转指纹指向 DRAM SEU 非软件",
+                        "KASAN_HW_TAGS 在 SM6115 是未启用非空转"
+                    ],
+                    "fix_verdict": "APPROVE_WITH_NOTES",
+                    "fix_issues": [
+                        "未做换件最终验证",
+                        "bit1 样本量建议继续累积"
+                    ],
+                    "challenges_resolved": true,
+                    "timestamp": "2026-07-17T00:00:00+08:00"
+                }
+            ]
         }
     ]
 }

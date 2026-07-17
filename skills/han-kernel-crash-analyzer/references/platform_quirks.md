@@ -31,3 +31,11 @@
 - **怪癖：ramparse `--check-for-panic` 段可能为空（漏检 remoteproc/子系统 crash 触发的 panic）**——必须手动 grep dmesg_TZ.txt 全文：`remoteproc.*crashed` / `fatal error received` / `Kernel panic - not syncing`
 - 区分 HLOS 主动 panic vs 内存 fault：看 corevcpu 寄存器 esr_el1（EC=0x15 SVC=系统调用上下文，非 data abort 0x24/0x25）+ isr_el1（=0 无 pending abort）
 - modem(MPSS) crash 路径：smp2p 'q6v5 fatal' 通知 HLOS → qcom_q6v5_crash_handler_work → panic → qcom_wdt_trigger_bite 重启；看门狗 bite 在 panic 之后（是手段非原因）
+
+## SM6115 (BENGAL IDP) / LA.VENDOR.13.2.1 / kernel 5.15.151-qki-consolidate-android13
+- vmlinux：`symbols/ap_symbol/vmlinux`（~449M，ELF ARM aarch64，**debug_info not stripped**，BuildID=d2b50295…）；addr2line/objdump 完全可用（crash 内核为 -dirty，符号偏移基本对得上，极精确行号可能微偏）
+- CPU：Kryo (Cortex-A73 + A53)，ARMv8.0-A —— **不支持 ARM MTE**
+- **KASAN_HW_TAGS 在本平台是"未启用"非"空转"**：`CONFIG_KASAN_HW_TAGS=y` 依赖 MTE(ARMv8.5)，A73/A53 无 MTE → KASAN 实际没跑（命令行 `kasan.stacktrace=off` 参数存在但 KASAN 不工作）。抓 CPU UAF/OOB 须改 `CONFIG_KASAN_GENERIC`；`KASAN_SW_TAGS` 依赖 TBI(ARMv8.0) 可用，但对 KERNEL-tag(0xFF) 指针放行(`sw_tags.c:131`)有漏检盲区
+- PA 换算（线性映射）：`PA = (VA − 0xffffff8000000000) + 0x40000000`；KASLR 的 Kernel Offset(text) 不影响 linear map
+- userdebug build 默认 `slub_debug=FZP` + `panic_on_taint=0x20`：会把 SLUB debug 检测到的 padding/poison 损坏(BAD_PAGE taint)放大为 panic。排查 DRAM SEU 类问题建议判 bit 一致性（见 patterns ptrn-007），断电开关机压测下不必改 panic_on_taint
+- DDR：LPDDR4x（多数配置无 ECC，单 bit 错误不可纠不可检，靠 SLUB debug 在静态填充区被动捕获）

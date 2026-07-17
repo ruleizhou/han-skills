@@ -1,0 +1,81 @@
+{
+  "id": "slub-poison-overwrite-dram-seu",
+  "timestamp": "2026-07-17T00:00:00+08:00",
+  "crash_type": "SLUB Object padding/poison overwritten → panic_on_taint(BAD_PAGE)",
+  "fault_address": "检测点 check_bytes_and_report+0x1f0=0xffffffc0084f5b58(add_taint TAINT_BAD_PAGE); 样本1 损坏 PA=0x4401a2f3(padding 0x5a→0x58); 样本2 PA=0x4401b548(poison 0x6b→0x69)",
+  "platform": "Qualcomm SM6115 (BENGAL IDP nopmi), Kryo (Cortex-A73+A53)",
+  "kernel_version": "5.15.151-qki-consolidate-android13-8-gbe2c642b01c3-dirty",
+  "scenario": "断电开关机压力测试，约 500 次复现 1 次；无 ramdump，仅串口 log",
+  "root_cause": "kmalloc-1k 空闲对象的 poison(0x6b)/padding(0x5a) 区发生单 bit 翻转；多次样本翻转 bit 均为 bit1(0x02) 且落在同一 slab page(0xfffffffe00100600)、红区(0xbb)完整 → DRAM SEU/位线(DQ1)缺陷(硬件)。panic_on_taint=0x20 + slub_debug=FZP 把无害的静态填充区 bit 翻转放大为 panic。软件侧无 bug。",
+  "root_cause_category": "硬件 (DRAM SEU / marginal cell / 位线缺陷)",
+  "fix_summary": "软件侧不改。判别法：不改 panic_on_taint 直接压测，抠每次 First byte 算翻转 bit 固定性——bit 固定 + 地址飘移 = DRAM 位线问题(本案权重 bit1)。确认后走 memtester / DDR margin retrain / 查 LPDDR4x ECC / 换 DDR 颗粒或主板 / 换设备对比。KASAN_GENERIC 仅在判别指向 CPU 时才上(本案红区完整+bit一致，不适用，抓不到 SEU)。",
+  "pattern_keywords": [
+    "SLUB padding overwritten",
+    "SLUB poison overwritten",
+    "panic_on_taint",
+    "BAD_PAGE",
+    "kmalloc-1k",
+    "红区完整",
+    "bit1翻转",
+    "DRAM SEU",
+    "位线缺陷",
+    "KASAN_HW_TAGS未启用",
+    "断电开关机压测",
+    "bit一致性判别法",
+    "SM6115无MTE"
+  ],
+  "tools_used": [
+    "addr2line + vmlinux(debug_info, BuildID=d2b50295, not stripped)",
+    "对抗验证 Agent (general-purpose)"
+  ],
+  "quality_checklist": {
+    "objdump_executed": true,
+    "fault_address_mapped": true,
+    "root_cause_falsifiable": true,
+    "init_order_verified": "N/A",
+    "scenario_consistent": true
+  },
+  "adversarial_verification": {
+    "root_cause_verdict": "CONCUR_WITH_CAUTION",
+    "root_cause_challenges": [
+      "红区完整 → 排除 CPU 线性越界/UAF(初始'相邻越界'判断被推翻)",
+      "bit 翻转指纹(0x5a→0x58, 0x6b→0x69 均 bit1) → SEU 非软件越界",
+      "KASAN_HW_TAGS 在无 MTE 的 SM6115 是'未启用'非'空转'",
+      "PA=0x4401xxxx 在 normal RAM 非 DMA 保留区 → 削弱 DMA 假说"
+    ],
+    "fix_verdict": "APPROVE_WITH_NOTES",
+    "fix_issues": [
+      "未做换 DDR/换主板最终验证(outcome=partial)",
+      "bit1 一致性虽多次验证，理论巧合概率 ~1/8^n，样本量建议继续累积"
+    ],
+    "challenges_resolved": true
+  },
+  "outcome": "partial",
+  "two_sample_evidence": {
+    "sample1": {
+      "cache": "kmalloc-1k",
+      "type": "padding overwritten",
+      "VA": "0xffffff800401a2f3",
+      "PA": "0x4401a2f3",
+      "offset": 8947,
+      "flip": "0x5a→0x58 (bit1)",
+      "alloc": "unix_dgram_sendmsg (pid1134)",
+      "free": "unix_dgram_recvmsg (pid654)",
+      "trigger": "T1170 vendor.qti.media",
+      "slab": "0xfffffffe00100600"
+    },
+    "sample2": {
+      "cache": "kmalloc-1k",
+      "type": "poison overwritten",
+      "VA": "0xffffff800401b548",
+      "PA": "0x4401b548",
+      "offset": 13640,
+      "flip": "0x6b→0x69 (bit1)",
+      "alloc": "alloc_pipe_info (pid1)",
+      "free": "free_pipe_info (pid1)",
+      "trigger": "T599 kworker/5:5",
+      "slab": "0xfffffffe00100600"
+    },
+    "key_finding": "同 slab page + bit1 一致 + 红区完整 → DRAM 硬件"
+  }
+}
