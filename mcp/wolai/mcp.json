@@ -1,0 +1,12 @@
+{
+  "name": "wolai",
+  "description": "Wolai API MCP — 个人知识管理/笔记服务",
+  "type": "http",
+  "url": "https://api.wolai.com/v1/mcp",
+  "headers": {
+    "Authorization": "Bearer ${WOLAI_TOKEN}"
+  },
+  "env": {
+    "WOLAI_TOKEN": "Wolai API Token，从 https://www.wolai.com 获取"
+  }
+}

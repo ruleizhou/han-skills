@@ -65,6 +65,23 @@ expand_path() {
     esac
 }
 
+# 从 mcp.json 读取元数据字段，缺省 type="command"
+read_mcp_meta() {
+    local mcp_dir="$1" field="$2"
+    local meta="$mcp_dir/mcp.json"
+    [[ -f "$meta" ]] || { [[ "$field" == "type" ]] && echo "command" || echo ""; return 0; }
+    MCP_META="$meta" MCP_FIELD="$field" python3 -c "
+import json, os, sys
+with open(os.environ['MCP_META']) as f:
+    d = json.load(f)
+val = d.get(os.environ['MCP_FIELD'], 'command' if os.environ['MCP_FIELD']=='type' else '')
+if isinstance(val, (dict, list)):
+    print(json.dumps(val, ensure_ascii=False))
+else:
+    print(val)
+"
+}
+
 # ============================================================
 # 自动发现（单一真源：扫描 ./skills 与 ./mcp）
 # ============================================================
@@ -206,6 +223,27 @@ data.setdefault('mcpServers', {})[name] = json.loads(j)
 with open(f, 'w') as fh:
     json.dump(data, fh, indent=2, ensure_ascii=False)
     fh.write('\n')
+"
+}
+
+# 输出 HTTP MCP 的完整 JSON（url + headers，env var 替换）
+build_http_mcp_json() {
+    local mcp_dir="$1"
+    MCP_META="$mcp_dir/mcp.json" WOLAI_TOKEN="${WOLAI_TOKEN:-}" python3 -c "
+import json, os, re
+with open(os.environ['MCP_META']) as f:
+    d = json.load(f)
+url = d.get('url', '')
+# headers 中的 \${VAR} 用环境变量替换
+headers = {}
+for k, v in d.get('headers', {}).items():
+    v_sub = v
+    for match in re.finditer(r'\\$\\{(\\w+)\\}', v):
+        var_name = match.group(1)
+        v_sub = v_sub.replace(match.group(0), os.environ.get(var_name, ''))
+    headers[k] = v_sub
+result = {'type': 'http', 'url': url, 'headers': headers}
+print(json.dumps(result, ensure_ascii=False))
 "
 }
 
@@ -355,16 +393,26 @@ install_mcps() {
         return 0
     fi
 
-    # 需要 Python >= 3.10（MCP server 运行依赖）
+    # 需要 Python >= 3.10（仅 command 类型 MCP server 运行依赖）
+    # HTTP 类型 MCP 不需要 Python；仅跳过检测，循环内按类型判断
+    local has_python=true
     if ! detect_python; then
-        warn "$agent: 未找到 Python >= 3.10，跳过 MCP 注册（可设置 HAN_MCP_PYTHON）"
-        return 0
+        has_python=false
     fi
 
     local i
     for i in "${!MCP_NAMES[@]}"; do
         local mcp_name="${MCP_NAMES[$i]}"
         local mcp_dir="${MCP_DIRS[$i]}"
+        local mcp_type_meta
+        mcp_type_meta="$(read_mcp_meta "$mcp_dir" "type")"
+
+        # HTTP 类型：跳过 server.py 检查，统一走 JSON 直接写入
+        if [[ "$mcp_type_meta" == "http" ]]; then
+            install_http_mcp "$agent" "$mcp_name" "$mcp_dir"
+            continue
+        fi
+
         local server_py="$mcp_dir/server.py"
         if [[ ! -f "$server_py" ]]; then
             warn "$agent: $mcp_name 缺 server.py，跳过"
@@ -373,6 +421,10 @@ install_mcps() {
 
         if [[ "$mcp_type" == "command" ]]; then
             # Claude Code: claude mcp add
+            if [[ "$has_python" != "true" ]]; then
+                warn "$agent: 未找到 Python >= 3.10，跳过 command MCP $mcp_name（可设置 HAN_MCP_PYTHON）"
+                continue
+            fi
             if ! command -v claude &>/dev/null; then
                 warn "$agent: claude CLI 未找到，跳过 MCP"
                 continue
@@ -435,6 +487,16 @@ uninstall_mcps() {
     local i
     for i in "${!MCP_NAMES[@]}"; do
         local mcp_name="${MCP_NAMES[$i]}"
+        local mcp_dir="${MCP_DIRS[$i]}"
+        local mcp_type_meta
+        mcp_type_meta="$(read_mcp_meta "$mcp_dir" "type")"
+
+        # HTTP 类型：从对应 JSON 文件移除
+        if [[ "$mcp_type_meta" == "http" ]]; then
+            uninstall_http_mcp "$agent" "$mcp_name"
+            continue
+        fi
+
         if [[ "$mcp_type" == "command" ]]; then
             if command -v claude &>/dev/null && claude mcp list 2>/dev/null | grep -q "$mcp_name"; then
                 if $DRY_RUN; then
@@ -458,6 +520,60 @@ uninstall_mcps() {
             fi
         fi
     done
+}
+
+# HTTP MCP 目标 JSON 文件
+http_mcp_target_file() {
+    local agent="$1"
+    case "$agent" in
+        claude)   echo "$HOME/.claude.json" ;;
+        opencode) echo "$(expand_path "$(agent_var opencode MCP_FILE)")" ;;
+        cursor)   echo "$(expand_path "$(agent_var cursor MCP_FILE)")" ;;
+        *)        echo "" ;;
+    esac
+}
+
+install_http_mcp() {
+    local agent="$1" mcp_name="$2" mcp_dir="$3"
+    local target_file
+    target_file="$(http_mcp_target_file "$agent")"
+    if [[ -z "$target_file" ]]; then
+        warn "$agent: HTTP MCP 不支持，跳过 $mcp_name"
+        return 0
+    fi
+
+    if mcp_in_json "$target_file" "$mcp_name"; then
+        info "$agent: HTTP MCP $mcp_name 已注册"
+        return 0
+    fi
+
+    local http_json
+    http_json="$(build_http_mcp_json "$mcp_dir")"
+    if $DRY_RUN; then
+        echo "  [dry] 注册 HTTP MCP $mcp_name → $target_file"
+    else
+        mkdir -p "$(dirname "$target_file")"
+        merge_mcp_json "$target_file" "$mcp_name" "$http_json"
+        log "$agent: 注册 HTTP MCP $mcp_name → $target_file"
+    fi
+}
+
+uninstall_http_mcp() {
+    local agent="$1" mcp_name="$2"
+    local target_file
+    target_file="$(http_mcp_target_file "$agent")"
+    if [[ -z "$target_file" ]]; then
+        return 0
+    fi
+
+    if [[ -f "$target_file" ]] && mcp_in_json "$target_file" "$mcp_name"; then
+        if $DRY_RUN; then
+            echo "  [dry] 从 $(basename "$target_file") 移除 HTTP MCP $mcp_name"
+        else
+            remove_mcp_json "$target_file" "$mcp_name"
+        fi
+        log "$agent: 移除 HTTP MCP $mcp_name"
+    fi
 }
 
 # ============================================================
@@ -569,26 +685,35 @@ show_status() {
             info "MCPs:   不支持"
         elif [[ ${#MCP_NAMES[@]} -eq 0 ]]; then
             info "MCPs:   无源"
-        elif [[ "$mcp_type" == "command" ]]; then
-            local mi=0 mm=0 mtotal="${#MCP_NAMES[@]}" n
-            for n in "${MCP_NAMES[@]}"; do
-                if command -v claude &>/dev/null && claude mcp list 2>/dev/null | grep -q "$n"; then
-                    mi=$((mi+1))
+        else
+            local mi=0 mm=0 mtotal="${#MCP_NAMES[@]}" k mcp_type_meta target
+            for k in "${!MCP_NAMES[@]}"; do
+                local mcp_n="${MCP_NAMES[$k]}"
+                local mcp_d="${MCP_DIRS[$k]}"
+                mcp_type_meta="$(read_mcp_meta "$mcp_d" "type")"
+                if [[ "$mcp_type_meta" == "http" ]]; then
+                    target="$(http_mcp_target_file "$agent")"
+                    if [[ -n "$target" ]] && mcp_in_json "$target" "$mcp_n"; then
+                        mi=$((mi+1))
+                    else
+                        mm=$((mm+1))
+                    fi
+                elif [[ "$mcp_type" == "command" ]]; then
+                    if command -v claude &>/dev/null && claude mcp list 2>/dev/null | grep -q "$mcp_n"; then
+                        mi=$((mi+1))
+                    else
+                        mm=$((mm+1))
+                    fi
                 else
-                    mm=$((mm+1))
+                    local mcp_file
+                    mcp_file="$(expand_path "$(agent_var "$agent" MCP_FILE)")"
+                    if mcp_in_json "$mcp_file" "$mcp_n"; then mi=$((mi+1)); else mm=$((mm+1)); fi
                 fi
             done
-            if [[ "$mm" -eq 0 ]]; then log "MCPs:   $mi/$mtotal"; else warn "MCPs:   $mi/$mtotal，缺 $mm"; fi
-        else
-            local mcp_file mi=0 mm=0 mtotal="${#MCP_NAMES[@]}" n
-            mcp_file="$(expand_path "$(agent_var "$agent" MCP_FILE)")"
-            for n in "${MCP_NAMES[@]}"; do
-                if mcp_in_json "$mcp_file" "$n"; then mi=$((mi+1)); else mm=$((mm+1)); fi
-            done
             if [[ "$mm" -eq 0 ]]; then
-                log "MCPs:   $mi/$mtotal（$mcp_file）"
+                log "MCPs:   $mi/$mtotal"
             else
-                warn "MCPs:   $mi/$mtotal，缺 $mm（$mcp_file）"
+                warn "MCPs:   $mi/$mtotal，缺 $mm"
             fi
         fi
         echo ""
