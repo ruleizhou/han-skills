@@ -1,0 +1,22 @@
+<?xml version="1.0" ?> 
+<!-- provision_ufs_template.xml - 最保守通用模板
+     适用：不确定 UFS 厂家能力时的安全起点
+     特点：WB 全禁用、ProvisioningType=0 (Default)、LUN4 禁用
+     固定预留：~80MB（LUN1/2/3/5），LUN0 吃剩余空间
+     使用：复制为 provision_ufs_<设备标识>.xml，按能力查询结果逐步放开参数
+-->
+<data>
+    <ufs bNumberLU="0" bBootEnable="1" bDescrAccessEn="0" bInitPowerMode="1" bHighPriorityLUN="0x5" bSecureRemovalType="0" bInitActiveICCLevel="0" wPeriodicRTCUpdate="0" bConfigDescrLock="0" bWriteBoosterBufferPreserveUserSpaceEn="0" bWriteBoosterBufferType="0" shared_wb_buffer_size_in_kb="0" />
+
+    <ufs LUNum="0" bLUEnable="1" bBootLunID="0" size_in_kb="4096"     bDataReliability="0" bLUWriteProtect="0" bMemoryType="0" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 0 - User LUN - Rest of the device" />
+    <ufs LUNum="1" bLUEnable="1" bBootLunID="1" size_in_kb="8192"     bDataReliability="0" bLUWriteProtect="1" bMemoryType="3" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 1 - Boot LUN A, 8MB" />
+    <ufs LUNum="2" bLUEnable="1" bBootLunID="2" size_in_kb="8192"     bDataReliability="0" bLUWriteProtect="1" bMemoryType="3" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 2 - Boot LUN B, 8MB" />
+    <ufs LUNum="3" bLUEnable="1" bBootLunID="0" size_in_kb="32768"    bDataReliability="0" bLUWriteProtect="1" bMemoryType="0" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 3 - OTP LUN, 32MB" />
+    <ufs LUNum="4" bLUEnable="0" bBootLunID="0" size_in_kb="0"  bDataReliability="0" bLUWriteProtect="0" bMemoryType="0" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 4 - Disabled by default (enable if Protected RO needed)" />
+    <ufs LUNum="5" bLUEnable="1" bBootLunID="0" size_in_kb="32768"    bDataReliability="0" bLUWriteProtect="0" bMemoryType="0" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 5 - Protected Read-write LUN, 32MB" />
+    <ufs LUNum="6" bLUEnable="0" bBootLunID="0" size_in_kb="0"  bDataReliability="0" bLUWriteProtect="0" bMemoryType="0" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 6 - Internal Test LUN-1 (disabled)" />
+    <ufs LUNum="7" bLUEnable="0" bBootLunID="0" size_in_kb="0"  bDataReliability="0" bLUWriteProtect="0" bMemoryType="0" bLogicalBlockSize="0x0c" bProvisioningType="0" wContextCapabilities="0" wb_buffer_size_in_kb="0" desc="LU 7 - Internal Test LUN-2 (disabled)" />
+    
+    <ufs LUNtoGrow="0" commit="1"/>
+
+</data>

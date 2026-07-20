@@ -1,0 +1,32 @@
+{
+  "_comment": "ufs-provision-analyzer 自学习经验库。每次成功 provision 后由 feedback-loop.md 沉淀。",
+  "_schema": {
+    "vendor": "UFS 厂家 (Samsung/Micron/Kioxia/YMTC/SKhynix/Unknown)",
+    "capacity_gb": "UFS 总容量 (GB)",
+    "config": "生效的参数组合",
+    "root_cause": "原 XML 失败原因",
+    "confidence": "置信度 1-5（case_count 越多越高）",
+    "last_used": "最后使用日期 YYYY-MM-DD",
+    "case_count": "累计案例数"
+  },
+  "patterns": [
+    {
+      "vendor": "Unknown",
+      "capacity_gb": 64,
+      "config": {
+        "bWriteBoosterBufferType": 0,
+        "shared_wb_buffer_size_in_kb": 0,
+        "bWriteBoosterBufferPreserveUserSpaceEn": 0,
+        "bProvisioningType": 0,
+        "lun4_enabled": false,
+        "lun4_size_in_kb": 0,
+        "bLogicalBlockSize": "0x0c"
+      },
+      "root_cause": "WB Preserve 模式不支持 + Thin Provisioning 用于 Boot LUN 被拒",
+      "confidence": 1,
+      "last_used": "2026-07-20",
+      "case_count": 1,
+      "note": "首个案例：MC9041 V47，原 XML LUN4=6GB + WB=4GB + 全 Thin 导致 commit EINVAL"
+    }
+  ]
+}
