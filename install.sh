@@ -522,6 +522,126 @@ uninstall_mcps() {
     done
 }
 
+# ============================================================
+# Understand-Anything（第三方 plugin）安装
+# 默认同步装（HAN_INSTALL_UA=1，install.conf 兜底；--no-ua / HAN_INSTALL_UA=0 关）。
+# 各平台原生方式：claude→claude plugin install；codex/opencode→UA 官方 curl|bash；
+# cursor→CLI 官方不支持 plugin，提示 IDE clone。
+# ============================================================
+
+install_ua() {
+    local agent="$1"
+    [[ "${HAN_INSTALL_UA:-1}" == "1" ]] || { info "$agent: 跳过 UA（--no-ua 或 HAN_INSTALL_UA=0）"; return 0; }
+    case "$agent" in
+        claude)
+            command -v claude &>/dev/null || { warn "$agent: claude CLI 未找到，跳过 UA"; return 0; }
+            local ua_mp="${UA_MARKETPLACE:-Egonex-AI/Understand-Anything}"
+            if $DRY_RUN; then
+                echo "  [dry] claude plugin marketplace add $ua_mp（UA 官方）"
+                echo "  [dry] claude plugin install understand-anything@understand-anything"
+                return 0
+            fi
+            # 用 UA 官方 marketplace（其 source 是相对路径 ./understand-anything-plugin，组件加载正确）。
+            # 不走 han-skills marketplace 引用：UA repo 根有 .claude-plugin/ + plugin 在 understand-anything-plugin/
+            # 子目录，url+path 会让 claude 把 repo 根当组件扫描根 → 组件 0；git-subdir 又需 git≥2.20。
+            claude plugin marketplace list 2>/dev/null | grep -q "understand-anything" \
+                || claude plugin marketplace add "$ua_mp"
+            if claude plugin list 2>/dev/null | grep -q "understand-anything"; then
+                info "$agent: UA 已装"; return 0
+            fi
+            if claude plugin install understand-anything@understand-anything; then
+                log "$agent: 装好 UA（完整：skills + 9 subagent）"
+            else
+                warn "$agent: 装 UA 失败"
+            fi
+            ;;
+        codex)
+            command -v curl &>/dev/null || { warn "$agent: curl 未找到，跳过 UA"; return 0; }
+            if $DRY_RUN; then echo "  [dry] curl -fsSL UA install.sh | bash -s codex"; return 0; fi
+            if curl -fsSL "$UA_INSTALL_URL" | bash -s codex; then
+                log "$agent: 装好 UA skills（降级：UA 无 codex 清单，subagent 不注册）"
+            else
+                warn "$agent: 装 UA 失败"
+            fi
+            ;;
+        opencode)
+            command -v curl &>/dev/null || { warn "$agent: curl 未找到，跳过 UA"; return 0; }
+            if $DRY_RUN; then
+                echo "  [dry] curl -fsSL UA install.sh | bash -s opencode"
+                echo "  [dry] + 软链 agents/*.md → ~/.config/opencode/agents/"
+                return 0
+            fi
+            if ! curl -fsSL "$UA_INSTALL_URL" | bash -s opencode; then
+                warn "$agent: UA 装 skills 失败"; return 0
+            fi
+            # 额外补 subagent 注册（比 UA 官方更完整）：软链 agents/*.md 到 opencode 扫描目录
+            local ua_agents="$HOME/.understand-anything/repo/understand-anything-plugin/agents"
+            local oc_dir="$HOME/.config/opencode/agents"
+            if [[ -d "$ua_agents" ]]; then
+                mkdir -p "$oc_dir"
+                local a n=0
+                shopt -s nullglob
+                for a in "$ua_agents"/*.md; do ln -sfn "$a" "$oc_dir/$(basename "$a")"; n=$((n+1)); done
+                shopt -u nullglob
+                log "$agent: 装好 UA（skills + $n subagent，可完整）"
+            else
+                log "$agent: 装好 UA skills（未找到 agents 目录，跳过 subagent 注册）"
+            fi
+            ;;
+        cursor)
+            info "$agent: cursor CLI 官方不支持 plugin（论坛确认）。完整方案 = git clone UA 仓库后在 Cursor IDE 打开，靠 .cursor-plugin 自动发现（含 subagent）。install.sh 不代劳此 GUI 步骤。"
+            ;;
+        *)
+            info "$agent: 无 UA 安装路径，跳过"
+            ;;
+    esac
+}
+
+# Understand-Anything 卸载（与 install_ua 对称；幂等，未装则无操作，不受 HAN_INSTALL_UA 开关影响）
+uninstall_ua() {
+    local agent="$1"
+    case "$agent" in
+        claude)
+            command -v claude &>/dev/null || return 0
+            claude plugin list 2>/dev/null | grep -q "understand-anything" || return 0
+            if $DRY_RUN; then
+                echo "  [dry] claude plugin uninstall understand-anything"; return 0
+            fi
+            if claude plugin uninstall understand-anything 2>/dev/null; then
+                log "$agent: 移除 UA"
+            else
+                warn "$agent: 移除 UA 失败"
+            fi
+            ;;
+        codex|opencode)
+            local ua_repo="$HOME/.understand-anything/repo"
+            [[ -d "$ua_repo" ]] || return 0
+            if $DRY_RUN; then
+                echo "  [dry] bash $ua_repo/install.sh --uninstall $agent"
+            elif bash "$ua_repo/install.sh" --uninstall "$agent" 2>/dev/null; then
+                log "$agent: 移除 UA"
+            else
+                warn "$agent: 移除 UA 失败（可手动 rm -rf ~/.understand-anything）"
+            fi
+            # opencode 额外移除指向 UA repo 的 subagent 软链
+            if [[ "$agent" == "opencode" && -d "$HOME/.config/opencode/agents" ]]; then
+                local oc_dir="$HOME/.config/opencode/agents" a
+                shopt -s nullglob
+                for a in "$oc_dir"/*.md; do
+                    [[ -L "$a" ]] || continue
+                    case "$(readlink "$a")" in
+                        */.understand-anything/repo/*) $DRY_RUN || rm -f "$a" ;;
+                    esac
+                done
+                shopt -u nullglob
+            fi
+            ;;
+        cursor)
+            info "$agent: UA 未经 install.sh 安装（cursor 走 IDE），无需卸载"
+            ;;
+    esac
+}
+
 # HTTP MCP 目标 JSON 文件
 http_mcp_target_file() {
     local agent="$1"
@@ -737,11 +857,14 @@ validate_agent() {
 
 # 公共选项解析 → AGENT_ARG / SKILLS_ONLY / MCP_ONLY（DRY_RUN 全局）
 parse_opts() {
-    AGENT_ARG=""; SKILLS_ONLY=false; MCP_ONLY=false
+    AGENT_ARG=""; SKILLS_ONLY=false; MCP_ONLY=false; UA_ONLY=false
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --skills-only) SKILLS_ONLY=true; shift ;;
             --mcp-only)    MCP_ONLY=true; shift ;;
+            --with-ua)     HAN_INSTALL_UA=1; shift ;;
+            --no-ua)       HAN_INSTALL_UA=0; shift ;;
+            --ua-only)     UA_ONLY=true; shift ;;
             --dry-run)     DRY_RUN=true; shift ;;
             --all)         AGENT_ARG="--all"; shift ;;
             -h|--help)     return 1 ;;
@@ -770,8 +893,10 @@ cmd_install() {
     for a in $agents; do
         echo ""
         info "=== 安装 → $a ==="
+        if $UA_ONLY; then install_ua "$a"; continue; fi
         $MCP_ONLY || install_skills "$a"
         $SKILLS_ONLY || install_mcps "$a"
+        $SKILLS_ONLY || $MCP_ONLY || install_ua "$a"
     done
     echo ""
     log "完成。运行 './install.sh status' 查看状态"
@@ -783,8 +908,10 @@ cmd_uninstall() {
     local agents a
     agents="$(agents_for "$AGENT_ARG")"
     for a in $agents; do
+        if $UA_ONLY; then uninstall_ua "$a"; continue; fi
         $MCP_ONLY || uninstall_skills "$a"
         $SKILLS_ONLY || uninstall_mcps "$a"
+        $SKILLS_ONLY || $MCP_ONLY || uninstall_ua "$a"
     done
     log "卸载完成"
 }
@@ -802,6 +929,7 @@ cmd_update() {
         $SKILLS_ONLY || uninstall_mcps "$a"
         $MCP_ONLY || install_skills "$a"
         $SKILLS_ONLY || install_mcps "$a"
+        $SKILLS_ONLY || $MCP_ONLY || install_ua "$a"
     done
     log "完成"
 }

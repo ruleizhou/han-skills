@@ -25,6 +25,8 @@ Han 个人 Skills 仓库。单一真源在 `skills/`，四平台（Claude Code /
 - skill 名建议 kebab-case；`SKILL.md` 的 `name` 字段必须 == 所在目录名。
 - frontmatter 用相对路径或 `${CLAUDE_PLUGIN_ROOT}`，禁止硬编码绝对路径。
 - skill 间通过明确 CLI 接口协作，不读对方私有目录。
+- **marketplace.json 可承载多个 plugin**：`plugins[0]` = `han`（自有，受 validate.py name/version 同步约束）；`plugins[1+]` 理论上可放第三方「纯引用」条目，但**子目录 plugin 有坑**——`url`+`path` 在「repo 根有 `.claude-plugin/` + plugin 在子目录」时，claude 会把 repo 根当组件扫描根 → 组件 0（实测 UA 即如此）；`git-subdir` 需 git≥2.20（否则 `invalid filter-spec 'tree:0'`）。所以 han-skills **不**在 marketplace 引用第三方 plugin。
+- **install.sh 同步安装第三方 plugin（UA）**：install.sh 默认同步装 UA（`HAN_INSTALL_UA=1`，`--no-ua` 跳过），各平台用 **UA 官方源**——claude→`claude plugin marketplace add Egonex-AI/Understand-Anything` + `install understand-anything@understand-anything`（**不**用 han-skills marketplace 引用，因 UA repo 结构会让 claude 组件扫描扑空）；codex/opencode→UA 官方 `curl|bash`（opencode 额外软链 agents 补 subagent）；cursor→CLI 不支持故提示 IDE。UA 在 codex/cursor 上降级（subagent 不注册）是 UA 官方平台限制。
 
 ## Boundaries
 

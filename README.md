@@ -54,6 +54,33 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 
 > `name`/`version`/`description` 在 `.claude-plugin/` 与 `.codex-plugin/` 之间保持同步，由 `scripts/validate.py` 校验。
 
+## 附载的第三方 Plugin：Understand-Anything
+
+install.sh 会**同步安装**第三方 plugin [Understand-Anything](https://github.com/Egonex-AI/Understand-Anything)（UA）——AI 代码库理解工具，7 阶段多 agent 流水线把任意代码库扫成交互式知识图谱（文件/函数/类/依赖 + 导览 + 深度解释 + Web dashboard）。
+
+> UA 的 plugin 内容在其仓库的 `understand-anything-plugin/` 子目录（repo 根另有 `.claude-plugin/` 作 marketplace 入口）。**han-skills 的 marketplace 不直接引用 UA**——`url`+`path` 会让 claude 把 repo 根当组件扫描根 → 组件 0；`git-subdir` 需 git≥2.20。改由 install.sh 各平台用 UA 官方源装。
+
+**四平台完整度**（UA 完整体验绑死 Claude Code，跨平台是 UA 官方都解不开的硬约束）：
+
+| 平台 | install.sh 装 UA 的方式 | 完整度 |
+| --- | --- | --- |
+| Claude Code | `claude plugin marketplace add Egonex-AI/Understand-Anything` + `claude plugin install understand-anything@understand-anything` | ✅ 完整（skills + 9 subagent） |
+| OpenCode | UA 官方 `curl\|bash` + 额外软链 `agents/*.md` 到 `~/.config/opencode/agents/` | ✅ 可完整（补 subagent 注册） |
+| Codex | UA 官方 `curl\|bash`（仅 skills） | ⚠️ 降级（UA 无 codex 清单，subagent 不注册） |
+| Cursor | 跳过 + 提示 IDE clone | ⚠️ CLI 官方不支持 plugin，需 IDE |
+
+**install.sh 默认同步装 UA**（`HAN_INSTALL_UA=1`），随 `./install.sh` 一并安装。跳过用 `--no-ua` 或 `HAN_INSTALL_UA=0`；单独操作用 `--ua-only`：
+
+```
+./install.sh                              # 装 han skills + MCP + UA（四平台）
+./install.sh install claude --no-ua       # 只装 claude 的 han skills，不装 UA
+./install.sh install opencode --ua-only   # 只给 opencode 装 UA
+./install.sh uninstall claude             # 卸载（含 UA，对称）
+```
+
+> **运行时依赖**：Node 22 + pnpm 10 + Python 3 仅在首次 `/understand` 时才需要（构建 `packages/core`）；安装 plugin 本身不需要。
+> **国内网络备用**：`UA_INSTALL_URL=https://gitee.com/rulei_mirror/Understand-Anything/raw/main/install.sh ./install.sh ...`。
+
 ## 安装
 
 > 推送 GitHub 前，先把 `.claude-plugin/`、`.codex-plugin/` 里的 `ruleizhou` 替换成你的 GitHub 用户名。
