@@ -1,0 +1,10 @@
+{
+  "_comment": "PreToolUse hook 片段:派发 Agent 子 agent 前查智谱配额,超阈值 exit 2 deny。由 setup.sh 幂等注入 ~/.claude/settings*.json(智谱 profile)的 hooks.PreToolUse。",
+  "matcher": "Agent",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "bash ~/.claude/skills/han-quota-watch/scripts/quota-gate.sh"
+    }
+  ]
+}
