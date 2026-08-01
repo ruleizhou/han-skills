@@ -1,6 +1,20 @@
 {
     "signatures": [
         {
+            "pattern": "Unable to handle kernel paging request at virtual address",
+            "type": "内核页错误（非 NULL，translation fault）",
+            "priority_items": [
+                "bit-flip XOR 分析（单比特 vs 多字节损坏）",
+                "slub poison pattern 反证 UAF",
+                "39/48-bit VA 规范地址校验",
+                "crash kmem -s 立判 slab 分配/释放状态",
+                "KASAN 模式确认（HW_TAGS 无 MTE=静默失效）",
+                "L1 cache dump vs DRAM 比对（区分 SRAM/DRAM SEU）"
+            ],
+            "count": 1,
+            "first_seen": "2026-07-24"
+        },
+        {
             "pattern": "Unable to handle kernel NULL pointer dereference at virtual address",
             "type": "NULL 指针解引用",
             "priority_items": [
