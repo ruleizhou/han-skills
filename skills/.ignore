@@ -1,0 +1,5 @@
+# pi / ripgrep ignore — Deprecated skills are source-only, never distributed.
+# pi discovers SKILL.md recursively (skills.js addIgnoreRules reads this file),
+# so this keeps skills/Deprecated/ out of `pi install` / `pi -e .` discovery.
+# git does NOT read .ignore, so the Deprecated source stays tracked in git.
+Deprecated/

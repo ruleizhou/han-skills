@@ -9,9 +9,11 @@ Checks
    - .claude-plugin/plugin.json
    - .claude-plugin/marketplace.json (metadata.version + plugins[0].name)
    - .codex-plugin/plugin.json
+   - package.json (version only; pi package manifest)
 4. The 'skills' path declared in .claude-plugin/plugin.json exists.
-5. Each .cursor/rules/<name>.mdc exists and matches gen_cursor_rules.render_mdc().
-6. install.sh, hooks/*.sh and skills/<name>/scripts/*.sh have the +x bit.
+5. package.json is a valid pi package: 'pi.skills' paths exist + 'pi-package' keyword.
+6. Each .cursor/rules/<name>.mdc exists and matches gen_cursor_rules.render_mdc().
+7. install.sh, hooks/*.sh and skills/<name>/scripts/*.sh have the +x bit.
 
 Exit 0 on success, 1 on any violation.
 
@@ -106,8 +108,9 @@ def check_manifests() -> None:
     claude_plugin = ROOT / ".claude-plugin" / "plugin.json"
     claude_market = ROOT / ".claude-plugin" / "marketplace.json"
     codex_plugin = ROOT / ".codex-plugin" / "plugin.json"
+    pkg_json = ROOT / "package.json"
 
-    for p in (claude_plugin, claude_market, codex_plugin):
+    for p in (claude_plugin, claude_market, codex_plugin, pkg_json):
         if not p.is_file():
             fail(f"missing manifest: {rel(p)}")
             return
@@ -116,6 +119,7 @@ def check_manifests() -> None:
         cdata = json.loads(claude_plugin.read_text(encoding="utf-8"))
         cmdata = json.loads(claude_market.read_text(encoding="utf-8"))
         xdata = json.loads(codex_plugin.read_text(encoding="utf-8"))
+        pdata = json.loads(pkg_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         fail(f"manifest is not valid JSON: {e}")
         return
@@ -139,6 +143,7 @@ def check_manifests() -> None:
             "metadata", {}
         ).get("version"),
         ".codex-plugin/plugin.json": xdata.get("version"),
+        "package.json": pdata.get("version"),
     }
     if (
         len({v for v in versions.values() if v is not None}) > 1
@@ -154,6 +159,62 @@ def check_manifests() -> None:
                 f".claude-plugin/plugin.json 'skills' path does not exist: "
                 f"{skills_path}"
             )
+
+
+def check_package_json() -> None:
+    """Validate package.json as a pi package: pi.skills paths + pi-package keyword.
+
+    The version sync is handled by check_manifests(); here we only enforce the
+    pi-specific structure so that `pi install` / `pi -e ./` can discover skills.
+    """
+    pkg_json = ROOT / "package.json"
+    if not pkg_json.is_file():
+        return  # Already reported in check_manifests().
+    try:
+        data = json.loads(pkg_json.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return  # Already reported.
+    if not data.get("name"):
+        fail("package.json missing or empty 'name'")
+    pi = data.get("pi") or {}
+    skills_paths = pi.get("skills") or []
+    if not skills_paths:
+        fail("package.json 'pi.skills' is empty (pi needs at least one skills path)")
+        return
+    for sp in skills_paths:
+        if any(ch in sp for ch in "*?![]"):
+            continue  # glob pattern (e.g. ./skills/* or !./skills/Deprecated)
+        full = (ROOT / sp).resolve()
+        if not full.is_dir():
+            fail(f"package.json 'pi.skills' path does not exist: {sp}")
+    # pi discovers SKILL.md recursively, so skills/Deprecated/ would be loaded
+    # by `pi install` unless excluded. Two equivalent mechanisms:
+    #   (a) skills/.ignore with a "Deprecated/" rule (pi native ignore, git-agnostic)
+    #   (b) a "!./skills/Deprecated" negation in pi.skills (package.json glob)
+    deprecated_dir = ROOT / "skills" / DEPRECATED_DIR_NAME
+    if deprecated_dir.is_dir() and any(deprecated_dir.rglob("SKILL.md")):
+        ignore_file = ROOT / "skills" / ".ignore"
+        has_ignore_rule = (
+            ignore_file.is_file()
+            and "Deprecated" in ignore_file.read_text(encoding="utf-8")
+        )
+        has_negation = any(
+            isinstance(s, str) and "!" in s and "Deprecated" in s
+            for s in skills_paths
+        )
+        if not (has_ignore_rule or has_negation):
+            fail(
+                "skills/Deprecated/ contains SKILL.md but is not excluded from pi "
+                "discovery (pi recurses into SKILL.md). Add 'Deprecated/' to "
+                "skills/.ignore (git-agnostic) OR '!./skills/Deprecated' to "
+                "package.json pi.skills"
+            )
+    keywords = data.get("keywords") or []
+    if "pi-package" not in keywords:
+        fail(
+            "package.json missing 'pi-package' keyword "
+            "(required for pi package discovery)"
+        )
 
 
 def check_cursor_rules_sync() -> int:
@@ -205,6 +266,7 @@ def check_executable_bits() -> int:
 def main() -> int:
     skill_count = check_skills()
     check_manifests()
+    check_package_json()
     cursor_count = check_cursor_rules_sync()
     sh_count = check_executable_bits()
 
@@ -215,7 +277,7 @@ def main() -> int:
         return 1
 
     print(
-        f"OK: {skill_count} skills, 2 manifests synced, "
+        f"OK: {skill_count} skills, 3 manifests synced (+ package.json), "
         f"{cursor_count} cursor rule(s) in sync, "
         f"{sh_count} shell script(s) executable"
     )

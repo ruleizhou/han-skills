@@ -35,7 +35,7 @@ fi
 # shellcheck disable=SC1090
 source "$CONF_FILE"
 
-ALL_AGENTS="claude codex opencode cursor"   # 代码常量（不放 conf）
+ALL_AGENTS="claude codex opencode cursor pi"   # 代码常量（不放 conf）
 DRY_RUN=false
 
 # MCP 注册才需要 Python 检测；此处仅定义函数，按需调用
@@ -591,6 +591,9 @@ install_ua() {
         cursor)
             info "$agent: cursor CLI 官方不支持 plugin（论坛确认）。完整方案 = git clone UA 仓库后在 Cursor IDE 打开，靠 .cursor-plugin 自动发现（含 subagent）。install.sh 不代劳此 GUI 步骤。"
             ;;
+        pi)
+            info "$agent: pi 平台 UA 暂不接入 install.sh（pi 有独立 package 机制；如需 UA 可自行运行：pi install git:github.com/Egonex-AI/Understand-Anything）"
+            ;;
         *)
             info "$agent: 无 UA 安装路径，跳过"
             ;;
@@ -638,6 +641,9 @@ uninstall_ua() {
             ;;
         cursor)
             info "$agent: UA 未经 install.sh 安装（cursor 走 IDE），无需卸载"
+            ;;
+        pi)
+            info "$agent: pi 平台 UA 未经 install.sh 安装，无需卸载"
             ;;
     esac
 }
@@ -766,6 +772,7 @@ show_status() {
             codex)    pretty="Codex" ;;
             opencode) pretty="OpenCode" ;;
             cursor)   pretty="Cursor" ;;
+            pi)       pretty="Pi" ;;
             *)        pretty="$agent" ;;
         esac
         dir="$(agent_var "$agent" DIR)"

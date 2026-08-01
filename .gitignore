@@ -4,5 +4,8 @@ __pycache__/
 .env
 .han-skills/
 
+# pi local runtime dir (sessions, npm cache, agent-mesh config).
+.pi/
+
 # NOTE: skills/<name>/templates/self-learning/data/cases/ is intentional
 # self-learning history and SHOULD be committed — do not ignore it.

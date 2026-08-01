@@ -8,7 +8,7 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 - **han 生图体系** —— `han-imagen` 生图底座（OpenAI/Google 双 provider，纯 Python 标准库）+ 5 个业务 skill（信息图 / 手绘知识卡 / 拆解图 / 幻灯片 / SVG 图表）。业务 skill 均带防幻觉两阶段法 + 自学习，套底座出图；幻灯片/SVG 是纯标准库 CLI 工具。
 - **han-llm-wiki** —— 个人知识库 Wiki 维护技能，9 个命令（init/ingest/query/lint/card/weekly/research/mode/think/save），BM25 检索 + 方法论模式（PARA/LYT/Zettelkasten）+ D2 配图。
 - **han-kernel-crash-analyzer** —— Linux 内核崩溃分析（高通/Android），覆盖 NULL 指针 / KASAN UAF / SLUB 损坏 / ABBA 死锁 / panic / ramdump。反汇编优先 + Agent 对抗验证 + 案例自学习闭环。
-- **实用工具** —— `han-d2-diagram`（D2 声明式图表，sketch 手绘风）+ `han-git-commit`（交互式 Git 提交信息生成，基于 `~/.git-template`）+ `han-flash-test`（UFS/eMMC 读写速率测试，规格对标 + 自学习闭环）+ `han-tech-doc-writer`（技术文档写作，D2 图表 + 信息图双轨视觉，7 步工作流 + 自学习反馈闭环）+ `han-util-tools`（内核工具总路由，按 场景→平台→模块→类型 四级引导）。
+- **实用工具** —— `han-d2-diagram`（D2 声明式图表，sketch 手绘风）+ `han-git-commit`（交互式 Git 提交信息生成，基于 `~/.git-template`）+ `han-flash-test`（UFS/eMMC 读写速率测试，规格对标 + 自学习闭环）+ `han-tech-doc-writer`（技术文档写作，D2 图表 + 信息图双轨视觉，7 步工作流 + 自学习反馈闭环）+ `han-util-tools`（内核工具总路由，按 场景→平台→模块→类型 四级引导）+ `han-quota-watch`（LLM 配额守卫，智谱 Coding Plan 每 5 小时用量判定 + 429 自动休眠/唤醒，Claude Code 专用）。
 
 ## 目录结构
 
@@ -28,13 +28,14 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 ├── references/
 │   └── README.md                # 跨 skill 共享参考
 ├── scripts/
-│   ├── validate.py              # 四平台校验
+│   ├── validate.py              # 五平台校验（含 package.json）
 │   └── gen_cursor_rules.py      # SKILL.md → .cursor/rules/*.mdc 转换器
 ├── skills/
 │   └── <name>/                  # 每个 skill 一个目录（han-skill-creator-plus + han-* 生图体系 + han-llm-wiki + han-kernel-crash-analyzer + han-d2-diagram + han-git-commit + han-flash-test + han-tech-doc-writer + han-util-tools），单一真源
 ├── mcp/                          # 附带的 MCP Server（非 skill）
 │   └── windows-remote/           #   Windows 远程控制（adb/fastboot/UART）
-├── install.sh                   # 软链接安装（三目标）
+├── install.sh                   # 软链接安装（五平台目标）
+├── package.json                 # pi package manifest（pi install 原生分发）
 ├── README.md
 └── CLAUDE.md
 ```
@@ -43,7 +44,7 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 
 ## 多平台 Plugin 配置
 
-本仓库支持 **4 套** skill 分发机制，对应不同 Agent 客户端：
+本仓库支持 **5 套** skill 分发机制，对应不同 Agent 客户端：
 
 | 平台 | 机制 | 仓库里的产物 | 安装命令 |
 | --- | --- | --- | --- |
@@ -51,8 +52,9 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 | OpenAI Codex | git marketplace | `.codex-plugin/` | `codex plugin marketplace add` → `codex plugin add` |
 | OpenCode | 目录扫描（无 marketplace） | 无 manifest，靠 `install.sh` | `./install.sh` |
 | Cursor | 目录扫描（`~/.cursor/skills`） | 无 manifest，靠 `install.sh` 软链 | `./install.sh install cursor` |
+| Pi | pi package（[Agent Skills 标准](https://agentskills.io)） | `package.json`（`pi.skills`） | `pi install git:...` 或 `./install.sh install pi` |
 
-> `name`/`version`/`description` 在 `.claude-plugin/` 与 `.codex-plugin/` 之间保持同步，由 `scripts/validate.py` 校验。
+> `name`/`version`/`description` 在 `.claude-plugin/`、`.codex-plugin/` 与 `package.json` 之间保持同步，由 `scripts/validate.py` 校验（`package.json` 仅校验 `version`，`name` 因 npm 命名规则不同设为 `han-skills`）。
 
 ## 附载的第三方 Plugin：Understand-Anything
 
@@ -133,7 +135,33 @@ OpenCode 原生兼容 Anthropic 的 `SKILL.md`，启动时扫描 `~/.config/open
 ./install.sh install cursor
 ```
 
-### 方式五：本地 install.sh（兼容模式）
+### 方式五：pi（pi package / 软链）
+
+[Pi](https://pi.dev)（`@earendil-works/pi-coding-agent`）实现 [Agent Skills 标准](https://agentskills.io)，启动时原生扫描 `~/.pi/agent/skills/*/SKILL.md`。本仓库的 `package.json` 声明了 `pi.skills`，两种装法：
+
+**A. pi 原生 package（推荐）** —— 走 `pi install`，自动管理、可 `pi list` / `pi config` 启用禁用、`pi update --all` 更新：
+
+```
+pi install git:github.com/YOUR_GH_USER/han-skill        # 全局（git，发布后用）
+pi install ./han-skills                                  # 本地路径（开发用）
+pi -e ./han-skills                                       # 临时试用（不写 settings）
+```
+
+或团队共享：在项目 `.pi/settings.json` 写 `{"packages":["git:github.com/YOUR_GH_USER/han-skill"]}`，pi 启动自动装。
+
+**B. install.sh 软链**（与其它平台一致，链到 `~/.pi/agent/skills`）：
+
+```
+./install.sh install pi
+```
+
+装好后 pi 会话内 `/skill:han-<name>` 直接调用；改 skill 后无需重装（软链/pi package 均读源目录）。
+
+> `skills/.ignore` 已排除 `Deprecated/`（pi 递归发现 SKILL.md，靠此文件跳过弃用 skill；git 不读 `.ignore`，弃用源码仍保留）。
+
+> MCP（windows-remote/wolai）暂不接入 pi（pi 有独立 MCP 机制，见 [settings 文档](https://pi.dev/docs/latest/settings)）；Understand-Anything 可自行 `pi install git:Egonex-AI/Understand-Anything`。
+
+### 方式六：本地 install.sh（兼容模式）
 
 适用于手动管理 skill 目录，或在 plugin 机制不可用时：
 
@@ -148,9 +176,9 @@ HAN_SKILLS_TARGETS="$HOME/.claude/skills:$HOME/.config/opencode/skills" ./instal
 ## 本地开发
 
 ```
-./install.sh                          # 软链安装到四平台默认目标
+./install.sh                          # 软链安装到五平台默认目标
 ./install.sh --list                   # 查看各目标安装状态
-python3 scripts/validate.py           # 校验：skills + manifest 同步 + cursor rules 同步 + 执行位
+python3 scripts/validate.py           # 校验：skills + 三套 manifest 同步 + package.json(pi) + cursor rules + 执行位
 python3 scripts/gen_cursor_rules.py   # 从 skills/*/SKILL.md 重新生成 .cursor/rules/*.mdc
 python3 scripts/gen_cursor_rules.py --check   # 只校验 cursor rules 是否过期
 ```
@@ -172,6 +200,7 @@ python3 scripts/gen_cursor_rules.py --check   # 只校验 cursor rules 是否过
 | `han-flash-test` | UFS/eMMC 读写速率测试：fio 直接读写裸块设备，顺序/随机多档取中位数，规格对标 + 自学习闭环 |
 | `han-tech-doc-writer` | 技术文档写作：D2 图表 + 信息图（han-infographic）双轨视觉，7 步工作流（诊断→源→大纲→图表+信息图→写作→审核→输出），自学习反馈闭环 |
 | `han-util-tools` | 内核工具总路由：/han-util-tools 命令触发，按 场景→平台→模块→类型 四级引导，覆盖 Debug/器件 Bringup/功能开发 |
+| `han-quota-watch` | LLM 配额守卫：智谱 Coding Plan 每 5 小时用量判定，超阈值写检查点 + CronCreate(durable) 唤醒，实现 429 后会话自动恢复（Claude Code 专用，依赖 `~/.claude/CLAUDE.md` 第五节） |
 
 ## 已弃用 Skill
 
