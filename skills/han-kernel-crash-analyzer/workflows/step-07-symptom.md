@@ -23,6 +23,7 @@
 [ ] 根因结论是否可证伪？（存在什么样的数据能让此结论不成立？）
 [ ] 若涉及 init/probe/校准阶段：回调执行顺序是否已验证？
 [ ] 结论是否与 Step 0 收集的场景一致？（不一致是否已标记异常？）
+[ ] 对"疑似野指针/garbage"：是否已核验它 ≠ 某编译期常量基址？arm64 `vmemmap` 变量 ≠ `VMEMMAP_START`（差 memstart 偏移，见 platform_quirks.md），crash `kmem` 报 "not in mem map" ≠ 纯随机 garbage——pfn=0 的 page 结构恰落 vmemmap 基址且因物理 0 无 RAM 未映射。先算基址再判 garbage（详见 crash_types.md「DRAM SEU」）
 ```
 
 **如果任一项不通过：回到对应的步骤补全分析，不得跳过。** 在报告中注明哪些项不适用（如"不涉及 init/probe"）。

@@ -260,6 +260,44 @@
                     "timestamp": "2026-07-17T00:00:00+08:00"
                 }
             ]
+        },
+        {
+            "id": "ptrn-008",
+            "name": "show_smaps_rollup 路径单 bit 翻转崩溃（DRAM SEU，5#/6# 同源确证）",
+            "crash_type": "无效指针解引用 (paging request, translation fault on READ)",
+            "category": "硬件 DRAM SEU 单 bit 翻转（误判高发：易押软件 UAF/竞态）",
+            "description": "android.bg 读 /proc/<pid>/smaps_rollup 时崩溃，5#/6# 经 crash 实测 + arm64 vmemmap 机制同源确证为 DRAM SEU 单 bit 翻转：6# 在 shmem_mapping(vma->vm_file->f_mapping) 解引用被 SEU 翻 bit52 的 f_mapping（合法=inode->i_data，XOR popcount=1 铁证，file 活着 f_count=4）；5# 在 smaps_account/PageAnon(page) 解引用由 PTE.pfn 被 SEU 翻 bit18 得到的 page（合法 pfn=min_low_pfn=0x40000=2^18 单 bit，翻→0，pfn_to_page(0)=arm64 vmemmap 基址=0xFFFFFFFDFF000000，该地址 pfn0 无RAM未映射→L2 fault）。两 fault 点都在持 mmap_read_lock 下，smaps_rollup 是高频读指针的哨兵受害者。v2 曾误判为'软件 UAF/drop-reacquire 竞态/5#纯野值'，v3 经 vmemmap memstart-offset 机制推翻。",
+            "confidence": 5,
+            "frequency": 2,
+            "fix_template": "软件侧无 bug 可修。硬件 RAS 单线：memtester 多板 / 查 PMIC-TZ ECC log / DDR margin retrain / 命中 cell 则 RMA 换件。判别法抠翻转 bit 固定性（bit 固定+地址飘移=位线DQ缺陷；PA固定=marginal cell；随机=纯SEU考虑ECC）。不上 KASAN（抓不到单 bit 翻转）。band-aid 仅调试镜像 BUG_ON（不进生产，避免 PSS 漂移影响 lmkd）。",
+            "keywords": [
+                "show_smaps_rollup",
+                "smaps_account",
+                "shmem_mapping",
+                "PageAnon",
+                "android.bg",
+                "drop-reacquire",
+                "mmap_lock_is_contended",
+                "find_vma",
+                "vm_next 链表版",
+                "垃圾指针",
+                "user/kernel gap",
+                "两不同 fault 点",
+                "VA_BITS=39 vmemmap=0xFFFFFF80",
+                "竞态 vs 外部破坏 不可裁决",
+                "5#=bit18 PTE.pfn",
+                "6#=bit52 file->f_mapping",
+                "vmemmap memstart_offset",
+                "min_low_pfn=0x40000=2^18",
+                "pfn_to_page(0)",
+                "crash kmem not in mem map 误判",
+                "XOR popcount=1",
+                "同源 SEU 不同击中目标"
+            ],
+            "first_seen": "2026-08-06",
+            "last_seen": "2026-08-06",
+            "outcome": "confirmed_seu_hardware",
+            "key_lesson": "crash log 反汇编只能定位'症状'(解引用垃圾指针),不能定论'根因'(软件 vs 硬件 SEU)。本案两轮对抗验证一度倾向'软件破坏/drop-reacquire 竞态',但 crash 工具实证才确证为 DRAM SEU 单 bit 翻转。教训:(1)对'垃圾指针'必须用 crash 工具核验其是否=期望值±1bit,而非仅看是否在有效地址范围;(2)对抗验证提出的 SEU 假设即使首次落点判断错误,其方向直觉仍可能正确,须用实证而非地址范围臆测证伪;(3)live slab 对象(ALLOCATED+refcount>0)被单 bit 翻转=SEU 铁证,排除 UAF(应 FREE)与 OOB(应连续覆盖);(4)【v3 新增·vmemmap 基址误判】对'看着在有效区外的野 page 指针',必须先算 arm64 vmemmap C 变量基址(=VMEMMAP_START−memstart_pfn×sizeof(struct page),≠VMEMMAP_START!),看野值是否=该基址或其2^k偏移。crash kmem 报'not in mem map'不等于纯随机 garbage——pfn=0 的 page 结构恰落 vmemmap 基址且因物理0无RAM未映射。合法 pfn 若是2的幂(如min_low_pfn=0x40000=2^18),翻其唯一置位bit→pfn=0→page=vmemmap基址,看着'离有效区差很多bit'实则是pfn域单bit(换算到page柄域放大sizeof(page)=64倍)。本案5#正是此误判:v2判'纯野值待软件排查',v3算出0xFFFFFFFDFF000000=vmemmap基址才确证bit18 SEU。"
         }
     ]
 }

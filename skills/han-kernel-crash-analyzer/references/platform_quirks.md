@@ -39,3 +39,5 @@
 - PA 换算（线性映射）：`PA = (VA − 0xffffff8000000000) + 0x40000000`；KASLR 的 Kernel Offset(text) 不影响 linear map
 - userdebug build 默认 `slub_debug=FZP` + `panic_on_taint=0x20`：会把 SLUB debug 检测到的 padding/poison 损坏(BAD_PAGE taint)放大为 panic。排查 DRAM SEU 类问题建议判 bit 一致性（见 patterns ptrn-007），断电开关机压测下不必改 panic_on_taint
 - DDR：LPDDR4x（多数配置无 ECC，单 bit 错误不可纠不可检，靠 SLUB debug 在静态填充区被动捕获）
+- **vmemmap 基址反推（排查"野 page 指针"必算，否则极易误判为 garbage）**：arm64 `vmemmap` C 变量 = `VMEMMAP_START − (memstart_addr>>PAGE_SHIFT)×sizeof(struct page)` = `0xFFFFFFFE00000000 − 0x40000×64 = 0xFFFFFFFDFF000000`（**≠ VMEMMAP_START！差 0x1000000 = memstart 偏移**）。pfn=0 的 page 结构落此基址，因物理 0 无 RAM 未映射 → crash `kmem` 报 "not in mem map"，**非 garbage**。合法 RAM 首页 pfn = `min_low_pfn = memstart_pfn = 0x40000 = 2^18`（单 bit），SEU 翻 bit18 → pfn=0 → page=vmemmap 基址。详见 crash_types.md「DRAM SEU」+ patterns ptrn-008
+- **通用 ARM64 公式**（非 SM6115 独有，换平台只变 memstart_addr）：`vmemmap 基址 = VMEMMAP_START − memstart_pfn × sizeof(struct page)`；crash 实测三件套：`p sizeof(struct page)` / `p memstart_addr` / `p min_low_pfn`，代公式即得本机 vmemmap 基址
