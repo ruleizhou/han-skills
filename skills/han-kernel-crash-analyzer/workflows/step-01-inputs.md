@@ -7,7 +7,7 @@
    - **`dmesg_TZ.txt`** 最高优先级 — 高通 ramdump 中最完整的 crash 日志，包含 kernel panic 全文、调用栈、寄存器、`Code:` 内存指令转储，应作为 crash 信息的第一来源
    - `parser_out/` 目录 — 高通 ramdump 解析输出（`dmesg_TZ.txt` 通常在此目录或当前目录下）
    - `issues/<BugID>/artifacts/vmlinux` — 禅道/军师工作流下与 dump **Linux version 整行匹配** 的符号文件（见 `zentao-bug-log-fetch` § vmlinux 匹配）
-   - `symbols/` 目录 — vmlinux/System.map 符号文件
+   - `symbols/` 目录 — **`symbols/vmlinux`（dump 自带，最高优先）**、System.map 符号文件
    - `*.txt` 文件（如 `kasan.txt`、`reboot.txt`）— crash 日志文本
    - `*.log` 文件 — 内核日志/dmesg 输出
    - `*.json` 文件 — 解析元数据
@@ -32,6 +32,15 @@ options:
 - **Crash 现场**：`dmesg_TZ.txt` > parser_out/ > 其他 crash log 文件
 - **符号文件**：vmlinux 或 System.map（用于 objdump）
 - **内核代码路径**：对应的内核源码树（Step 0 已收集）
+
+### vmlinux 探测铁律（所有高通 ramdump 场景，跳过即翻车）
+
+> **血泪教训（SM6115 MC5612 elo/6# 案）**：用 `find ... | head` 列目录时，466MB 的 `symbols/vmlinux` 排序靠后被截断，武断判“无 vmlinux”，转去 source tree 找了个版本不符的 vmlinux → crash 拒绝加载、一路误判“版本不匹配”。三爷一句“不匹配怎么解析出 log”才戳破。
+
+**铁律**：
+1. **判“无 vmlinux”前，必须显式 `ls -la symbols/vmlinux`（禁用 find/head 等会截断的命令）**。高通 ramdump 的 `symbols/vmlinux` 是标配。
+2. **vmlinux 优先级：`symbols/vmlinux`（dump 自带）> source tree**。source tree 的 vmlinux 可能版本不符（编译日期/commit 不同），只能做反汇编单函数参考，**不能直接喂 crash**。
+3. **能解析 log（ramparse 符号化出 `func+offset/size`）即证明存在匹配符号源**——若 crash 报 do not match，先怀疑“我用的 vmlinux 对吗”，别武断判版本不存在。
 
 ### vmlinux 匹配（禅道 / aosp-log-analysis-workspace 场景）
 

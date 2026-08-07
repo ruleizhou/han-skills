@@ -105,6 +105,39 @@
                 "verified_cmd": "crash <vmlinux> \"DDRCS0_0.BIN@0x40000000,DDRCS0_1.BIN@0xc0000000\" --kaslr=0x25c4c00000 --no_data_debug --machdep vabits_actual=39 --no_panic"
             },
             "cached_at": "2026-07-15T04:41:40Z"
+        },
+        "/home5/zhourulei/code/MC5612/LA.VENDOR.13.2.1": {
+            "tools": {
+                "llvm-objdump": true,
+                "aarch64-linux-gnu-objdump": false,
+                "nm": true,
+                "crash": true,
+                "llvm-symbolizer": true
+            },
+            "vmlinux": "/home5/zhourulei/code/MC5612/LA.VENDOR.13.2.1/kernel_platform/out/msm-kernel-bengal-gki/gki_kernel/common/vmlinux",
+            "cached_at": "2026-08-07T06:48:08Z"
+        },
+        "/home5/zhourulei/issue/crash/SM6115/MC5612/reboot/elo/6#": {
+            "vmlinux": "/home5/zhourulei/issue/crash/SM6115/MC5612/reboot/elo/6#/symbols/vmlinux",
+            "vmlinux_build_id": "42d31472451ccadbdfd7d6569d215cb3765c5621",
+            "vmlinux_version": "5.15.151-android13-8-gd7a1bc5fdeed #1 SMP PREEMPT Wed Jul 29 15:28:51 UTC 2026",
+            "kaslr": "0x1bc2600000",
+            "kaslr_method": "OCIMEM.BIN 0xdead4ead magic +4 u64",
+            "vabits_actual": 39,
+            "ddr_segments": [
+                "DDRCS0_0.BIN@0x40000000",
+                "DDRCS1_0.BIN@0xc0000000"
+            ],
+            "crash": true,
+            "verified_cmd": "crash symbols/vmlinux \"DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000\" --kaslr=0x1bc2600000 --machdep vabits_actual=39 --no_data_debug --no_panic",
+            "tools": {
+                "llvm-objdump": true,
+                "nm": true,
+                "crash": true,
+                "llvm-symbolizer": true
+            },
+            "lesson": "用 dump 自带 symbols/vmlinux, 不要用 source tree 的 Jul7 vmlinux(版本不匹配被 crash 拒绝)",
+            "cached_at": "2026-08-07T07:43:32Z"
         }
     }
 }

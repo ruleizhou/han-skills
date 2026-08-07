@@ -13,6 +13,8 @@
 4. **必带 `--kaslr=<offset>`**。**禁止**用 `--machdep kimage_voffset=<val>`（运行时值/链接基准值都会导致 segfault 或 `do not match`）。
 
 > **血泪教训（SM6115 MC5612 elo/5# 案）**：跳过此检查，自创 `--machdep kimage_voffset=<val>` → crash 拿它翻译线性映射地址 → 算出非法物理 → **segfault（exit 139）**；或漏 `--kaslr` → `kimage_voffset cannot be determined` 直接退出。**`--kaslr` 是 rawdump+KASLR 唯一正确入口**——crash 8.0.4 对 rawdump 无 vmcore header，必须手动喂，别指望它自动推。
+>
+> **血泪教训2（SM6115 MC5612 elo/6# 案）**：vmlinux 用错（拿 source tree 的 Jul7 版本喂 Jul29 的 dump）→ crash 报 `vmlinux and ramdump_elf do not match`。**反证逻辑**：ramparse 能符号化出 `func+offset/size`，就证明存在匹配符号源——`symbols/vmlinux`（dump 自带）才是对的，**别用 source tree 的**。报 do not match / kimage_voffset **第一反应永远是“vmlinux 用对了吗”**，而非“版本不存在”。详见 `step-01-inputs.md` § vmlinux 探测铁律。
 
 ## 触发条件
 - 存在 dump/ 目录含 DDRCS*.BIN

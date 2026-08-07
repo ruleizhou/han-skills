@@ -22,6 +22,7 @@ description: >
 1. **先反汇编，再下结论** — 必须从 crash log 提取 fault address，用 objdump 定位到具体指令，再追溯到源码行。反汇编之前不得给根因结论。
 2. **改 init/probe 代码前，先验证执行顺序** — 追踪完整回调序列，确认修复点在时间线上正确，不会被后续操作覆盖。
 3. **先确认范围，再输出** — 分析开始前必须执行 Step 0 交互确认，不得跳过。
+4. **内存破坏类必须上 crash `kmem`** — crash 现场出现指针异常值 / 单 bit 翻转 / UAF / OOB / SLUB redzone / bad magic / 链表 cycle 等内存破坏签名时，**必须**用 crash 工具做 `kmem`/`kmem -s`/`struct`/`search` 内存分析（见 `references/tool_chain.md`「内存分析工具（crash）」档）。python 只能读字节，**读不出对象归属/边界/freelist/slab 健康度**，不得作为内存破坏类的唯一分析手段。判“OOB/UAF 待 KASAN 排除”前，必须先用 crash 周边字节分析（孤立单 bit vs 连续破坏）收紧结论。
 
 ## 模式判断
 
