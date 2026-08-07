@@ -65,7 +65,19 @@
                 "kernel_offset": "0x2617200000",
                 "runtime_base": "0xffffffe621720000"
             },
-            "cached_at": "2026-07-13T14:30:00Z"
+            "cached_at": "2026-07-13T14:30:00Z",
+            "crash": {
+                "binary": "/home5/zhourulei/.local/bin/crash",
+                "vabits_actual": 39,
+                "kaslr_method": "OCIMEM_0xdead4ead (搜 OCIMEM.BIN 0xdead4ead magic, 后u64小端=KASLR)",
+                "kaslr_offset_example": "0x1160000000 (SM6115 MC5612 elo/5#)",
+                "must_flags": "--kaslr=<offset> 必带, 否则报 'kimage_voffset cannot be determined' 直接退出",
+                "extra_flags": "--no_data_debug --no_panic",
+                "ddr_segments": "DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000 (逗号连成一个参数, 勿分两个@文件)",
+                "verified_cmd": "crash <vmlinux> \"DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000\" --kaslr=0x1160000000 --no_data_debug --machdep vabits_actual=39 --no_panic",
+                "lesson": "勿用 --machdep kimage_voffset=<val>(运行时值或链接基准值都导致 segfault/do-not-match); 必须用 --kaslr=<offset>; DDRCS 用逗号单参数; 带齐 --no_data_debug --no_panic",
+                "verified_at": "2026-08-07T12:10:30.442574"
+            }
         },
         "/home5/zhourulei/code/MT5825/LA.VENDOR.13.2.1": {
             "tools": {

@@ -21,6 +21,8 @@ ARM64 反汇编工具链的使用备忘。具体缓存数据（按工作区）�
 
 ### 启动命令（严格按 `workflows/crash-parse-raw.md` C0/C1/C2，别手拼漏参数）
 
+> **强制第一步**：先读 `data/tool_cache.json` 的 `crash` 字段，**有 `verified_cmd` 直接抄，禁止自创 `--machdep` 参数**（自创 `kimage_voffset` 会 segfault，见 `crash-parse-raw.md`「⚠️ 强制前置检查」血泪教训）。
+
 ```bash
 crash <vmlinux> "<DDRCS0_0.BIN@phys0>,<DDRCS0_1.BIN@phys1>" \
   --kaslr=<从OCIMEM 0xdead4ead读出的偏移> --no_data_debug --machdep vabits_actual=39 --no_panic

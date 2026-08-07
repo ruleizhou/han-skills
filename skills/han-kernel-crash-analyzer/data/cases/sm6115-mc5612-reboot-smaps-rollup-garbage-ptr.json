@@ -1,0 +1,127 @@
+{
+    "id": "sm6115-mc5612-reboot-smaps-rollup-garbage-ptr",
+    "timestamp": "2026-08-06T19:30:00+08:00",
+    "crash_type": "Oops → panic (无效指针解引用, paging request, translation fault on READ)",
+    "fault_address": "5# 0xFFFFFFFDFF000008 (page arg, L2 fault); 6# 0xFFEFFF803A3D8908 (f_mapping->a_ops, L0 fault, user/kernel gap)",
+    "platform": "Qualcomm SM6115 (BENGAL IDP nopmi)",
+    "kernel_version": "5.15.151-android13-8-gd7a1bc5fdeed #1 SMP PREEMPT Wed Jul 29 15:28:51 UTC 2026",
+    "scenario": "重启压测；5# 约2000次复现、6# 约1300次复现，均启动后~27s 死机；故障进程 android.bg 读 /proc/<pid>/smaps_rollup",
+    "root_cause": "经 crash 工具实证确证为 DRAM SEU / 单 bit 翻转（硬件，非软件 UAF/OOB）。6#：故障文件 0xffffff80611c5540 属 filp slab 且 ALLOCATED(refcount=4,f_op=ext4_file_ops,f_inode 有效)，仅 f_mapping(0xe8)被坏；期望 f_mapping=inode->i_data=0xffffff803a3d8848(存活,.host=f_inode)，实测垃圾 0xffefff803a3d8848，XOR=0x0010000000000000 popcount=1 → 恰好 1 bit 翻转(bit52)→ SEU。5#：垃圾 page 0xfffffffdff000000 在 vmemmap 外(非有效 page)，非 pte-pfn 单 bit 翻转，最可能为 PMD/PUD 指针单 bit 翻转级联到垃圾 pte/page(待补证)。两 dump 同路径同时点同场景=同一类根因 SEU。",
+    "root_cause_category": "硬件 (DRAM SEU / 单 bit 翻转)",
+    "fix_summary": "软件侧无 bug 可修。换板/memtester 重启循环定位 SEU DRAM cell 并确认是否单板；DDR margin retrain / 上 LPDDR4x ECC；换 DDR 颗粒或主板/换设备对比。不必上 KASAN(SEU 非软件越界)。§5 的软件修复(drop-reacquire/KASAN)在此结论下不适用,仅作备查。",
+    "pattern_keywords": [
+        "show_smaps_rollup",
+        "smaps_account",
+        "shmem_mapping",
+        "PageAnon",
+        "android.bg",
+        "smaps_rollup 采样",
+        "drop-reacquire",
+        "mmap_lock_is_contended",
+        "find_vma",
+        "vm_next 链表版",
+        "垃圾指针",
+        "user/kernel gap",
+        "translation fault",
+        "重启压测",
+        "两不同 fault 点",
+        "List is corrupted",
+        "ipc_log_context",
+        "VA_BITS=39 vmemmap=0xFFFFFF80",
+        "BuildID 整行匹配"
+    ],
+    "tools_used": [
+        "llvm-objdump + llvm-symbolizer (vmlinux BuildID=42d31472451ccadb, not stripped, debug_info)",
+        "System.map (symbols/modules/System.map)",
+        "对抗验证 Agent x2 (general-purpose, root-cause + fix)"
+    ],
+    "disasm_evidence": {
+        "dump5": {
+            "pc": "smaps_account+0x24 = 0xffffffc00864148c",
+            "instr": "ldar x9,[x9] (c8dffd29), x9=arg2+8, arg2(page)=0xFFFFFFFDFF000000",
+            "source": "PageAnon(page) @ fs/proc/task_mmu.c:462, lr=smaps_pte_entry @ :632"
+        },
+        "dump6": {
+            "pc": "show_smaps_rollup+0x208 = 0xffffffc008641ba0",
+            "instr": "ldr x9,[x9,#0xc0] (f9406129), x9=*(vma->vm_file+232=f_mapping)=0xFFEFFF803A3D8848",
+            "source": "shmem_mapping(vma->vm_file->f_mapping) @ task_mmu.c:776 <- show_smaps_rollup @ :910"
+        },
+        "kaslr": {
+            "dump5": "0x116000000",
+            "dump6": "0x1ba4000000"
+        }
+    },
+    "quality_checklist": {
+        "objdump_executed": true,
+        "fault_address_mapped": true,
+        "root_cause_falsifiable": true,
+        "init_order_verified": "N/A",
+        "scenario_consistent": true
+    },
+    "adversarial_verification": {
+        "root_cause_verdict": "SEU_CONFIRMED_BY_CRASH_TOOL (overturns initial software-corruption framing)",
+        "root_cause_challenges": [
+            "7A 提出 SEU 单 bit 假设(基于 vmemmap=0xFFFFFFFC)→当时按本内核 vmemmap=0xFFFFFF80 证伪了 5# 的 page 指针;但 crash 工具实证 6# 的 f_mapping 确为单 bit 翻转(XOR popcount=1),7A 的 SEU 直觉正确,只是落点在 6# 的 f_mapping 而非 5# 的 page",
+            "8A 提出 drop-reacquire 自竞态→经 crash 工具实证推翻:6# 文件存活(refcount=4)且仅单 bit 翻转,非 UAF(未释放)非 OOB(非连续覆盖),故非软件竞态/越界",
+            "两轮对抗验证的价值:推动从'软件破坏'怀疑走向'硬件 SEU'实证;单凭 crash log 反汇编无法定论,crash 工具实证是裁决关键"
+        ],
+        "fix_verdict": "HARDWARE_FIX (no software change)",
+        "fix_issues": [
+            "5# 的 PMD/PUD 单 bit 翻转仍为推断,需补页表走查实证",
+            "需换板/memtester 定位具体 DRAM cell 以闭环"
+        ],
+        "challenges_resolved": true
+    },
+    "outcome": "confirmed_seu_hardware",
+    "crash_tool_evidence": {
+        "tool": "crash 8.0.4",
+        "kaslr": {
+            "dump5": "0x1160000000",
+            "dump6": "0x1bc2600000"
+        },
+        "dump6_finding": {
+            "vm_file": "0xffffff80611c5540",
+            "slab": "filp (struct file)",
+            "object_state": "ALLOCATED (not freed), refcount=4",
+            "corrupted_field": "f_mapping @ offset 0xe8",
+            "expected_f_mapping": "0xffffff803a3d8848 (= f_inode+0x190 = inode->i_data, alive, .host=f_inode)",
+            "garbage_f_mapping": "0xffefff803a3d8848",
+            "xor": "0x0010000000000000",
+            "popcount": 1,
+            "verdict": "single-bit SEU (bit 52), NOT UAF (file alive), NOT OOB (isolated 1-bit, not contiguous overwrite)"
+        },
+        "dump5_finding": {
+            "garbage_page": "0xfffffffdff000000",
+            "kmem": "kernel virtual address not found in mem map (outside vmemmap 0xFFFFFF80)",
+            "target_mm": "0xffffff8034f1dc00 (alive, mm_users=3, map_count=229, pgd=0xffffff8062884000)",
+            "vtop_0x7ac434a000": "PMD/PTE intact (PTE=0xe80000ef74df43, pfn=0xef74d, valid page=0xfffffffe02bdd340)",
+            "vmemmap_base": "0xfffffffdff000000 (derived: page - pfn*64, round-trip verified)",
+            "key": "garbage page == vmemmap_base == pfn_to_page(0) -> faulting pte had pfn=0",
+            "verdict": "faulting pte pfn=0 (multi-bit zeroed, NOT single-bit flip); differs from 6#; either multi-bit DRAM SEU or software pte-clear race (pending: locate exact faulting pte, check if single-bit-adjacent to a valid pfn)"
+        },
+        "unified_conclusion": "5# and 6# are DIFFERENT mechanisms: 6# = single-bit SEU on f_mapping (confirmed hardware); 5# = pte pfn=0 (multi-bit, not single-bit SEU, unconfirmed). Both in smaps_rollup under reboot stress but not the same root cause."
+    },
+    "key_lesson": "两不同 fault 点的解读有歧义:既可读为'通用外部破坏(位置随机)'也可读为'单一竞态打破多个不变量(哪个先崩看时序)'。仅凭 crash dump 无法裁决时,必须用 KASAN 活机压测+修复经验证定夺,而非盲改。链表版 vs maple-tree 版的 drop-reacquire UAF 构造不同,需按本内核实际控制流复核,勿套用 maple-tree 版结论。",
+    "dump5_faulting_pte_located": {
+        "method": "python page-table walk (crash 8.0.4 KASLR-unstable for this rawdump)",
+        "linear_map_formula": "phys = virt - PAGE_OFFSET(0xffffff8000000000) + PHYS_OFFSET(0x40000000)",
+        "kimage_phys_base": "0x40000000 (linux_banner link-va vs phys)",
+        "faulting_addr": "0x7ac422a000 (=panic reg x19)",
+        "pte_table_phys": "0x9c735000",
+        "dump_pte_value": "0x1 (bit0=1 present, output_addr=0 -> pfn=0)",
+        "count_of_bad_ptes": "3 identical 0x1: 0x7ac422a000/d000/f000",
+        "neighbor_normal_pte": "0xe80000ef74df43 (pfn=0xef74d)",
+        "panic_vs_dump": "panic=migration entry(w6=1, swp_offset/pfn=0); dump(5s later)=0x1; both pfn=0 -> same garbage page",
+        "single_bit_check": "0x1 vs normal pte popcount>>1, NOT single-bit from valid pte; 3 identical values suggest DRAM local defect, not random single SEU",
+        "refined_root_cause": "5# = DRAM局部bit0缺陷: 文件映射VMA未fault页(pte=0x0)的bit0被翻转为1(0x1), 3个相邻位置, smaps读smaps_rollup遍历遇0x1当present->pfn_to_page(0)->panic. 与6#(随机单bit SEU)同为硬件DRAM缺陷",
+        "verified_at": "2026-08-07T11:57:30.648569",
+        "crash_verified": "crash rd -p 0x9c735150/168/178 = 0x1 (物理直读, 与python一致)",
+        "target_mm_verified": "crash struct mm_struct 0xffffff8034f1dc00: pgd=0xffffff8062884000 mm_users=3 map_count=229 (存活有效)",
+        "pte_table_page": "kmem -p 0x9c735000 -> page 0xfffffffe0171cd40 CNT=1 (页本身正常, 是页内pte内容坏)",
+        "pte_table_full": "crash rd -p: 512项中509项=0x0(文件映射未fault), 仅3个孤立0x1(idx42/45/47)",
+        "vma_context": "0x7ac422a000 在文件映射VMA [0x7aa4391000~0x7ac434a000) ~510MB, vm_file非空; 3个坏pte均在其内",
+        "precise_corruption": "0x0->0x1 = bit0(valid位)单bit翻转, 3个相邻unmapped pte -> DRAM局部bit0缺陷(stuck-at/反复翻转), 非多位破坏非随机单SEU",
+        "crash_correct_cmd": "crash vmlinux \"DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000\" --kaslr=0x1160000000 --no_data_debug --machdep vabits_actual=39 --no_panic"
+    },
+    "verified_by": "han-kernel-crash-analyzer re-analysis 2026-08 (faulting pte located via python pt-walk)"
+}
