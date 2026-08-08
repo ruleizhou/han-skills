@@ -17,6 +17,7 @@
 - 关键词列表
 - 使用的反汇编工具
 - 质量自查结果
+- 动态复现结果（Step 8B：已建回路 / 跳过 / finding，及回归测试路径）
 
 如果对话历史中找不到完整信息，用 `AskUserQuestion` 向用户确认关键细节。
 
@@ -85,6 +86,11 @@ options:
     "fix_verdict": "<APPROVE/APPROVE_WITH_NOTES/REJECT/跳过>",
     "fix_issues": ["<问题摘要>"],
     "challenges_resolved": true
+  },
+  "repro": {
+    "status": "<built_loop | skipped_static | skipped_transient | finding_no_seam>",
+    "repro_command": "<复现命令或空>",
+    "regression_test": "<回归测试路径或空>"
   },
   "outcome": "<success/partial/failed>"
 }
@@ -156,6 +162,7 @@ options:
 更新 `data/patterns.json`：
 
 - **success 的轮次**：提取根因模式，如果已有匹配模式 → `confidence += 1`；如果是新模式 → 追加 `confidence: 1`
+  - **有回归测试佐证**（Step 8B 建出复现回路且 red→green，案例 `repro.status=built_loop`）：额外 `confidence += 1`（动态证实 > 静态推断），并在模式的 `adversarial_verifications` 记录 `repro_verified: true`
 - **failed 的轮次**：对应模式 `confidence -= 1`；如果 confidence 降到 < 0 → 从 patterns.json 中移除
 
 模式条目格式：

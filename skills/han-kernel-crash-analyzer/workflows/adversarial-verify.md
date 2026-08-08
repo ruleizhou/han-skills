@@ -181,4 +181,4 @@ SUGGESTED_REVISIONS: <if any>
 - Agent issues 列表摘要
 - 主分析者对 issues 的回应（采纳/不采纳+理由）
 
-**完成后，读取 `workflows/step-09-report.md` 继续。**
+**完成后，读取 `workflows/step-08b-repro.md` 继续（动态复现与回归评估，条件触发）。**

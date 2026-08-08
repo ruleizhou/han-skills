@@ -56,12 +56,15 @@ description: >
 | 7A | `workflows/adversarial-verify.md` A 节 | Agent 对抗验证根因结论 |
 | 8 | `workflows/step-08-fix.md` | 提出修复建议 |
 | 8A | `workflows/adversarial-verify.md` B 节 | Agent 对抗验证修复方案 |
+| 8B | `workflows/step-08b-repro.md` | 动态复现与回归评估（条件触发：可复现类建回路+回归测试，不可复现类记 finding） |
 | 9 | `workflows/step-09-report.md` | 输出报告 + 案例自动存档 |
 | 10 | `workflows/step-10-learn.md` | 收录新类型/场景 |
 
 **反馈闭环由用户主动触发（"修好了/搞定了"等），不在分析流程中自动弹出。触发后读取 `workflows/feedback-loop.md`。**
 
 **Step 7A 和 8A 是 Agent 对抗验证步骤。Agent tool 不可用或调用失败时跳过这两个步骤，回退到现有手动流程（不阻塞后续步骤）。**
+
+**Step 8B 是动态复现与回归评估，条件触发（仅可复现类 crash）：竞态/UAF/SLUB/性能回归等动态行为类建复现回路 + 回归测试；静态逻辑类（NULL 解引用/初始化顺序/API 误用）与硬件瞬态类（SEU/DRAM bit flip）跳过。Step 8B 是后置增强，不是前置门控——不可复现不影响根因结论置信度。**
 
 **强制入口：无论用户是否已提供 crash 信息，分析模式第一步必须执行 Step 0（读取并执行 `workflows/step-00-scenario.md` 的交互流程）。不得以任何理由跳过 Step 0。**
 
@@ -76,6 +79,7 @@ description: >
 - 根因模式库：`data/patterns.json`（历史分析模式累积）
 - 工具链缓存：`data/tool_cache.json`（按工作区缓存可用工具）
 - SLUB 损坏提取脚本：`scripts/slub_pa_extract.py`（提取 overwritten 事件 + 算 PA + 判 DRAM/CPU/DMA，对齐 patterns ptrn-007）
+- **动态复现验证（Step 8B 调用）**：Skill `diagnosing-bugs`（`~/.pi/agent/skills/diagnosing-bugs/SKILL.md`）— 偶发/竞态类 crash 建复现回路 + 回归测试的 P1-P5 纪律，Step 8B 借用
 - **vmlinux 匹配（禅道 ramdump）**：Skill `zentao-bug-log-fetch` §「vmlinux 匹配」— 检索范围仅 `aosp-log-analysis-workspace/`，`Linux version` 整行 EXACT MATCH
 - **vmlinux 匹配（禅道 ramdump）**：Skill `zentao-bug-log-fetch` §「vmlinux 匹配」— 检索范围仅 `aosp-log-analysis-workspace/`，`Linux version` 整行 EXACT MATCH
 
