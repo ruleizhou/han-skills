@@ -138,6 +138,62 @@
             },
             "lesson": "用 dump 自带 symbols/vmlinux, 不要用 source tree 的 Jul7 vmlinux(版本不匹配被 crash 拒绝)",
             "cached_at": "2026-08-07T07:43:32Z"
+        },
+        "/home5/zhourulei/issue/crash/SM6115/MC5612/reboot/elo/6#-1688times": {
+            "vmlinux": "/home5/zhourulei/issue/crash/SM6115/MC5612/reboot/elo/6#-1688times/symbols/vmlinux",
+            "vmlinux_build_id": "42d31472451ccadbdfd7d6569d215cb3765c5621",
+            "vmlinux_version": "5.15.151-android13-8-gd7a1bc5fdeed #1 SMP PREEMPT Wed Jul 29 15:28:51 UTC 2026",
+            "kaslr": "0x1ecfa00000",
+            "kaslr_method": "OCIMEM.BIN 0xdead4ead magic +4 u64 (每次重启随机, 勿抄 elo/6# 的 0x1bc2600000!)",
+            "vabits_actual": 39,
+            "ddr_segments": [
+                "DDRCS0_0.BIN@0x40000000",
+                "DDRCS1_0.BIN@0xc0000000"
+            ],
+            "crash": true,
+            "verified_cmd": "crash symbols/vmlinux \"DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000\" --kaslr=0x1ecfa00000 --machdep vabits_actual=39 --no_data_debug --no_panic",
+            "linear_map_formula": "phys = virt - 0xffffff8000000000(PAGE_OFFSET) + 0x40000000(PHYS_OFFSET)",
+            "tools": {
+                "llvm-objdump": true,
+                "nm": true,
+                "crash": true,
+                "llvm-symbolizer": true
+            },
+            "root_cause": "DRAM 2-bit flip (bit30+31) on file.f_inode; show_map_vma+0x4c task_mmu.c:286 是放大镜(无辜); 翻转字节PA=0xa26763e3; 同家族第3例",
+            "flipped_byte_PA": "0xa26763e3",
+            "report": "elo6_1688times_show_map_vma_f_inode_bit翻转_分析报告.md",
+            "cached_at": "2026-08-07T16:30:00Z"
+        },
+        "/home5/zhourulei/backup/HanExpertTeams_New/analysis/attachments/DOTEMG/DOTEMG-132": {
+            "tools": {
+                "llvm-objdump": true,
+                "crash": true,
+                "llvm-symbolizer": true
+            },
+            "kernel": {
+                "linux_version": "5.15.151-android13-8-g6642f9712d50 #1 SMP PREEMPT Wed Apr 22 16:37:24 UTC 2026",
+                "line": "GKI(elo JENKIN HARPER-1.3-AND-14), 非 qki-consolidate 正式线",
+                "vmlinux": null,
+                "vmlinux_note": "0.85 正式版本(V01-V18)与临时版本全是 qki-consolidate 线, 无匹配 GKI vmlinux; 需向 elo JENKIN 线要 symbol 包"
+            },
+            "evidence_locations": {
+                "dmesg_283": "DDRCS0_0.BIN +0x16600000 (行格式 '[ ts][T#] ', 时间戳后紧跟线程标记)",
+                "dmesg_1375": "DDRCS0_0.BIN +0x9080000",
+                "tz_log": "OCIMEM.BIN +0x171c0 起文本段 (SYSTEM_NOC ERROR + S:Debug reset)",
+                "dwc3_regdump": "DDRCS0_0.BIN ~+0x3d1ff061 (ipc log '[Reg_Name: Offset Value]')",
+                "ddr_segments": "DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000"
+            },
+            "kaslr_method": "OCIMEM 0xdead4ead 本例无命中; GKI 线 dump 若需 crash 解栈, 用 banner 物理偏移+vmlinux linux_banner 符号反推",
+            "smb_fetch": {
+                "creds": "~/.smbcredentials (0.86 测试部-共享文档 / 0.85 软件版本 通用)",
+                "tool": "uv venv /tmp/smbenv + smbprotocol (smbclient 命令行未装); 单文件用 smbclient.open_file, 目录用递归脚本",
+                "dump_share": "\\\\192.168.0.86\\测试部-共享文档\\8、问题LOG\\MC5612",
+                "sw_share": "\\\\192.168.0.85\\软件版本\\MC5612",
+                "note": "QMESA死机/sw path.txt 指向 0.85 版本服务器; 临时版本/周如磊/ 有按 bug ID 归档的调试包"
+            },
+            "root_cause_summary": "dwc3 event buffer DMA=0 窗口写 IOVA 0 -> SMMU TF(TF+W+SS) -> fault 处理路径失血(handler 故意 ENOSYS + GKI 版 verify_fault 无超时打印) -> TZ SYSTEM_NOC ERROR(ERRLOG1_HIGH=FSYNR1) -> debug reset 进 DLOAD",
+            "patches": "~/backup/patch/MC5612_reboot/ 0001(0602)/0002+0003(0623)/0005(0625)",
+            "cached_at": "2026-08-15T00:00:00Z"
         }
     }
 }

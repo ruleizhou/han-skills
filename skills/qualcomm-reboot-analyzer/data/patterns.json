@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "id": "pmic-spmi-probe-stall",
+      "symptoms": ["开关机压测偶发进recovery界面", "偶发boot卡死后自愈", "reboot command 'RescueParty'"],
+      "signals": [
+        "could not increase module refcount for pin N(-22)",
+        "同mfd父设备(pm7250b@2)兄弟子驱动齐-517(spmi-gpio/adc-tm/usb-pdphy)",
+        "disp_vddio rc=-517 + component_bind_all failed(重试12次后放弃)",
+        "apexd: display.composer is crashing"
+      ],
+      "root_class": "pmic-spmi-probe时序(spmi-gpio模块非LIVE→gpiochip缺位→显示栈放弃→composer崩)",
+      "confidence": 0.7,
+      "frequency": 1,
+      "negative_signals": [
+        "Image size: 4096 Bytes(读首块固定打印,非分区损坏)",
+        "deferred probe timeout刷屏(常态)",
+        "temp-alarm/SPMI错误刷屏(常态)"
+      ],
+      "cases": ["95916"]
+    },
+    {
+      "id": "userspace-silent-hang",
+      "symptoms": ["boot早期静默卡死", "开关机压测轮次超时不重启", "重启后不开机但无崩溃日志", "adbd未上线无logcat"],
+      "signals": [
+        "异常轮开机流程正常(init/模块加载齐全)后长时间零输出",
+        "7.3h/30min级静默+printk ratelimit吞行(51348 lines suppressed)",
+        "rescue_note count≥2(events log)或正常轮恒count=1旁证",
+        "无log_round_N+1(主机阻塞wait-for-device)"
+      ],
+      "root_class": "userspace静默卡死(system_server反复重启或framework挂起,串口盲区)",
+      "confidence": 0.6,
+      "frequency": 1,
+      "negative_signals": [
+        "内核panic(那属于han-kernel-crash-analyzer)",
+        "USB连接后就地出现recovery UI≠工具触发(collect_log.bat物证+1.77s<6.5s枚举不等式排除)"
+      ],
+      "cases": ["95916"]
+    },
+    {
+      "id": "rescue-party-escalation",
+      "symptoms": ["偶发进recovery界面", "提示恢复出厂/wipe data界面"],
+      "signals": [
+        "reboot command全量分布含'RescueParty'或'recovery'",
+        "ABL唯一一次Recovery:1+Load Image recovery_a数百ms完整加载",
+        "recovery UI Brightness状态机(127→63相隔120.0s)",
+        "多起独立事件(自愈判据:下一轮command '')+count持久累计"
+      ],
+      "root_class": "下游表现(非独立缺陷):RescueParty mitigationCount累计至L5",
+      "confidence": 0.85,
+      "frequency": 1,
+      "negative_signals": [
+        "misc BCB残留(BCB是rescue主动写入)",
+        "A/B slot切换/rollback异常(VB2全程通过)",
+        "reboot参数竞态('recovery'为framework显式传入)"
+      ],
+      "cases": ["95916"]
+    },
+    {
+      "id": "uefi-pwrkey-misjudge",
+      "symptoms": ["高温软重启后不开机", "重启后需手动按键才能开机", "压测中概率性重启失败"],
+      "signals": [
+        "失败轮UEFI阶段打印 Invalid pwrkey press. Shutting down!",
+        "失败点位于存储枚举成功后、Booting Linux前",
+        "PS_HOLD干净关机+需手动KPDPWR开机",
+        "高温/特定供电条件概率出现"
+      ],
+      "root_class": "bootloader电源键状态误判(UEFI层)",
+      "confidence": 0.85,
+      "frequency": 1,
+      "negative_signals": [
+        "SBL1-UFS假说(实机boot device为UFS时eMMC路线排除)",
+        "文件系统损坏(fsck修复后挂载正常)"
+      ],
+      "cases": ["96299"]
+    }
+  ]
+}

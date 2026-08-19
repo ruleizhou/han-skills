@@ -13,6 +13,10 @@ cat <<'EOF'
   han-kernel-crash-analyzer  Linux 内核崩溃分析 (高通/Android: NULL 指针/KASAN UAF/SLUB/ABBA 死锁/panic/ramdump)
     触发:"kernel crash"、"死机"、"ramdump"、"KASAN"、"kernel panic"、
          "NULL pointer"、"deadlock"、"问题解决了"、"修好了"
+  qualcomm-reboot-analyzer  高通平台无 dump 重启行为异常根因分析 (RescueParty 升级/ABL 误入 Recovery/misc BCB/开关机压测)
+    触发:"无法正常重启"、"重启后不开机"、"开关机测试失败"、"进 recovery"、
+         "recovery 界面"、"开机卡死"、"挂死无 dump"、"RescueParty"、"重启挂死"、
+         "boot 未完成"、"软重启不开机"、"修好了"
   han-d2-diagram           D2 声明式图表 (流程图/架构图/ER/类图, sketch 手绘风, PNG+SVG)
     触发:"画个流程图"、"架构图"、"ER 图"、"类图"、"把这段转成图表"、
          "D2 怎么画"、"sketch 手绘风"、"生成手绘风格"

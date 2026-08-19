@@ -1,7 +1,22 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-06-19T05:35:00Z",
+  "last_updated": "2026-08-17",
   "device_profiles": {
+    "HBN1901280CHBC": {
+      "model": "HBN1901280CHBC",
+      "manufacturer": "宏芯宇",
+      "capacity": "128GB",
+      "kernel": "5.10.236-qki-consolidate",
+      "platform": "parrot (SM6450)",
+      "ufs_version": "UFS (实测挂 1d84000.ufshc;测试口径误称EMMC)",
+      "spec": {
+        "seqread": 0,
+        "seqwrite": 0,
+        "randread": 0,
+        "randwrite": 0,
+        "note": "规格未知;2026-08高低温挂测数据损坏待闭环,见 cases/hbn1901280chbc-128g-stress-md5-corruption-20260815.md"
+      }
+    },
     "CY14-64G": {
       "model": "CY14-64G",
       "rev": "0002",
@@ -12,7 +27,12 @@
       "ufs_version": "UFS 3.1 (推测)",
       "wb_supported": true,
       "wb_enabled": true,
-      "spec": {"seqread": 820, "seqwrite": 520, "randread": 35000, "randwrite": 80000}
+      "spec": {
+        "seqread": 820,
+        "seqwrite": 520,
+        "randread": 35000,
+        "randwrite": 80000
+      }
     },
     "SDINFDK4-64G": {
       "model": "SDINFDK4-64G",
@@ -25,7 +45,13 @@
       "wb_supported": true,
       "wb_enabled": true,
       "wb_max_alloc_units": 3561,
-      "spec": {"seqread": 1100, "seqwrite": 550, "randread": 0, "randwrite": 0, "note": "随机规格未知，待用户提供"}
+      "spec": {
+        "seqread": 1100,
+        "seqwrite": 550,
+        "randread": 0,
+        "randwrite": 0,
+        "note": "随机规格未知，待用户提供"
+      }
     }
   },
   "test_results": {
@@ -35,20 +61,70 @@
       "method": "ufs_test_sh",
       "scheduler": "none",
       "wb_enabled": false,
-      "spec": {"seqread": 820, "seqwrite": 520, "randread": 35000, "randwrite": 80000},
-      "results": {
-        "seqread_nj1_mbps":  {"min":913.0,"median":913.0,"max":916.0},
-        "seqread_nj2_mbps":  {"min":1398.0,"median":1402.0,"max":1411.0},
-        "seqread_nj4_mbps":  {"min":1710.0,"median":1715.0,"max":1717.0},
-        "seqread_nj8_mbps":  {"min":1891.0,"median":1893.0,"max":1895.0},
-        "seqwrite_nj1_mbps": {"min":421.0,"median":422.0,"max":423.0},
-        "seqwrite_nj2_mbps": {"min":484.0,"median":486.0,"max":487.0},
-        "seqwrite_nj4_mbps": {"min":420.0,"median":475.0,"max":475.0},
-        "seqwrite_nj8_mbps": {"min":149.0,"median":157.0,"max":162.0},
-        "randread_iops":     {"min":45700.0,"median":47400.0,"max":48600.0},
-        "randwrite_iops":    {"min":3415.0,"median":3556.0,"max":3672.0}
+      "spec": {
+        "seqread": 820,
+        "seqwrite": 520,
+        "randread": 35000,
+        "randwrite": 80000
       },
-      "verdict": {"seqread":"pass","seqwrite":"fail","randread":"pass","randwrite":"warn"}
+      "results": {
+        "seqread_nj1_mbps": {
+          "min": 913.0,
+          "median": 913.0,
+          "max": 916.0
+        },
+        "seqread_nj2_mbps": {
+          "min": 1398.0,
+          "median": 1402.0,
+          "max": 1411.0
+        },
+        "seqread_nj4_mbps": {
+          "min": 1710.0,
+          "median": 1715.0,
+          "max": 1717.0
+        },
+        "seqread_nj8_mbps": {
+          "min": 1891.0,
+          "median": 1893.0,
+          "max": 1895.0
+        },
+        "seqwrite_nj1_mbps": {
+          "min": 421.0,
+          "median": 422.0,
+          "max": 423.0
+        },
+        "seqwrite_nj2_mbps": {
+          "min": 484.0,
+          "median": 486.0,
+          "max": 487.0
+        },
+        "seqwrite_nj4_mbps": {
+          "min": 420.0,
+          "median": 475.0,
+          "max": 475.0
+        },
+        "seqwrite_nj8_mbps": {
+          "min": 149.0,
+          "median": 157.0,
+          "max": 162.0
+        },
+        "randread_iops": {
+          "min": 45700.0,
+          "median": 47400.0,
+          "max": 48600.0
+        },
+        "randwrite_iops": {
+          "min": 3415.0,
+          "median": 3556.0,
+          "max": 3672.0
+        }
+      },
+      "verdict": {
+        "seqread": "pass",
+        "seqwrite": "fail",
+        "randread": "pass",
+        "randwrite": "warn"
+      }
     },
     "CY14-64G_20260618": {
       "device": "CY14-64G",
@@ -89,11 +165,45 @@
     }
   },
   "alerts": [
-    {"text": "CY14-64G(三星): WB关闭时顺序写峰值486MB/s未达标520MB/s, 启用WB是关键", "confidence": 2, "frequency": 2},
-    {"text": "CY14-64G(三星): SLC断崖已确认——8GB累计写入后从475→157MB/s(67%降速)暴露TLC直写", "confidence": 2, "frequency": 1},
-    {"text": "CY14-64G(三星): 顺序读裸rawdump达1893MB/s, 为规格820MB/s的231%, 读通路极健康", "confidence": 2, "frequency": 1},
-    {"text": "SDINFDK4-64G(闪迪): 写SLC峰值595MB/s达标550MB/s ✅; 持续写215MB/s出现SLC断崖(64%降速)", "confidence": 2, "frequency": 2},
-    {"text": "随机IOPS受限于psync引擎(iodepth cap=1)，SanDisk随机写10.1k IOPS明显优于三星5.4k", "confidence": 2, "frequency": 2},
-    {"text": "SanDisk wb_max_alloc_units=3561(三星1536)虽大但SLC耗尽后TLC直写仅215MB/s", "confidence": 2, "frequency": 2}
+    {
+      "text": "CY14-64G(三星): WB关闭时顺序写峰值486MB/s未达标520MB/s, 启用WB是关键",
+      "confidence": 2,
+      "frequency": 2
+    },
+    {
+      "text": "CY14-64G(三星): SLC断崖已确认——8GB累计写入后从475→157MB/s(67%降速)暴露TLC直写",
+      "confidence": 2,
+      "frequency": 1
+    },
+    {
+      "text": "CY14-64G(三星): 顺序读裸rawdump达1893MB/s, 为规格820MB/s的231%, 读通路极健康",
+      "confidence": 2,
+      "frequency": 1
+    },
+    {
+      "text": "SDINFDK4-64G(闪迪): 写SLC峰值595MB/s达标550MB/s ✅; 持续写215MB/s出现SLC断崖(64%降速)",
+      "confidence": 2,
+      "frequency": 2
+    },
+    {
+      "text": "随机IOPS受限于psync引擎(iodepth cap=1)，SanDisk随机写10.1k IOPS明显优于三星5.4k",
+      "confidence": 2,
+      "frequency": 2
+    },
+    {
+      "text": "SanDisk wb_max_alloc_units=3561(三星1536)虽大但SLC耗尽后TLC直写仅215MB/s",
+      "confidence": 2,
+      "frequency": 2
+    },
+    {
+      "text": "HBN1901280CHBC(宏芯宇128G): 高低温(60°/20°)挂测MD5数据损坏+读卡死68.8min+假写速731MB/s, 3/3两板复现, 指向来料可靠性待换料闭环(BUG 96455)",
+      "confidence": 1,
+      "frequency": 1
+    },
+    {
+      "text": "MC5616 挂测'数据损坏'假象:挂测写入走 page cache(写速>物理极限 731MB/s)+ warm reset 未落盘 → MD5 fail,而 UFS 链路 0 错误;挂测中断主因是系统 boot 不完成瘫死(DSI ESD/audio/zygote)。挂测类 bug 单先查内核 I/O error 是否为 0,再判定器件责任",
+      "confidence": 0.8,
+      "frequency": 1
+    }
   ]
 }

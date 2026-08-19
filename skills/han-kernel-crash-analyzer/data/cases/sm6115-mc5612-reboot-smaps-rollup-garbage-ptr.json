@@ -123,5 +123,22 @@
         "precise_corruption": "0x0->0x1 = bit0(valid位)单bit翻转, 3个相邻unmapped pte -> DRAM局部bit0缺陷(stuck-at/反复翻转), 非多位破坏非随机单SEU",
         "crash_correct_cmd": "crash vmlinux \"DDRCS0_0.BIN@0x40000000,DDRCS1_0.BIN@0xc0000000\" --kaslr=0x1160000000 --no_data_debug --machdep vabits_actual=39 --no_panic"
     },
+    "dump6_1688times_finding": {
+        "kaslr": "0x1ecfa00000",
+        "flipped_object": "file.f_inode (filp slab, ALLOCATED, refcount=4, f_op=ext4_file_operations)",
+        "expected_f_inode": "0xffffff8050354c98 (= dentry->d_inode, 独立路径交叉验证, file_inode()正常情况两者相等)",
+        "garbage_f_inode": "0xffffff8090354c98 (指向全零 lru 页 0xd0354000, 非slab -> 排除UAF)",
+        "xor": "0x00000000C0000000",
+        "popcount": 2,
+        "flipped_bits": "bit30 + bit31 (8字节指针的byte3, 0x50->0x90)",
+        "flipped_byte_PA": "0xa26763e3",
+        "fault_site": "show_map_vma+0x4c @ task_mmu.c:286 dev=inode->i_sb->s_dev; read i_sb=0 -> fault @0x10 (ESR 0x96000005 level-1 translation fault on READ)",
+        "linear_map_formula": "phys = virt - 0xffffff8000000000(PAGE_OFFSET) + 0x40000000(PHYS_OFFSET), 双路径(vtop vs 线性推导)自洽",
+        "verdict": "DRAM 2-bit SEU on file.f_inode (NOT UAF: f_inode points to non-slab lru page; NOT OOB: 点状非片状破坏); task_mmu.c innocent (放大镜)",
+        "family_note": "第3例: 5#/6#/6#-1688times 翻转PA全不同(0x9c735150/0xa11c562e/0xa26763e3) bit全不同(bit0/bit52/bit30-31) 对象类别不同(pte/f_mapping/f_inode) -> 非单一坏cell, 偏随机SEU/多点脆弱",
+        "adversarial_verify": "strategist五问全推翻 + 源码命门(file_inode()=f->f_inode 经fs.h:1389核实)自洽, 置信度95%~99%",
+        "report": "/home5/zhourulei/issue/crash/SM6115/MC5612/reboot/elo/6#-1688times/elo6_1688times_show_map_vma_f_inode_bit翻转_分析报告.md",
+        "verified_at": "2026-08-07T16:30:00Z"
+    },
     "verified_by": "han-kernel-crash-analyzer re-analysis 2026-08 (faulting pte located via python pt-walk)"
 }
