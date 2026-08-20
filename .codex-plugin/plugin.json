@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides) + han-llm-wiki (personal knowledge-base wiki with 9 commands) + han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android) + han-d2-diagram (D2 declarative diagrams) + han-git-commit (interactive git commit message generator) + han-flash-test (UFS/eMMC read/write benchmark) + han-util-tools (kernel dev toolkit router, /han-util-tools command) + han-tech-doc-writer (technical doc writer with D2 diagrams + infographics, 7-step workflow) + qualcomm-reboot-analyzer (Qualcomm/Android no-dump reboot anomaly root cause analysis).",
+  "description": "Han's skill set: self-learning skill factory + image generation suite (han-imagen engine, infographic, hand-write-pic, disassembly-diagram, slides) + han-llm-wiki (personal knowledge-base wiki with 9 commands) + han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android) + han-d2-diagram (D2 declarative diagrams) + han-git-commit (interactive git commit message generator) + han-flash-test (UFS/eMMC read/write benchmark) + han-util-tools (kernel dev toolkit router, /han-util-tools command) + han-tech-doc-writer (technical doc writer with D2 diagrams + infographics, 7-step workflow) + qualcomm-reboot-analyzer (Qualcomm/Android no-dump reboot anomaly root cause analysis) + qualcomm-flash-validation-analyzer (Qualcomm QMVS flash-validation test-failure root cause analysis — clock scaling / devfreq governor / UFS quirks).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -39,13 +39,18 @@
     "reboot",
     "recovery",
     "rescue-party",
-    "bootloop"
+    "bootloop",
+    "flash-validation",
+    "clock-scaling",
+    "devfreq",
+    "governor",
+    "gear-switching"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Han Skills",
     "shortDescription": "Personal skill factory and image-generation workflows",
-    "longDescription": "Han's Codex skill collection. Ships han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), and han-llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save). Includes han-kernel-crash-analyzer (Linux kernel crash analysis — NULL pointer / KASAN UAF / SLUB / deadlock — with disassembly-first workflow + self-learning). Also ships han-d2-diagram (D2 declarative diagrams), han-git-commit (interactive git commit message generator), and han-flash-test (UFS/eMMC read/write benchmark). Also ships han-util-tools (kernel dev toolkit router — /han-util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type; new sub-skills created on demand via han-skill-creator-plus). Also ships han-tech-doc-writer (technical documentation writer with D2 diagrams + han-infographic infographics, 7-step workflow: diagnose→source→outline→diagrams+infographics→write→review→output, self-learning feedback loop). Also ships qualcomm-reboot-analyzer (Qualcomm/Android reboot-behavior root cause analysis without dumps — RescueParty escalation audit, ABL/misc-BCB recovery-entry diagnosis, power-cycle stress failure triage, death-fingerprint evidence + self-learning).",
+    "longDescription": "Han's Codex skill collection. Ships han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), and han-llm-wiki (personal knowledge-base wiki with 9 commands: init/ingest/query/lint/card/weekly/research/mode/think/save). Includes han-kernel-crash-analyzer (Linux kernel crash analysis — NULL pointer / KASAN UAF / SLUB / deadlock — with disassembly-first workflow + self-learning). Also ships han-d2-diagram (D2 declarative diagrams), han-git-commit (interactive git commit message generator), and han-flash-test (UFS/eMMC read/write benchmark). Also ships han-util-tools (kernel dev toolkit router — /han-util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type; new sub-skills created on demand via han-skill-creator-plus). Also ships han-tech-doc-writer (technical documentation writer with D2 diagrams + han-infographic infographics, 7-step workflow: diagnose→source→outline→diagrams+infographics→write→review→output, self-learning feedback loop). Also ships qualcomm-reboot-analyzer (Qualcomm/Android reboot-behavior root cause analysis without dumps — RescueParty escalation audit, ABL/misc-BCB recovery-entry diagnosis, power-cycle stress failure triage, death-fingerprint evidence + self-learning). Also ships qualcomm-flash-validation-analyzer (Qualcomm QMVS flash-validation test-failure root cause analysis — 45-item result CSV alignment, driver-tree check (msm/common dual-tree trap), governor three-branch analysis, device experiment matrix (load profiling / forced clock-scale bisection / no-suspend control / ftrace load series), layered root cause + fix patches (downdifferential split / quirk entry), self-learning).",
     "developerName": "Han",
     "category": "Productivity",
     "capabilities": [
@@ -69,7 +74,8 @@
       "Benchmark UFS/eMMC read/write throughput on an Android device",
       "Route a kernel dev task (debug / bringup / feature-dev) via /han-util-tools",
       "Write a Chinese technical document from a URL/local file with D2 diagrams and infographics",
-      "Diagnose an abnormal reboot with no dump (RescueParty escalation / stuck in recovery / power-cycle stress failure) on a Qualcomm Android device"
+      "Diagnose an abnormal reboot with no dump (RescueParty escalation / stuck in recovery / power-cycle stress failure) on a Qualcomm Android device",
+      "Diagnose a QMVS flash-validation failure (clock-scaling transitions deficit / gear not switching / devfreq governor dead-zone / UFS quirk miss) on a Qualcomm Android device"
     ],
     "brandColor": "#0EA5E9"
   }

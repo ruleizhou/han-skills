@@ -1,0 +1,63 @@
+---
+name: qualcomm-flash-validation-analyzer
+description: >
+  高通 QMVS flash-validation 测试失败的根因排查。触发词：flash-validation 失败/fail、
+  clock scale 不过、transitions 不足、UFS 变频失败/不切档、gear 不切换、test_ran=0、
+  value=-1、性能项不达标、错误计数非零、换新 flash 料验证失败、UFS 2.x/3.x 换料测试、
+  devfreq 死区、quirk 未命中。覆盖：45 项结果 CSV 对齐定位失败面 → 驱动树确认
+  （msm/common 双树陷阱）→ governor 三分支分析 → 设备实验矩阵（负载刻画/强制变频二分/
+  禁挂起对照/ftrace load 序列）→ 分层根因 + 修复 patch（downdifferential 分流/quirk 补条目）。
+  不处理：内核 crash/ramdump（用 han-kernel-crash-analyzer）、主动测存储速率
+  （用 han-flash-test）、重启行为异常（用 qualcomm-reboot-analyzer）。
+  反馈闭环：修好了/验证通过了/根因确认了。
+---
+
+# Qualcomm Flash Validation Analyzer
+
+排查高通平台 QMVS flash-validation 测试失败：从 45 项结果 CSV 定位失败面，沿决策树做静态确认 + 设备实验实锤，输出分层根因、修复 patch 与验证清单。带案例自学习（patterns.json + cases），越用判断越准。
+
+## 核心原则
+
+1. **先确认哪棵驱动树在跑**——`CONFIG_SCSI_UFS_QCOM=m` 即 msm-kernel 树（downdifferential=65），看错树结论全偏
+2. **每个结论必须有实验或代码证据**——静态推理标注"待设备验证"，不确定就说不确定
+3. **ftrace load 序列是最有力证据**——governor 死区只有 `devfreq_monitor` tracepoint 能直接看见
+4. **实验后恢复现场**——governor/PM control/tracing 开关用完还原；echo on 只做对照实验不做规避方案（会弄死依赖 suspend 前置的测试项）
+5. **换料必核 quirks 白名单**——manufacturer_id 不在 `ufs_qcom_dev_fixups[]`（如 Hynix 0x0CD6 ≠ 0x1AD）即掉出生态兼容层
+
+## 模式判断
+
+| 触发信号 | 模式 | 动作 |
+|----------|------|------|
+| flash-validation 失败/某几项不过/换料验证 fail | [分析模式] | Step 0 → 5 主流程 |
+| 修好了/验证通过了/根因确认了/测试全 PASS 了 | [反馈闭环模式] | 读 `workflows/feedback-loop.md` |
+
+## 预检清单
+
+- 测试结果目录在手（fv_c_test_result_*.csv 必需，report/pylog 增强）
+- 对照机结果（可选但强烈建议，定位失败面最快）
+- adb 设备可用性（决定能否做实验层；无设备输出静态分析并标注局限）
+- 环境一致性存疑时：核对两机 uname/report 头（**dirty build vs CI 是隐形变量**）
+
+## Workflow
+
+本 skill 使用 6 步工作流（Step 0 ~ Step 5），按顺序执行。**每个步骤开始时，先 Read 对应的详细指令文件：**
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+| 0 | `workflows/step-00-collect.md` | 收集结果/对照/设备，核查环境变量 |
+| 1 | `workflows/step-01-parse-results.md` | CSV 对齐解析，失败面分类路由 |
+| 2 | `workflows/step-02-route.md` | 查模式库 + 按类别路由排查路径（A 变频/B 性能/C 错误/D RPMB·WB） |
+| 3 | `workflows/step-03-device-probe.md` | 设备实验矩阵（快照/负载/二分/对照/ftrace） |
+| 4 | `workflows/step-04-conclude.md` | 分层根因 + 修复 patch + 验证清单 + 报告 |
+| 5 | `workflows/step-05-learn.md` | 案例双格式存档 + patterns 更新 |
+
+**反馈闭环由用户主动触发，不在主流程中自动弹出。触发后读取 `workflows/feedback-loop.md`。**
+
+**开始执行时，首先读取 `workflows/step-00-collect.md`。**
+
+## 参考资料速查
+
+- `references/ufs-clkscale-mechanism.md` — 机制知识库（两树差异/governor 三分支/quirk 表/flashval 黑盒/修复模式）
+- `references/device-commands.md` — 设备命令速查 + 实验脚本模板 + rmt-adb 代理注意事项
+- `data/patterns.json` — 模式库（3 条首案例模式，反馈闭环中演化）
+- `data/cases/` — 案例存档（JSON 机读索引；首案例 20260820-140000 MC5616 Hynix UFS2.2）

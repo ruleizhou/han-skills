@@ -1,0 +1,58 @@
+{
+  "_schema": "patterns.json — 模式/经验库，每次成功分析后将有效的模式沉淀于此",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "_fields": {
+    "id": "唯一标识，格式 ptrn-<自增三位数>",
+    "name": "模式简短名称（一句话概括）",
+    "category": "分类：clkscale | perf | error | tooling | testtrap",
+    "description": "模式详细描述，包含关键特征和判断依据",
+    "confidence": "置信度，初始为 1，success +1, fail -1",
+    "frequency": "出现次数",
+    "keywords": "用于模式匹配的关键词列表",
+    "first_seen": "首次发现日期 YYYY-MM-DD",
+    "last_seen": "最近一次出现日期 YYYY-MM-DD",
+    "outcome": "最终结果: success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "慢料 governor 死区：clock scaling transitions 不足的主因",
+      "category": "clkscale",
+      "description": "flash 单 IO 延迟高的料（UFS 2.x，4K randread 比 UFS 3.x 慢一半）在 flashval 的 180ms 队列化 IO 负载下，busy% 拖尾在 10~47，落入 simple_ondemand 死区（busy>5 即保持当前频率，msm 树 downdifferential=65），频率钉死 300M/G3，gear 切换事件几乎不产生，transitions 只有几十次（要求 1000）。判据：ftrace devfreq_monitor 的 load 序列长期 5<load<70；升频（load>70）和降频（load≤5）都极少发生。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["clock scale fail", "transitions 不足", "governor 死区", "busy 拖尾", "downdifferential", "UFS 2.x", "变频失败"],
+      "first_seen": "2026-08-20",
+      "last_seen": "2026-08-20",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "quirk 白名单 miss：新料 id 掉表导致空闲秒挂起吞降频",
+      "category": "clkscale",
+      "description": "manufacturer_id 不在 ufs_qcom_dev_fixups[]（如 Hynix UFS2.2 报 0x0CD6 ≠ SKHYNIX 0x1AD）→ 拿不到 DELAY_BEFORE_LPM → IO 停立即 runtime suspend → is_allowed=false → 降频请求全部 -EBUSY 静默失败（无日志，唯一症状 trans_stat 不增长）。判据：空闲时 power/runtime_status=suspended 且 userspace 强制升频失败；echo on 后 transitions 明显增加。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["quirk miss", "manufacturer_id", "0x0CD6", "runtime suspend", "EBUSY", "降频失败", "DELAY_BEFORE_LPM"],
+      "first_seen": "2026-08-20",
+      "last_seen": "2026-08-20",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "echo on 规避陷阱：禁挂起会弄死依赖 suspend 前置的测试项",
+      "category": "testtrap",
+      "description": "用 echo on > power/control 禁 UFS runtime suspend 可部分救活 clock scaling 计数（28→50），但 flashval test10（with writes，version 1.0）前置逻辑依赖 storage suspend 发生，禁挂起导致等待超时 → test_ran=0、value=-1。echo on 只能用作对照实验归因，不可作为过测试的规避方案。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["echo on", "规避", "test10", "-1", "test_ran 0", "前置超时"],
+      "first_seen": "2026-08-20",
+      "last_seen": "2026-08-20",
+      "outcome": "success"
+    }
+  ]
+}

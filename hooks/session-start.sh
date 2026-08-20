@@ -17,6 +17,10 @@ cat <<'EOF'
     触发:"无法正常重启"、"重启后不开机"、"开关机测试失败"、"进 recovery"、
          "recovery 界面"、"开机卡死"、"挂死无 dump"、"RescueParty"、"重启挂死"、
          "boot 未完成"、"软重启不开机"、"修好了"
+  qualcomm-flash-validation-analyzer  高通 QMVS flash-validation 测试失败根因排查 (变频死区/quirk 未命中/性能不达标)
+    触发:"flash-validation 失败"、"clock scale 不过"、"transitions 不足"、
+         "UFS 不切档"、"gear 不切换"、"test_ran=0"、"换新 flash 料验证失败"、
+         "devfreq 死区"、"修好了"
   han-d2-diagram           D2 声明式图表 (流程图/架构图/ER/类图, sketch 手绘风, PNG+SVG)
     触发:"画个流程图"、"架构图"、"ER 图"、"类图"、"把这段转成图表"、
          "D2 怎么画"、"sketch 手绘风"、"生成手绘风格"

@@ -2,7 +2,7 @@
   "name": "han-skills",
   "version": "0.1.0",
   "private": true,
-  "description": "Han's personal skill set as a pi package: han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck -> PPTX/PDF), han-llm-wiki (personal knowledge-base wiki with 9 commands), han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android -- NULL pointer / KASAN UAF / SLUB / deadlock), han-d2-diagram (D2 declarative diagrams with sketch/hand-drawn styles), han-git-commit (interactive git commit message generator), han-flash-test (UFS/eMMC read/write benchmark), han-quota-watch (LLM quota guard with auto sleep/wake), han-util-tools (kernel dev toolkit router), han-tech-doc-writer (technical documentation writer with D2 diagrams + infographics, 7-step workflow + self-learning), qualcomm-reboot-analyzer (Qualcomm/Android no-dump reboot anomaly root cause analysis -- RescueParty escalation / ABL recovery-entry / power-cycle stress triage).",
+  "description": "Han's personal skill set as a pi package: han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck -> PPTX/PDF), han-llm-wiki (personal knowledge-base wiki with 9 commands), han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android -- NULL pointer / KASAN UAF / SLUB / deadlock), han-d2-diagram (D2 declarative diagrams with sketch/hand-drawn styles), han-git-commit (interactive git commit message generator), han-flash-test (UFS/eMMC read/write benchmark), han-quota-watch (LLM quota guard with auto sleep/wake), han-util-tools (kernel dev toolkit router), han-tech-doc-writer (technical documentation writer with D2 diagrams + infographics, 7-step workflow + self-learning), qualcomm-reboot-analyzer (Qualcomm/Android no-dump reboot anomaly root cause analysis -- RescueParty escalation / ABL recovery-entry / power-cycle stress triage), qualcomm-flash-validation-analyzer (Qualcomm QMVS flash-validation test-failure root cause analysis -- clock-scaling transitions deficit / devfreq governor dead-zone / UFS quirk miss).",
   "author": "Han (https://github.com/YOUR_GH_USER)",
   "homepage": "https://github.com/YOUR_GH_USER/han-skill",
   "repository": {
@@ -43,7 +43,12 @@
     "reboot",
     "recovery",
     "rescue-party",
-    "bootloop"
+    "bootloop",
+    "flash-validation",
+    "clock-scaling",
+    "devfreq",
+    "governor",
+    "gear-switching"
   ],
   "pi": {
     "skills": ["./skills"]

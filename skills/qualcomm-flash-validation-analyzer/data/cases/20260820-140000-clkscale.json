@@ -1,0 +1,33 @@
+{
+  "id": "20260820-140000",
+  "timestamp": "2026-08-20T14:00:00+08:00",
+  "input_summary": "MC5616 parrot QMVS flash-validation：1号 C2G072(UFS3.x) 全 PASS，2号 Hynix HBN1901280CHBC(UFS2.2, mid=0x0CD6) 4项 FAIL（test 2.1/2.2=28次, 10.1/10.2=3次，要求≥1000）",
+  "process_steps": [
+    "45项CSV对齐对比定位失败面：全部是clock scaling transitions计数",
+    "排除环境变量：两内核build间9个commit均不涉UFS；DT相同",
+    "确认实际驱动：CONFIG_SCSI_UFS_QCOM=m → msm-kernel树（downdifferential=65非common树的5）",
+    "flashval黑盒逆向：strings找sysfs路径+pylog进度日志 → 180ms队列IO+轮询bus_speed_mode，30s无切换即弃",
+    "实验一（负载刻画）：负载停后20s不降频，burst 0切换",
+    "实验二（userspace强制变频二分）：挂起态升频EBUSY静默失败",
+    "实验三（禁挂起对照）：echo on后burst每轮+2次恢复",
+    "实验四（微IO复刻）：100s零切换，trans钉死",
+    "ftrace devfreq_monitor：load序列10~47死区徘徊，仅load>70升/load≤2降",
+    "根因定论：主因governor死区×慢料延迟，次因quirk miss空闲秒挂起",
+    "输出patch：downdifferential按SDAM位分流(2.x=45/3.x=65)+UFS_FIX(0x0CD6)补DELAY_BEFORE_LPM"
+  ],
+  "key_findings": [
+    "msm树governor三分支：busy>70升频、busy>5保持(死区)、≤5才降频",
+    "Hynix UFS2.2延迟×2导致burst后busy拖尾10~47钉死死区",
+    "0x0CD6不在quirks表(SKHYNIX=0x1AD)→无LPM延迟→空闲秒挂起→is_allowed=false吞降频(EBUSY静默)",
+    "echo on规避陷阱：救test2但弄死test10(-1 test_ran=0)",
+    "SDAM位limit_phy_submode(1=3.x/0=2.x)比id查表稳，适合做参数分流依据"
+  ],
+  "final_result": "根因双层定位并设备实测实锤；patch输出待刷模块验证",
+  "result_assessment": "partial",
+  "platform": "MC5616 parrot SM6450 5.10.236-qki",
+  "flash_device": "Hynix HBN1901280CHBC UFS2.2 0x0CD6",
+  "fail_tests": ["2.1", "2.2", "10.1", "10.2"],
+  "root_cause_categories": ["governor-deadzone", "quirk-miss"],
+  "fix": "ufs-qcom.c双hunk: downdifferential分流 + UFS_FIX(0x0CD6, DELAY_BEFORE_LPM)",
+  "report_path": "/home5/zhourulei/issue/modules/flash/UFS clock scaling 测试失败问题分析.md"
+}

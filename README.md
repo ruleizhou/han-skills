@@ -2,12 +2,13 @@
 
 Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。同时作为**多平台 skill 分发骨架**的示例。
 
-当前收录五类 skill：
+当前收录六类 skill：
 
 - **han-skill-creator-plus** —— 能造「自学习（feedback loop）+ 按需文件拆分（SKILL.md 路由 + workflows/）」skill 的工厂，适合长期沉淀自己的 skill 集合。
 - **han 生图体系** —— `han-imagen` 生图底座（OpenAI/Google 双 provider，纯 Python 标准库）+ 5 个业务 skill（信息图 / 手绘知识卡 / 拆解图 / 幻灯片 / SVG 图表）。业务 skill 均带防幻觉两阶段法 + 自学习，套底座出图；幻灯片/SVG 是纯标准库 CLI 工具。
 - **han-llm-wiki** —— 个人知识库 Wiki 维护技能，9 个命令（init/ingest/query/lint/card/weekly/research/mode/think/save），BM25 检索 + 方法论模式（PARA/LYT/Zettelkasten）+ D2 配图。
 - **han-kernel-crash-analyzer** —— Linux 内核崩溃分析（高通/Android），覆盖 NULL 指针 / KASAN UAF / SLUB 损坏 / ABBA 死锁 / panic / ramdump。反汇编优先 + Agent 对抗验证 + 案例自学习闭环。
+- **qualcomm debug 系列** —— `qualcomm-reboot-analyzer`（无 dump 重启行为异常根因分析：RescueParty 升级链 / ABL 误入 Recovery / misc BCB / 开关机压测，死因指纹 + 自学习）+ `qualcomm-flash-validation-analyzer`（QMVS flash-validation 测试失败根因排查：clock scaling transitions 不足 / UFS 不切档 / devfreq governor 死区 / quirk 未命中，45 项 CSV 对齐 + 设备实验矩阵 + 修复 patch + 自学习）。
 - **实用工具** —— `han-d2-diagram`（D2 声明式图表，sketch 手绘风）+ `han-git-commit`（交互式 Git 提交信息生成，基于 `~/.git-template`）+ `han-flash-test`（UFS/eMMC 读写速率测试，规格对标 + 自学习闭环）+ `han-tech-doc-writer`（技术文档写作，D2 图表 + 信息图双轨视觉，7 步工作流 + 自学习反馈闭环）+ `han-util-tools`（内核工具总路由，按 场景→平台→模块→类型 四级引导）+ `han-quota-watch`（LLM 配额守卫，智谱 Coding Plan 每 5 小时用量判定 + 429 自动休眠/唤醒，Claude Code 专用）。
 
 ## 目录结构
