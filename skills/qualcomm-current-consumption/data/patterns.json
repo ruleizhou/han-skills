@@ -1,0 +1,106 @@
+{
+  "_schema": "patterns.json — 模式/经验库，每次成功分析后将有效的模式沉淀于此",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "_fields": {
+    "id": "唯一标识，格式 ptrn-<自增三位数>",
+    "name": "模式简短名称（一句话概括）",
+    "category": "分类，按本 skill 领域自定义",
+    "description": "模式详细描述，包含关键特征和判断依据",
+    "confidence": "置信度，初始为 1，success +1, fail -1",
+    "frequency": "出现次数",
+    "keywords": "用于模式匹配的关键词列表",
+    "first_seen": "首次发现日期 YYYY-MM-DD",
+    "last_seen": "最近一次出现日期 YYYY-MM-DD",
+    "outcome": "最终结果: success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "CX/DDR通但aosd恒0(现象,根因需查平台分支)",
+      "category": "AOSS_SYMPTOM",
+      "description": "qcom_sleep_stats 中 cxsd/ddr 有 Count、aosd 始终 0——这是「现象」非「根因」。根因分两类:(a) 真 STUCK(某 client 异常投 /sleep/aoss);(b) 平台 retention 设计(见 ptrn-007)。MC5616 netrani 20260729 深挖坐实为 (b):cx_ret 永久投 retention。故见本现象须先查平台 sleep.scons 分支再定性,勿默认 STUCK。",
+      "confidence": 1,
+      "frequency": 2,
+      "keywords": ["aosd", "cxsd", "ddr", "AOSS", "待机功耗", "sleep/aoss", "cx_ret", "retention"],
+      "first_seen": "2026-07-28",
+      "last_seen": "2026-07-29",
+      "outcome": "partial"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "无NFC时VEN脚常高漏电",
+      "category": "CLASS_BOARD_GPIO",
+      "description": "无 NFC 硬件但 nfc 驱动/gpio VEN out high，拉低或 DTS disable 可降约 2mA；驱动多为 nfc_i2c.ko / qcom,sn-nci。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["NFC", "gpio6", "VEN", "nfc_i2c", "sn-nci"],
+      "first_seen": "2026-07-28",
+      "last_seen": "2026-07-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "UFS SPM抬到5电流几乎不变",
+      "category": "CLASS_UFS_SPM",
+      "description": "spm_lvl 从 3(SLEEP) 提到 5(POWERDOWN+OFF) 后 Enabled regulators 可清空，但待机电流无显著下降时，勿再将 UFS 当主因。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["spm_lvl", "UFS", "VCCQ", "pm6450_l13", "POWERDOWN"],
+      "first_seen": "2026-07-28",
+      "last_seen": "2026-07-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-004",
+      "name": "STM/debug仅贡献约1mA且不抬aosd",
+      "category": "CLASS_DEBUG_MINOR",
+      "description": "关闭 STM/ETR/DCC/debug_enabled 后约降 1mA，aosd 仍为 0。persist.debug.coresight.config=stm-events 会使 STM 复开，测流前必须回读 enable_source。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["STM", "coresight", "debug_enabled", "stm-events", "DCC", "QDSS"],
+      "first_seen": "2026-07-28",
+      "last_seen": "2026-07-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-005",
+      "name": "hansei目标须用netrani非845",
+      "category": "TOOLING",
+      "description": "SM6450P/Parrot AOP hansei -t 使用 netrani；误用 845 会导致 OCIMEM/dumptable 基址错误。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["hansei", "netrani", "845", "AOP", "elf"],
+      "first_seen": "2026-07-28",
+      "last_seen": "2026-07-28",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-006",
+      "name": "s2idle加USB测流污染致aosd假阴性",
+      "category": "MEASUREMENT_CONTAMINATION",
+      "description": "用户口径/当前状态可能为 s2idle 或 USB 在位（USB 持 XO 投票使 AOSD 必然为 0、抬高底流），足以造成 aosd=0+电流偏高的假阴性；下根因结论前必须核对 mem_sleep 括号项、拔 USB 浸泡窗口 delta。注意：MC5616 20260729 案例中经用户核实 deep+拔USB 窗口 aosd 仍 0，即本模式该次未命中，门控通过后转入 AOSS 主线——本模式价值在「前置排除」，勿直接当根因。",
+      "confidence": 0,
+      "frequency": 1,
+      "keywords": ["s2idle", "mem_sleep", "USB", "测流条件", "XO", "aosd假阴性", "diag,adb"],
+      "first_seen": "2026-07-29",
+      "last_seen": "2026-07-29",
+      "outcome": "failed"
+    },
+    {
+      "id": "ptrn-007",
+      "name": "netrani平台编译期CX retention致aosd=0(非故障)",
+      "category": "PLATFORM_DESIGN",
+      "description": "netrani/clarence/fillmore 在 AOP sleep.scons 编译期走 arc_assisted_cx_retention 分支(waipio/8350/kailua 走 collapse);cx_ret boot 期 aop_cx_ret_init 无条件永久投 cx.lvl=16(RAIL_VOLTAGE_LEVEL_RET),CX 到不了 OFF → ddr cxsdaosd 序列卡 CX off → aosd 恒 0。反汇编坐实(netrani aop_cx_ret_init@0x80820720: movs r1,#16; blx unpa_issue_request)。诊断信号:npa-dump 见 cx.lvl 被 cx_ret 钉 retention + adb_vote=0,即查 scons MSM_ID 分支。无 runtime 开关。配套 errata:AOSS_0C_ARC_MITIG/tme_vdu_wa。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["cx_ret", "retention", "netrani", "sleep.scons", "arc_assisted_cx_retention", "aosd", "cx.lvl", "aop_cx_ret_init"],
+      "first_seen": "2026-07-29",
+      "last_seen": "2026-07-29",
+      "outcome": "success"
+    }
+  ]
+}

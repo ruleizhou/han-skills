@@ -1,0 +1,24 @@
+{
+  "id": "20260728-mc5616",
+  "timestamp": "2026-07-28T20:00:00+08:00",
+  "input_summary": "MC5616 SM6450P 待机功耗偏高；Port_9 AOP dump + UART/GPIO；子系统已 sleep",
+  "process_steps": [
+    "hansei -t netrani 解析 Port_9",
+    "qcom_sleep_stats: aosd=0 cxsd/ddr>0",
+    "UFS spm 3→5 几乎无收益",
+    "NFC gpio6 拉低约 -2mA",
+    "STM/debug 清理约 -1mA，aosd 仍 0"
+  ],
+  "key_findings": [
+    "CLASS_AOSS_STUCK",
+    "NPA /sleep/aoss=0",
+    "Enabled regulators 在 SPM5 后可为空"
+  ],
+  "final_result": "主因 AOSS 未进 aosd；小头 NFC+QDSS；待对标机 aosd 与 AOP 投票",
+  "result_assessment": "partial",
+  "root_cause_class": "CLASS_AOSS_STUCK",
+  "platform": "SM6450P/Parrot/MC5616",
+  "aop_target": "netrani",
+  "aosd_count": 0,
+  "delta_mA": {"nfc_gpio6": -2, "stm_debug": -1, "ufs_spm5": 0}
+}

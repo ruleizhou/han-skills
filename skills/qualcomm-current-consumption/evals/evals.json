@@ -1,0 +1,40 @@
+{
+  "_schema": "evals.json — skill 的评测用例集。每个用例覆盖一种真实使用场景。详细方法论见 references/评测指南.md",
+  "_how_to_write_expectations": "expectations 是【可验证的陈述句】，不是模糊愿望。好的 expectation 有区分度：skill 做对时通过、做错时失败。存疑默认 FAIL。",
+  "skill_name": "qualcomm-current-consumption",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "MC5616 待机电流偏高。adb 上 aosd Count=0，cxsd/ddr 都有一百多次，子系统也有 sleep。已经把 UFS spm 调到 5 了电流几乎不变。帮我定位主因方向。",
+      "expected_output": "主因类 CLASS_AOSS_STUCK；排除子系统未睡与 UFS 主因；给出对标机 aosd / AOP 下一步",
+      "files": [],
+      "expectations": [
+        "明确指出 aosd=0 且 cxsd/ddr 正常 → AOSS 主线",
+        "不把「子系统没睡」当作主因",
+        "提到 UFS SPM5 无收益时应排除 UFS 为主因",
+        "给出可执行的下一步（对标机或 AOP）"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我用 hansei 解析这份 AOP dump，ELF 和 Port_9 都在工程目录，平台是 SM6450P。",
+      "expected_output": "使用 -t netrani（非 845）的 hansei 命令与关键产出文件说明",
+      "files": [],
+      "expectations": [
+        "命令中 -t 为 netrani 或明确要求确认 target 而非默认 845",
+        "说明输出目录中 sleep_stats/npa-dump 等关键文件"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "项目没有 NFC，suspend 时 gpio6 还是 out high，和功耗有关吗？",
+      "expected_output": "建议 DTS 禁用 nfc + VEN 拉低；驱动 nfc_i2c；预期约数 mA 级收益并需实测",
+      "files": [],
+      "expectations": [
+        "提到禁用 NFC 节点或 nfc_i2c / qcom,sn-nci",
+        "提到拉低 VEN GPIO",
+        "要求或建议实测 ΔmA"
+      ]
+    }
+  ]
+}

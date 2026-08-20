@@ -1,7 +1,7 @@
 {
   "name": "han",
   "version": "0.1.0",
-  "description": "Han's personal skill set: han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown skills with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-llm-wiki (personal knowledge-base wiki with 9 commands), han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android — NULL pointer / KASAN UAF / SLUB / deadlock, disassembly-first workflow + self-learning), han-d2-diagram (D2 declarative diagrams with sketch/hand-drawn styles), han-git-commit (interactive git commit message generator), han-flash-test (UFS/eMMC read/write benchmark), han-util-tools (kernel dev toolkit router — /han-util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type), han-tech-doc-writer (technical documentation writer with D2 diagrams + han-infographic infographics, 7-step workflow + self-learning feedback loop), qualcomm-reboot-analyzer (Qualcomm/Android reboot-behavior root cause analysis without dumps — RescueParty escalation audit, ABL/misc-BCB recovery-entry diagnosis, power-cycle stress failure triage, death-fingerprint evidence + self-learning), qualcomm-flash-validation-analyzer (Qualcomm QMVS flash-validation test-failure root cause analysis — clock-scaling transitions deficit / gear not switching / devfreq governor dead-zone / UFS quirk miss, 45-item CSV alignment + driver-tree check + device experiment matrix + fix patches, self-learning).",
+  "description": "Han's personal skill set: han-skill-creator-plus (self-learning skill factory), han-imagen (image generation engine, OpenAI/Google), han-infographic / han-hand-write-pic / han-disassembly-diagram (infographic, sketchnote, teardown skills with anti-hallucination two-phase flow + self-learning), han-slides (image slide deck → PPTX/PDF), han-llm-wiki (personal knowledge-base wiki with 9 commands), han-kernel-crash-analyzer (Linux kernel crash analysis for Qualcomm/Android — NULL pointer / KASAN UAF / SLUB / deadlock, disassembly-first workflow + self-learning), han-d2-diagram (D2 declarative diagrams with sketch/hand-drawn styles), han-git-commit (interactive git commit message generator), han-flash-test (UFS/eMMC read/write benchmark), han-util-tools (kernel dev toolkit router — /han-util-tools command routes Debug/Bringup/Feature-dev scenarios to sub-skills via scenario→platform→module→type), han-tech-doc-writer (technical documentation writer with D2 diagrams + han-infographic infographics, 7-step workflow + self-learning feedback loop), qualcomm-reboot-analyzer (Qualcomm/Android reboot-behavior root cause analysis without dumps — RescueParty escalation audit, ABL/misc-BCB recovery-entry diagnosis, power-cycle stress failure triage, death-fingerprint evidence + self-learning), qualcomm-flash-validation-analyzer (Qualcomm QMVS flash-validation test-failure root cause analysis — clock-scaling transitions deficit / gear not switching / devfreq governor dead-zone / UFS quirk miss, 45-item CSV alignment + driver-tree check + device experiment matrix + fix patches, self-learning), qualcomm-current-consumption (Qualcomm/Android standby current-consumption root cause analysis — aosd/cxsd/ddr sleep-level triage, AOP dump/hansei parsing, UFS spm_lvl, GPIO/NFC always-on pins, STM/QDSS blocking deep sleep, layered conclusions via qcom_sleep_stats + self-learning).",
   "author": {
     "name": "Han",
     "url": "https://github.com/YOUR_GH_USER"
@@ -46,7 +46,12 @@
     "clock-scaling",
     "devfreq",
     "governor",
-    "gear-switching"
+    "gear-switching",
+    "current-consumption",
+    "power",
+    "sleep-current",
+    "aosd",
+    "aop"
   ],
   "skills": "./skills/"
 }

@@ -1,0 +1,30 @@
+{
+  "id": "20260729-mc5616-v222",
+  "timestamp": "2026-07-29T11:50:00+08:00",
+  "input_summary": "MC5616 SM6450P 待机电流 13mA（平台口径 5~6mA）；aosd=0 但 cxsd/ddr 有 Count；材料 adb+AOP dump+UART",
+  "process_steps": [
+    "Step0 交互收集：adb 可连、有 AOP dump+UART、无对标机",
+    "Step1 adb 基线：aosd=0 cxsd=20 ddr=20 子系统均有 Count；mem_sleep=[s2idle]",
+    "Step2 复用 parser_out hansei（netrani）：AOP ok；/sleep/aoss=0；cx.lvl 由 cx_ret=16 维持（唤醒后视角）",
+    "Step3 UART GPIO：无 out high；suspend 时 L24/L19/L13 仍 EN（SD/UFS 小轨）",
+    "Step4 userdebug 全家桶全开：debug_enabled=Y STM=1 ETR=1 DCC(100ff000.dcc_v2)=1 stm-events",
+    "代码定位：stm-events @ parrot/system.prop:169 + QSSI qssi*/system.prop 双侧默认",
+    "用户三次确认：13mA 系 deep+拔USB+飞行模式（WiFi/蜂窝全关）测量；拔USB浸泡窗口 Count delta aosd 仍 0 → 条件嫌疑与 wpss/modem 持票嫌疑全排除，CLASS_AOSS_STUCK 坐实"
+  ],
+  "key_findings": [
+    "干净条件（deep+无USB）下 aosd 仍 0，AOSS 未进最深档为真实根因，~7-8mA 差值量级自洽",
+    "ED8F6761 经 dump_info+sleep_stats 签名确认为休眠中抓取（last_entered>last_exited，DDR 终止于 D4），无需重抓",
+    "休眠中 NPA：/sleep/aoss 无活跃投票；cx.lvl 被 cx_ret 钉在 16（retention）→ CX 只到保持态",
+    "hansei 报 No RPMH Binary recovery：RPMH/ARC/BCM/VRM/PDC 投票表全部未恢复，XO 级最终挡点本地不可见（不臆造）",
+    "每次入睡前后 DBG Sig Lock/Unlock 频繁（ISR 0x5D/0x5E），DBG_EN=0x874 → AOP debug 为 AOSD gate 嫌疑",
+    "ptrn-006 测流污染模式本次未命中（门控通过后转主线），ptrn-001 置信度升至 3"
+  ],
+  "final_result": "P0 仅剩 debug 干净化重测（昨日条件不明作废）+ wakeup_sources 分析；WiFi/modem 嫌疑随飞行模式确认排除；仍 aosd=0 则带 hansei_log 升级 Qualcomm CE 解析 RPMh 投票，并确认参考机 aosd>0",
+  "result_assessment": "in_sleep_dump_analyzed_rpmh_votes_invisible_experiments_pending",
+  "root_cause_class": "CLASS_AOSS_STUCK",
+  "platform": "SM6450P/Parrot/MC5616",
+  "aop_target": "netrani",
+  "aosd_count": 0,
+  "delta_mA": {"measured": 13, "platform_ref": "5-6", "nfc_gpio6": -2, "stm_debug": -1, "ufs_spm5": 0},
+  "report": "issue/modules/power/SM6450P/MC5616/V222/MC5616-待机电流偏高-定位报告.md"
+}

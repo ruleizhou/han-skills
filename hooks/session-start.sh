@@ -21,6 +21,9 @@ cat <<'EOF'
     触发:"flash-validation 失败"、"clock scale 不过"、"transitions 不足"、
          "UFS 不切档"、"gear 不切换"、"test_ran=0"、"换新 flash 料验证失败"、
          "devfreq 死区"、"修好了"
+  qualcomm-current-consumption  高通 Android 待机/休眠电流偏高分层排查 (睡眠档位/AOP/GPIO/QDSS)
+    触发:"功耗偏高"、"待机电流大"、"灭屏电流"、"aosd"、"cxsd"、"ddr sleep"、
+         "解析 aop dump"、"hansei"、"UFS VCCQ"、"NFC VEN"、"STM 挡深睡"、"电流达标了"
   han-d2-diagram           D2 声明式图表 (流程图/架构图/ER/类图, sketch 手绘风, PNG+SVG)
     触发:"画个流程图"、"架构图"、"ER 图"、"类图"、"把这段转成图表"、
          "D2 怎么画"、"sketch 手绘风"、"生成手绘风格"
