@@ -93,7 +93,7 @@ _pick_best_python() {
     local require_mcp="$1"
     shift
     local -a cands=("$@")
-    local c ver line best=""
+    local c ver line="" best=""
 
     for c in "${cands[@]}"; do
         _py_version_ok "$c" || continue
