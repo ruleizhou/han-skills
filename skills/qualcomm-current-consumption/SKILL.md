@@ -1,5 +1,6 @@
 ---
 name: qualcomm-current-consumption
+version: "1.1.0"
 description: >
   排查高通 Android 待机/休眠电流偏高：aosd=0、cxsd/ddr 正常但功耗高、AOP dump/hansei 解析、
   UFS spm_lvl、GPIO/NFC 常开脚、STM/QDSS/debug_enabled、qcom_sleep_stats 分层定位。
@@ -19,7 +20,10 @@ description: >
 2. **拔 USB 前采基线** — 测流需断 USB；spm/stats/debug 状态必须在 adb 仍连时读完
 3. **Target 要对** — AOP hansei 用芯片代号（如 netrani），勿照抄文档 `-t 845`
 4. **小改验证收益** — NFC/STM 等单项改完要记 mA；无收益则升级主线（多为 aosd）
-5. **AskUserQuestion 优先** — Step 0 必须先交互收集场景，禁止先翻目录再提问
+5. **交互优先** — Step 0 必须先用结构化提问收集场景（平台映射见 step-00），禁止先翻目录再提问
+6. **锚定前验真编译** — 引源码行号/驱动结论前先查 `CONFIG_*=y/m`、`/proc/kallsyms` 或 `strings` 验 KO，防锚 dead code
+7. **修复后更糟立刻停手** — 下沉一层重诊，绝不在同层叠补丁
+8. **不早锚定** — 见供电轨/GPIO 脚位 ON，先对标机或跨机同配置对比再判主因
 
 ## 模式判断
 

@@ -11,7 +11,7 @@
 - 最终主因类与 ΔmA  
 - **领域字段**：`root_cause_class`、`aosd_count`、`delta_mA_total`、`platform`、`aop_target`
 
-若缺失，AskUserQuestion 补齐。
+若缺失，用结构化提问补齐。
 
 ## 步骤 2：呈现回顾
 
@@ -25,7 +25,7 @@
 
 ## 步骤 3：确认最终结果
 
-AskUserQuestion：
+结构化提问（平台映射见 step-00）：
 
 - 全部正确 / 部分正确 / 都不对  
 
@@ -49,6 +49,9 @@ AskUserQuestion：
   "delta_mA": {}
 }
 ```
+
+`result_assessment` 细分：`success` 须为**达标且已复测**（有修复后复采证据）；
+仅口述达标无复测证据用 `success_unverified`，防未复测结论混入模式库抬高置信度。
 
 ### Markdown → **当前工程目录** `<YYYYMMDD-HHMMSS>-power-idle.md`
 

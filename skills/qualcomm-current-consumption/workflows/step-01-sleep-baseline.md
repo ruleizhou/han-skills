@@ -2,6 +2,11 @@
 
 在 **USB 仍连接** 时采集（或使用用户已粘贴的 stats）。测流会拔 USB，本步必须先完成。
 
+> **一键采集**：adb 在线时优先跑 `scripts/capture_sleep_baseline.sh [OUTDIR]`——
+> 一次打包本步 + step-03/04 全部读节点，产出 `SUMMARY.md`（含分层自动初判），
+> 拔 USB 测流前必跑；电流表读数稳定后以 `MEASURED_MA=<mA>` 复跑补填。
+> 手动逐条采集按下方 1.1–1.3 执行。
+
 ## 1.1 必读
 
 ```bash
