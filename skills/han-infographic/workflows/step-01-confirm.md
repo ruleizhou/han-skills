@@ -18,7 +18,7 @@
 - 画幅:`landscape`(16:9)/ `portrait`(9:16,移动长图)/ `square`(1:1)
 - 语言:`zh` / `en` / 双语
 
-## 1.3 用 AskUserQuestion 确认
+## 1.3 用 结构化提问 确认
 
 把「patterns 推荐 + analysis 判断」综合成一个默认选项,让用户:
 

@@ -4,7 +4,7 @@
 
 ## 6.1 安装到正确位置
 
-用 AskUserQuestion 确认安装范围：
+用 结构化提问 确认安装范围：
 - **项目级**：`.claude/skills/<name>/`（仅当前项目可见）
 - **用户级**：`~/.claude/skills/<name>/`（所有项目可见，推荐）
 

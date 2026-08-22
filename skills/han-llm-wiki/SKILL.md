@@ -141,3 +141,5 @@ sources: [[来源1]], [[来源2]]
 - `references/page-templates.md`——页面模板（创建页面时读取）
 - `references/diagram-guide.md`——图文并茂配图指南（多引擎：D2 / han-infographic / han-hand-write-pic / han-disassembly-diagram，ingest/save 配图时读取）
 - `references/schema-guide.md`——AGENTS.md 配置指南（初始化时读取）
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

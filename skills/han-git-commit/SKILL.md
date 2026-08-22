@@ -37,3 +37,4 @@ description: >
 | 3 | `workflows/step-03-commit.md` | 预览确认 + 执行 git commit |
 
 **开始执行时，首先读取 `workflows/step-00-collect.md`。**
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

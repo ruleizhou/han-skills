@@ -56,3 +56,5 @@ description: >
 - 自学习基础设施模板：`templates/self-learning/`
 - 官方 skill-creator（评估/迭代/打包）：`~/.claude/plugins/marketplaces/anthropic-agent-skills/skills/skill-creator/SKILL.md`
 - 最佳实践参考：`../kernel-crash-analyzer/`（拆分+自学习的 live reference）
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

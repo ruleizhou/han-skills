@@ -20,7 +20,7 @@
 
 ### 步骤 1：是否使用模板？（单独交互）
 
-**首先用一个 AskUserQuestion 确认是否使用 ~/.git-template 模板：**
+**首先用一个 结构化提问 确认是否使用 ~/.git-template 模板：**
 
 | 字段 | 值 |
 |------|-----|
@@ -38,7 +38,7 @@
 
 读取 `data/modules.json` 和 `data/projects.json` 获取预设列表。
 
-**在同一个 AskUserQuestion 调用中同时收集 3 个字段：**
+**在同一个 结构化提问 调用中同时收集 3 个字段：**
 
 **问题 1：选择 Module**（header: "Module", multiSelect: false）
 

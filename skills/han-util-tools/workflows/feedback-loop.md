@@ -42,7 +42,7 @@
 
 ### 3. 确认
 
-用 AskUserQuestion 确认：
+用 结构化提问 确认：
 
 ```
 question: "分析/处理结果是否正确有效？"
@@ -89,7 +89,7 @@ options:
 
 #### 5.1 通用框架模式（无子 skill）
 
-用 AskUserQuestion 询问是否创建子 skill：
+用 结构化提问 询问是否创建子 skill：
 
 ```
 question: "该类型尚无专用子 skill，是否创建？"

@@ -98,3 +98,5 @@ description: >
 ## MCP 集成预留
 
 如果未来有 `crash-log-parser` MCP 服务可用，Step 3/4/5 可调用 MCP 工具加速（`match_signature`、`parse_crash_log`、`disassemble_at`）。MCP 不可用时回退到手动流程——MCP 是加速器，不是必要条件。
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

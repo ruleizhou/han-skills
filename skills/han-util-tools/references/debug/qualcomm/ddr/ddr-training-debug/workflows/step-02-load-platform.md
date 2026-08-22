@@ -9,7 +9,7 @@ ls {boot_images}/QcomPkg/SocPkg/
 ```
 
 - **存在** → 继续 2.1
-- **不存在或未收集** → 用 AskUserQuestion 追问用户（header: "源码路径"），问题："boot_images 源码根目录路径？"
+- **不存在或未收集** → 用 结构化提问 追问用户（header: "源码路径"），问题："boot_images 源码根目录路径？"
 
 ## 2.1 识别平台
 

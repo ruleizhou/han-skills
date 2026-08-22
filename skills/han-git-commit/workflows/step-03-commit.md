@@ -33,7 +33,7 @@ git diff --staged --stat
 
 ### 2. 确认
 
-使用 **AskUserQuestion** 确认。**在 question 中直接嵌入 Subject 行**，让用户一眼确认 title：
+使用 **结构化提问** 确认。**在 question 中直接嵌入 Subject 行**，让用户一眼确认 title：
 
 | 字段 | 值 |
 |------|-----|
@@ -68,7 +68,7 @@ rm -f /tmp/git-commit-msg-$$.txt
 
 #### 3b. 修改 Subject 行
 
-使用 **AskUserQuestion** 让用户输入修改后的 Subject 行：
+使用 **结构化提问** 让用户输入修改后的 Subject 行：
 
 | 字段 | 值 |
 |------|-----|

@@ -13,9 +13,9 @@
    - `*.json` 文件 — 解析元数据
 3. **如有足够文件**：直接进入 Step 2。
 3.5 **如无 dmesg_TZ.txt 但有 raw ramdump BIN + vmlinux**：检查 dump/ 目录含 DDRCS*.BIN 文件时 → 走crash直接解析路径：读取 workflows/crash-parse-raw.md → 从dump_info.txt取DDRCS物理映射 → 从OCIMEM.BIN取KASLR(0xdead4ead) → 拼接crash启动命令(优先从data/tool_cache.json读crash字段) → 启动crash执行sys/bt -a/log提取panic现场 → 写等效dmesg_TZ.txt → 回到主流程。
-4. **如缺少关键文件**：使用 `AskUserQuestion` 弹出交互式提问，收集缺失的输入。
+4. **如缺少关键文件**：使用 `结构化提问` 弹出交互式提问，收集缺失的输入。
 
-`AskUserQuestion` 示例：
+`结构化提问` 示例：
 ```
 question: "需要哪些 crash 分析输入？"
 header: "输入"

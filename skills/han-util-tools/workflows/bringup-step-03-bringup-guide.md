@@ -7,7 +7,7 @@
 
 ## 阶段 1 — 需求收集（不可跳过）
 
-用 AskUserQuestion 收集器件信息：
+用 结构化提问 收集器件信息：
 
 - **问题 1 — header: "器件信息"**
   - 器件类型、型号、接口协议（I2C / SPI / UART / MIPI / platform）

@@ -176,7 +176,7 @@ source_type: url
 |--------|------|------|
 | 1 | 存在 `80-Notes/` | 使用它 |
 | 2 | 存在其他 `NN-Notes/`（如 `08-Notes/`、`10-Notes/`） | 复用已有 Notes 根，并告知用户 |
-| 3 | 都不存在 | `AskUserQuestion`：是否创建 `80-Notes/`？或自定义路径 |
+| 3 | 都不存在 | `结构化提问`：是否创建 `80-Notes/`？或自定义路径 |
 
 **禁止**默认写到 `wiki/analyses/`、`wiki/concepts/`、`wiki/sources/`。
 
@@ -203,7 +203,7 @@ source_type: url
 
 ### 6.3 目录缺失时必须交互确认
 
-目标子目录**不存在**时，**禁止静默 `mkdir -p`**，必须 `AskUserQuestion`：
+目标子目录**不存在**时，**禁止静默 `mkdir -p`**，必须 `结构化提问`：
 
 ```
 question: "目录「80-Notes/Kernel/DMA/」不存在，如何处理？"

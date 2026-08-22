@@ -41,10 +41,10 @@
 ### 流程
 
 1. **验证模式名**：检查是否在 5 种模式之一。不在则列出可用模式并提示用户
-2. **确认切换**：使用 `AskUserQuestion` 工具确认（不要用文本 `yes/no` 输入）：
+2. **确认切换**：使用 `结构化提问` 工具确认（不要用文本 `yes/no` 输入）：
 
 ```
-AskUserQuestion:
+结构化提问:
   question: "确认将 wiki 模式切换为 {新模式}？已有文件不会被移动，仅影响后续 ingest/save 的归档路径。"
   header:  "确认切换"
   multiSelect: false

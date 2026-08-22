@@ -10,7 +10,7 @@ SKILL.md 已预跑 `scan_routes.py` 并缓存结果到 `R`。本文件从 `R.by_
 platforms = sorted(R.by_scenario.featdev.keys())
 ```
 
-AskUserQuestion（header: "平台"）：选项来自 `platforms` + `手动输入`。
+结构化提问（header: "平台"）：选项来自 `platforms` + `手动输入`。
 手动输入规范化：全小写、空格→下划线、去除非字母数字下划线。
 
 ### 选子系统
@@ -19,7 +19,7 @@ AskUserQuestion（header: "平台"）：选项来自 `platforms` + `手动输入
 subsystems = sorted(R.by_scenario.featdev[selected_platform].keys())
 ```
 
-AskUserQuestion（header: "子系统"）：选项来自 `subsystems` + `手动输入`。
+结构化提问（header: "子系统"）：选项来自 `subsystems` + `手动输入`。
 示例：Power / Thermal / Memory / Scheduler / Filesystem / Network / Driver
 
 ### 选功能类型
@@ -28,7 +28,7 @@ AskUserQuestion（header: "子系统"）：选项来自 `subsystems` + `手动�
 types = R.by_scenario.featdev[selected_platform][selected_subsystem]
 ```
 
-AskUserQuestion（header: "功能类型"）：选项来自 `types` + `手动输入`。
+结构化提问（header: "功能类型"）：选项来自 `types` + `手动输入`。
 
 ## 分派
 

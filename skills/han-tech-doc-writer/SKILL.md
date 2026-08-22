@@ -120,3 +120,5 @@ han-infographic 输出到 `~/Downloads/han-skill-imagen/{slug}-infographic.png`�
 复制到 `<输出目录>/_diagrams/<页面 slug>-info.png`（命名见 obsidian-guide.md）。
 
 **开始执行时，首先读取 `workflows/step-00-diagnose.md` 与 `references/obsidian-guide.md`。**
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

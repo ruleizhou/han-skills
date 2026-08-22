@@ -37,7 +37,7 @@
 
 ### Step 0: 场景选择
 
-通过 AskUserQuestion 选择场景（Debug / 器件 Bringup / 功能开发），进入对应分支。
+通过 结构化提问 选择场景（Debug / 器件 Bringup / 功能开发），进入对应分支。
 
 ### Debug 分支
 

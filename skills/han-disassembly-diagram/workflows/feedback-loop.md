@@ -24,7 +24,7 @@
 
 ## 步骤 3:确认最终结果
 
-AskUserQuestion:全部满意(confidence +1)/ 部分满意 / 不满意(confidence -1)。
+结构化提问:全部满意(confidence +1)/ 部分满意 / 不满意(confidence -1)。
 
 ## 步骤 4:存档案例(双格式)
 

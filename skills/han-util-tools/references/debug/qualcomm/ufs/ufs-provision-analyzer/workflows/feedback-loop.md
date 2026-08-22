@@ -16,7 +16,7 @@
 - 原 XML 失败原因（WB 超限 / 容量不足 / Thin 不支持 / 逻辑块 / 其他）
 - 最终生效的参数组合（WB 类型/尺寸、ProvisioningType、LUN 4 是否启用、逻辑块大小）
 
-### 2. 用 AskUserQuestion 确认
+### 2. 用 结构化提问 确认
 
 ```
 question: "本次成功的配置是？"

@@ -31,7 +31,7 @@ git diff
 如果两者都为空 → 提示用户：
 > 没有检测到变更。请先用 `git add <files>` 暂存需要提交的文件，然后重新触发提交。
 
-询问用户是否需要帮助 stage 文件（用 AskUserQuestion 确认），如果需要，运行 `git status` 展示文件列表，然后按用户指示 `git add`。
+询问用户是否需要帮助 stage 文件（用 结构化提问 确认），如果需要，运行 `git status` 展示文件列表，然后按用户指示 `git add`。
 
 ### 2. 检查变更规模
 

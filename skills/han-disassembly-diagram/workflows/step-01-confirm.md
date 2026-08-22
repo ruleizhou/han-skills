@@ -15,7 +15,7 @@
   - `cutaway`:强调内部布局、截面、通道、电路、流体路径
   - `auto`:按对象类型自动选最合适的
 
-## 1.3 用 AskUserQuestion 确认
+## 1.3 用 结构化提问 确认
 
 - aspect(默认 `landscape`)
 - mode(默认 `hybrid`)

@@ -4,7 +4,7 @@
 
 ## 1. 新模板收录
 
-如果本次创建了通用模板（不在 `assets/templates/` 中），用 AskUserQuestion 确认是否收录。
+如果本次创建了通用模板（不在 `assets/templates/` 中），用 结构化提问 确认是否收录。
 
 收录时执行：
 1. 将模板写入 `assets/templates/<new-type>.d2`
@@ -22,7 +22,7 @@
 - **结果评估**：success/partial/failed
 
 ### 收录
-用 AskUserQuestion 确认后，更新 `data/patterns.json`：
+用 结构化提问 确认后，更新 `data/patterns.json`：
 
 ```json
 {
@@ -44,7 +44,7 @@
 
 ## 3. 新场景收录
 
-如果用户提供了新的需求场景（不在 Step 0 模式判断表中），用 AskUserQuestion 确认后：
+如果用户提供了新的需求场景（不在 Step 0 模式判断表中），用 结构化提问 确认后：
 - 在 `workflows/step-00-diagnose.md` 的决策树中添加新分支
 - 在 SKILL.md 的模式判断表中添加新行
 

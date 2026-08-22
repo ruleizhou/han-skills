@@ -10,7 +10,7 @@
 
 ### 1. 新根因类型/新模式收录
 
-如果本次遇到了新的根因类型（不在 `references/known-issues.md` 和 `data/patterns.json` 中），用 `AskUserQuestion` 提示用户确认是否收录：
+如果本次遇到了新的根因类型（不在 `references/known-issues.md` 和 `data/patterns.json` 中），用 `结构化提问` 提示用户确认是否收录：
 
 ```
 question: "本次发现了一个新的根因模式，是否收录到 skill？"

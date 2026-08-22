@@ -82,3 +82,5 @@ description: >
 - `data/patterns.json` — 自学习模式库(症状→根因类,置信度)
 - `data/cases/` — 历史案例卡(95916 三事件结构、96299 UEFI pwrkey)
 - 最佳实践 live reference:`~/.claude/skills/han-kernel-crash-analyzer/(同款拆分+自学习架构)
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

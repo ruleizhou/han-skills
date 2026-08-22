@@ -19,7 +19,7 @@
 - 质量自查结果
 - 动态复现结果（Step 8B：已建回路 / 跳过 / finding，及回归测试路径）
 
-如果对话历史中找不到完整信息，用 `AskUserQuestion` 向用户确认关键细节。
+如果对话历史中找不到完整信息，用 `结构化提问` 向用户确认关键细节。
 
 ## 步骤 2：呈现分析链路
 
@@ -217,7 +217,7 @@ options:
 **feedback-loop 由用户信号（"搞定"/"修复生效"）触发，可能跳过了正常流程中的 Step 10。闭环结束前必须检查：**
 
 1. 回顾本次分析的 Step 3 结果 — crash 类型是否为 `[未知类型]`？
-2. 如果是 `[未知类型]` 且尚未收录：按照 `workflows/step-10-learn.md` 的 10.1 节，弹出 `AskUserQuestion` 让用户确认是否收录新类型到 `data/signatures.json` 和 `references/signature_table.md`
+2. 如果是 `[未知类型]` 且尚未收录：按照 `workflows/step-10-learn.md` 的 10.1 节，弹出 `结构化提问` 让用户确认是否收录新类型到 `data/signatures.json` 和 `references/signature_table.md`
 3. 如果是已知类型或已收录：跳过
 
 ```
@@ -234,7 +234,7 @@ options:
 
 ## 步骤 9：分析手册生成（条件触发）
 
-**触发条件**：满足以下任一条件时，弹出 `AskUserQuestion` 询问是否生成分析手册：
+**触发条件**：满足以下任一条件时，弹出 `结构化提问` 询问是否生成分析手册：
 
 1. 当前模式的 `confidence >= 3`（已验证有效的成熟模式，值得沉淀为操作手册）
 2. 用户在此次闭环中主动要求（"生成手册"、"写个分析指导"）

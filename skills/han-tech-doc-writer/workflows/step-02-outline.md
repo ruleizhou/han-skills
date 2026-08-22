@@ -87,7 +87,7 @@ options:
 
 **分支 C — 只写选定领域**:
 
-- 使用 `AskUserQuestion` 让用户勾选领域（multiSelect: true）
+- 使用 `结构化提问` 让用户勾选领域（multiSelect: true）
 - 仅选中 1 个领域 → 等同于单文档，正常走 2.1
 - 选中多个领域 → 回到分支 A 或 B（在确认领域后再问一次整合/拆分）
 
