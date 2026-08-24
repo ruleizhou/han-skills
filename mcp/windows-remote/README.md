@@ -132,13 +132,11 @@ rmt-uart stop COM3                       # 停止捕获
 
 | 工具 | 说明 |
 |------|------|
-| `run_command` | 通用命令执行：任意命令 + 可选附件（自动传输 → sha256 校验 → 执行） |
 | `exec_command` | 在 Windows 上执行任意命令 |
 | `adb` | 执行 adb 命令（快捷方式） |
-| `adb_push` | 本地文件 push 到设备（自动 SCP + adb push，带缓存） |
-| `adb_pull` | 设备文件 pull 到本地（adb pull → SCP 下载 → 清理临时文件） |
+| `adb_push` | 本地文件 push 到设备（自动 SCP + adb push） |
 | `fastboot` | 执行 fastboot 命令（快捷方式） |
-| `fastboot_flash` | 本地镜像 flash 到分区（自动 SCP + fastboot flash，带缓存） |
+| `fastboot_flash` | 本地镜像 flash 到分区（自动 SCP + fastboot flash） |
 | `check_connection` | 测试 SSH 连通性 |
 | `list_devices` | 列出所有 adb + fastboot 设备 |
 | `list_uart_ports` | 列出所有可用 COM 口及设备信息 |
@@ -156,30 +154,6 @@ rmt-uart stop COM3                       # 停止捕获
 | `cmd` | string | 是 | 要执行的命令 |
 | `timeout` | int | 否 | 超时秒数，默认 30 |
 
-### run_command
-
-通用命令执行：一切远程命令 = 「命令 + 可选附件」。带附件时自动完成「传输 → sha256 完整性校验 → 执行」，任一步失败命令不执行。
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `command` | string | 是 | 要执行的命令，附件一律用文件名引用 |
-| `attachments` | string[] | 否 | 本地文件路径列表（仅文件，不支持目录） |
-| `timeout` | int | 否 | 执行超时秒数，默认 30 |
-
-行为要点：
-
-- **两阶段原子**：先完成全部附件的传输 + 校验，任一失败则一个命令都不执行（杜绝刷机刷一半的混版状态）
-- **cwd 约定**：命令在远程工作区 `C:\Temp\windows-remote\` 下执行，附件按原文件名就位——`fastboot flash boot boot.img` 原样书写即可
-- **附件缓存**：旁挂 `.sha256` 清单记录上次成功上传的 hash，一致时跳过传输（重编译自动失效）；`adb_push` / `fastboot_flash` 同享此缓存
-- **多命令**：含 `&&` / `||` 时自动经 `cmd /s /c` 执行（Windows PowerShell 5.1 不支持这两个操作符）
-- **超时**：终止 SSH 会话并按命令特征清理远程残留进程（如挂着的 `adb logcat`），返回尾部 64KB 输出
-
-```
-run_command(command="adb logcat -d -t 500")
-run_command(command="fastboot flash boot boot.img && fastboot reboot",
-            attachments=["/home/user/boot.img"])
-```
-
 ### adb
 
 在 Windows 远程 PC 上执行 adb 命令。
@@ -193,7 +167,7 @@ run_command(command="fastboot flash boot boot.img && fastboot reboot",
 
 将本地 Linux 文件 push 到 Android 设备。自动完成 SCP 上传到 Windows → adb push 到设备。
 
-文件上传到远程工作区 `C:\Temp\windows-remote\`，旁挂 `.sha256` 清单做缓存：文件未变（hash 一致）时下次跳过传输，重编译自动失效。
+文件上传到 Windows 临时目录 `C:\Temp\windows-remote\`，同名文件会覆盖（充当缓存）。
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -212,7 +186,7 @@ run_command(command="fastboot flash boot boot.img && fastboot reboot",
 
 ### fastboot_flash
 
-将本地 Linux 镜像文件 flash 到设备分区。自动完成 SCP 上传到 Windows → fastboot flash。上传带 `.sha256` 清单缓存：镜像未变时重复 flash 跳过传输。
+将本地 Linux 镜像文件 flash 到设备分区。自动完成 SCP 上传到 Windows → fastboot flash。
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|

@@ -75,14 +75,7 @@ async def _ssh_exec(cmd: str, timeout: int = 30, tty: bool = False) -> str:
             proc.communicate(), timeout=timeout + 10
         )
     except asyncio.TimeoutError:
-        # 杀掉本地 ssh 进程，防止僵尸进程堆积。
-        # 注意：远程命令进程不会随 ssh 断开自动退出，由调用方（run_command）负责清理。
-        proc.kill()
-        try:
-            await proc.wait()
-        except Exception:
-            pass
-        return f"错误：命令超时（{timeout}s），已终止 SSH 会话"
+        return f"错误：命令超时（{timeout}s）"
 
     result = stdout.decode("utf-8", errors="replace")
     if tty:
@@ -360,113 +353,6 @@ async def _ensure_windows_temp_dir() -> str | None:
     )
 
 
-# ──────────────────────────────────────
-# 通用命令执行层
-# 模型：命令 = 命令文本 + 可选附件（Attachment）。
-# 附件 = 命令执行前必须先送达远程工作区并通过完整性校验的本地文件。
-# 两阶段原子：阶段一完成全部附件的传输+校验，阶段二才开始执行命令。
-# 缓存：附件按原文件名存放，旁挂 <name>.sha256 清单记录上次成功
-# 上传时的 hash；清单与本地一致时跳过传输（重编译自动失效）。
-# ──────────────────────────────────────
-
-OUTPUT_TAIL_LIMIT = 64 * 1024  # 返回输出仅保留尾部 64KB，防流式命令刷爆上下文
-
-
-async def _remote_cached_hash(win_path: str) -> str | None:
-    """读取远程缓存清单：附件文件与其 .sha256 清单同时存在时返回清单 hash，否则 None"""
-    ps = (
-        "if ((Test-Path '" + win_path + "') -and (Test-Path '" + win_path + ".sha256')) { "
-        "(Get-Content '" + win_path + ".sha256' -Raw).Trim().ToUpper() "
-        "} else { Write-Host 'NONE' }"
-    )
-    result = await _ssh_exec("powershell -Command \"" + ps + "\"", 10)
-    result = result.strip().upper()
-    if not result or "NONE" in result or "错误" in result:
-        return None
-    return result
-
-
-async def _write_remote_manifest(win_path: str, file_hash: str) -> None:
-    """上传成功后写缓存清单。清单只是跳传优化，写失败不影响本次执行。"""
-    ps = (
-        "Set-Content -Path '" + win_path + ".sha256' -Value '"
-        + file_hash + "' -Encoding ASCII -Force"
-    )
-    await _ssh_exec("powershell -Command \"" + ps + "\"", 10)
-
-
-async def _ensure_attachment(local_path: str, timeout: int = 120) -> str:
-    """确保附件已就位于远程工作区并通过完整性校验，返回成功信息或错误。
-
-    缓存命中（远程同名文件 + 清单 hash 与本地一致）时跳过传输；
-    否则全量 SCP 上传（内含双端 sha256 校验）并更新清单。
-    """
-    filename = os.path.basename(local_path)
-    win_path = WINDOWS_TEMP_DIR + "\\" + filename
-    local_hash = _local_sha256(local_path)
-
-    # 缓存命中判断（一条 SSH 往返，远程不算大文件 hash，毫秒级）
-    cached = await _remote_cached_hash(win_path)
-    if cached == local_hash:
-        return f"缓存命中（跳过传输）: {filename} (SHA256: {local_hash[:16]}...)"
-
-    dir_err = await _ensure_windows_temp_dir()
-    if dir_err and "错误" in dir_err:
-        return f"错误：无法创建远程工作目录 {WINDOWS_TEMP_DIR}\n{dir_err}"
-
-    result = await _scp_upload(local_path, win_path, timeout)
-    if "错误" in result:
-        return result
-    await _write_remote_manifest(win_path, local_hash)
-    return result
-
-
-def _wrap_command(command: str) -> str:
-    """命令含 && 或 || 时包一层 cmd /s /c（Windows PowerShell 5.1 不支持这两个操作符）。
-
-    /s 保证仅剥离最外层引号，命令文本原样传递给 cmd。单命令不包装，行为不变。
-    """
-    if "&&" in command or "||" in command:
-        return 'cmd /s /c "' + command + '"'
-    return command
-
-
-def _tail_truncate(text: str, max_bytes: int = OUTPUT_TAIL_LIMIT) -> str:
-    """输出超长时仅保留尾部（按字节），防 logcat 类命令刷爆上下文"""
-    data = text.encode("utf-8")
-    if len(data) <= max_bytes:
-        return text
-    kept = data[-max_bytes:].decode("utf-8", errors="ignore")
-    return f"…（输出超长，仅保留尾部 {max_bytes // 1024}KB）\n{kept}"
-
-
-async def _kill_remote_command(command_snippet: str) -> str:
-    """SSH 超时后，强杀远程残留的命令进程，返回清理结果描述。
-
-    command_snippet: 命令特征子串（用于 Win32_Process.CommandLine 匹配），
-    如 'fastboot flash' 或 'adb logcat'。
-    须防误杀：只杀 CommandLine 含特征串的进程；一个都杀不到不算错误。
-    """
-    # .Contains() 做纯子串匹配（无 -like 通配符/正则元字符注入面），单引号按 PS 规则转义；
-    # 排除 $PID —— 清理命令自身的 CommandLine 也含特征串，不排除会自杀
-    safe_snippet = command_snippet.replace("'", "''")
-    ps = (
-        "$procs = Get-CimInstance Win32_Process | "
-        "Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -and "
-        "$_.CommandLine.Contains('" + safe_snippet + "') }; "
-        "if ($procs) { "
-        "$procs | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; "
-        "Write-Host ('已清理远程残留进程: ' + "
-        "(($procs | ForEach-Object { $_.Name + '(' + $_.ProcessId + ')' }) -join ', ')) "
-        "} else { Write-Host '未发现远程残留进程' }"
-    )
-    result = await _ssh_exec("powershell -Command \"" + ps + "\"", 15)
-    if "错误" in result:
-        # 清理是尽力而为，失败不掩盖超时结论本身
-        return f"远程残留进程清理失败（不影响超时结论）: {result}"
-    return result
-
-
 @mcp.tool()
 async def adb_push(local_path: str, device_path: str, timeout: int = 120) -> str:
     """将本地 Linux 文件 push 到 Android 设备。
@@ -479,8 +365,11 @@ async def adb_push(local_path: str, device_path: str, timeout: int = 120) -> str
     filename = os.path.basename(local_path)
     win_path = WINDOWS_TEMP_DIR + "\\" + filename
 
-    # 附件准备（缓存命中跳传 / 全量上传 + 双端校验）
-    result = await _ensure_attachment(local_path, timeout)
+    # 确保临时目录存在
+    await _ensure_windows_temp_dir()
+
+    # SCP 上传
+    result = await _scp_upload(local_path, win_path, timeout)
     if "错误" in result:
         return result
 
@@ -534,8 +423,11 @@ async def fastboot_flash(partition: str, local_path: str, timeout: int = 120) ->
     filename = os.path.basename(local_path)
     win_path = WINDOWS_TEMP_DIR + "\\" + filename
 
-    # 附件准备（缓存命中跳传 / 全量上传 + 双端校验）
-    result = await _ensure_attachment(local_path, timeout)
+    # 确保临时目录存在
+    await _ensure_windows_temp_dir()
+
+    # SCP 上传
+    result = await _scp_upload(local_path, win_path, timeout)
     if "错误" in result:
         return result
 
@@ -546,57 +438,6 @@ async def fastboot_flash(partition: str, local_path: str, timeout: int = 120) ->
     if "错误" in flash_result:
         return f"{result}\n{flash_result}"
     return f"{result}\nfastboot flash {partition}: {flash_result}"
-
-
-@mcp.tool()
-async def run_command(
-    command: str, attachments: list[str] = [], timeout: int = 30
-) -> str:
-    """在 Windows 远程 PC 上执行任意命令，支持附件（执行前必须送达并通过校验的本地文件）。
-
-    两阶段原子：先完成全部附件的传输 + sha256 校验（任一失败则命令不执行），
-    全部就绪后才执行命令。附件按原文件名放入远程工作区（C:\\Temp\\windows-remote），
-    命令在该目录下执行——命令中的附件一律用文件名引用，原样书写即可。
-    附件命中缓存（远程已有同 hash 文件）时自动跳过传输，重复执行零等待。
-
-    command: 要执行的命令，如 'adb logcat -d' 或 'fastboot flash boot boot.img && fastboot flash dtbo dtbo.img'
-      （含 && / || 时自动经 cmd /c 执行，绕开 PowerShell 5.1 的不支持）
-    attachments: 本地文件路径列表（仅文件，不支持目录），如 ['/home/user/boot.img', '/home/user/dtbo.img']
-    timeout: 执行超时秒数，默认 30。超时会终止 SSH 会话并清理远程残留进程，
-      返回尾部 64KB 输出。
-
-    示例：
-      run_command(command="adb logcat -d -t 500")
-      run_command(
-          command="fastboot flash boot boot.img && fastboot reboot",
-          attachments=["/home/user/boot.img"],
-      )"""
-    if err := _config_missing():
-        return err
-
-    # 阶段〇：附件本地存在性前置检查（不存在则一个 SSH 都不发）
-    for att in attachments:
-        if not os.path.exists(att):
-            return f"错误：附件不存在: {att}"
-
-    # 阶段一：附件传输 + 完整性校验（两阶段原子的第一段）
-    ensure_logs: list[str] = []
-    for att in attachments:
-        result = await _ensure_attachment(att, max(timeout, 120))
-        if "错误" in result:
-            return f"附件准备失败，命令未执行。\n{result}"
-        ensure_logs.append(result)
-
-    # 阶段二：执行（cwd = 远程工作区，附件以文件名可见）
-    full_cmd = "cd '" + WINDOWS_TEMP_DIR + "'; " + _wrap_command(command)
-    result = await _ssh_exec(full_cmd, timeout)
-    if "命令超时" in result:
-        # SSH 会话已终止，但远程命令进程仍在跑，按命令特征清理残留
-        kill_note = await _kill_remote_command(command)
-        result = result + "\n" + kill_note
-    result = _tail_truncate(result)
-    prefix = ("\n".join(ensure_logs) + "\n") if ensure_logs else ""
-    return prefix + result
 
 
 # ──────────────────────────────────────

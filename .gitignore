@@ -9,7 +9,3 @@ __pycache__/
 
 # NOTE: skills/<name>/templates/self-learning/data/cases/ is intentional
 # self-learning history and SHOULD be committed — do not ignore it.
-
-# NOTE: mcp/windows-remote/docs/ 存放 ADR，必须跟踪。
-# 全局 ~/.gitignore 的裸 `docs` 规则会误伤它，这里反排除。
-!mcp/windows-remote/docs/
