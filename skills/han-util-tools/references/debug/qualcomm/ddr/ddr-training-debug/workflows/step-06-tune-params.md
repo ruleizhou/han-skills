@@ -83,3 +83,7 @@
 
 - 参数调优完成、修复已验证 → 读取 `workflows/step-07-learn.md` 沉淀案例
 - 修复未生效 → 回到 Step 5 重新分析
+
+> **边界提示**：若训练失败的根因是**频率上限被调整**（降训练频点/band 降档后新 band
+> 训练开关未联动、或 RPM 切频越界），阈值调优治标不治本——转走
+> `featdev/qualcomm/ddr/ddr-freq-cap`（XBL/RPM/Kernel 三层跨固件联动清单）。

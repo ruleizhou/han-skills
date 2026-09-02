@@ -8,12 +8,16 @@
 
 | 场景 | 平台 | 模块 | 问题类型 | 子 skill 名 | 添加日期 |
 |------|------|------|----------|------------|----------|
-| debug | qualcomm | Stability | kernel-crash-analyzer | han-kernel-crash-analyzer | 2026-06-29 |
-| debug | qualcomm | recovery | storage-mount | recovery-storage-mount | 2026-06-29 |
-| debug | qualcomm | usb | usb-transfer-analyzer | usb-transfer-analyzer | 2026-06-29 |
+| debug | qualcomm | Stability | boot-analyzer | han-boot-analyzer | 2026-09-02 |
+| debug | qualcomm | Stability | kernel-crash-analyzer | han-kernel-crash-analyzer | 2026-09-02 |
+| debug | qualcomm | ddr | ddr-training-debug | ddr-training-debug | 2026-09-02 |
+| debug | qualcomm | recovery | storage-mount | recovery-storage-mount | 2026-09-02 |
+| debug | qualcomm | ufs | ufs-provision-analyzer | ufs-provision-analyzer | 2026-09-02 |
+| debug | qualcomm | usb | usb-transfer-analyzer | usb-transfer-analyzer | 2026-09-02 |
+| featdev | qualcomm | ddr | ddr-freq-cap | ddr-freq-cap | 2026-09-02 |
 
 ---
 
 ## 统计
 
-- 总子 skill 数：3
+- 总子 skill 数：7

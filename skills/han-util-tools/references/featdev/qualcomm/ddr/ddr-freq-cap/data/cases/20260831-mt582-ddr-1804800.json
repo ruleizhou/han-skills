@@ -1,0 +1,40 @@
+{
+  "id": "20260831-mt582-ddr-1804800",
+  "timestamp": "2026-09-01T12:00:00+08:00",
+  "platform": "MT582 / Divar (SM6225/Khaje) / M61",
+  "input_summary": "硬性要求 Boot DDR Training 上限 ≤1804800kHz（不能只降运行时）。原最大频率 2092800(band7)。历时 2026-08-30~09-01，9 轮刷机 + 3 次 ramdump。",
+  "process_steps": [
+    "Step0 收集：训练+运行双受限硬性要求，平台 Divar",
+    "首轮：XBL 8 文件联动降频（f9477632af）→ boot 训练全过、UEFI 走完，kernel ~6s 死于 clk_smd_rpm 卡 msm_rpm_wait_for_ack（RPM 挂死）",
+    "kernel 侧逐路径 cap：probe/resume INT_MAX → set_rate/round_rate（icc 带宽路径）+ dts qcom,bimc-max-rate（b3de459/47cf203）→ 仍死 ~5.6s，形态变为 DDR 数据腐烂（logbuf/链表损坏、垃圾栈、Core0 PC=0xdeaddeaddeaddead）",
+    "排除实验：版本号 16.1 无关、关周期训练无关、num_levels 12/11 无关（V2c）、仅改训练宏 V2e → boot 训练 ABORT（RD 1D CF ZERO EYE WIDTH @1804800，证明 switchboard 全套增强必需）",
+    "基线对照（补做）：基线 XBL + 新 kernel = 能开机 → 分锅：kernel 无辜，锅在降频 XBL 与旧 RPM 固件的跨固件错位",
+    "RPM 层定位：切频查表循环无钳位，越界请求直接拿未训练数据写 PHY；首轮改通用 rpm/ddrss/ 未生效（白烧一轮），实际编译路径为 rpm/divar/ddrss/ 独立副本",
+    "终局：RPM divar 路径三处查表加 idx+频率双钳并回写 misc.new_clk_in_kHz（c1c493ccf1），反汇编验证产物 → 三层联刷正常开机"
+  ],
+  "key_findings": [
+    "SMEM 共享数据（clock_plan/训练数据）是跨固件 ABI，XBL 单边 cap 必炸",
+    "RPM 是 DCVS 裁决者（本平台无 AOP），kernel cap 管不到 RPM 自身 DCVS/NPA/init 的超限请求",
+    "RPM 查表越界无 clamp：越界槽=未训练数据/PLL 全 0 → 数据腐烂或 RPM 挂死，三种死相同一根源",
+    "RPM 平台独立源码副本：divar/ 才是真编译路径，产物必须反汇编验证",
+    "XBL 降训练为联动集：新最高 band 须全套接替（switchboard/INDEX/DIT），否则训练 ABORT",
+    "kernel BIMC 投票四路径：probe/resume 的 INT_MAX、set_rate（icc 带宽换算不查 ddr_freq_table）、round_rate、prepare 缓存",
+    "设备训练分区 checksum 恒 0：每次开机全量重训，版本 bump 无意义",
+    "QUTS 导出 log 为多段 ring buffer 拼接；两次 dump 的 DDR_DATA.BIN 差 178/12288 字节属训练数据健康基线"
+  ],
+  "experiments": [
+    {"round": "v1", "config": "XBL 联动降频 + 旧 kernel(7/17)", "result": "❌ kernel 6.0s 卡 RPM ACK"},
+    {"round": "v4/v5", "config": "+ SMEM clock_plan 尾槽清零（±版本回退）", "result": "❌ kernel 5.6s 数据腐烂"},
+    {"round": "F/G", "config": "训练还原 2092 + num_levels 截表", "result": "❌ boot 训练卡死/Read@2092（retimer 查 band 越界）"},
+    {"round": "全cap", "config": "kernel 四路径 cap", "result": "❌ 同点数据腐烂（RPM 自身请求未堵）"},
+    {"round": "关周期训练", "config": "periodic_training_enable=0", "result": "❌ 同点（排除 DIT 假设）"},
+    {"round": "V2c", "config": "训练 1804 + 全 12 档表", "result": "❌ 同点（排除 num_levels 假设）"},
+    {"round": "V2e", "config": "仅改训练宏，switchboard/INDEX 还原", "result": "❌ boot ABORT：RD 1D CF ZERO EYE @1804800（证明联动集必需）"},
+    {"round": "基线", "config": "基线 XBL + 新 kernel", "result": "✅ 开机（分锅：kernel 无辜）"},
+    {"round": "终局", "config": "XBL f9477632af + RPM divar clamp c1c493ccf1 + kernel b3de459/47cf203", "result": "✅ 正常开机"}
+  ],
+  "final_result": "三层同代际联刷：XBL（f9477632af 训练降 1804 全套联动）+ RPM（c1c493ccf1 divar 路径切频 clamp）+ Kernel（b3de459 qcom,bimc-max-rate + 47cf203 dts）。仅刷 XBL+kernel 不刷 RPM 仍死。",
+  "result_assessment": "success_three_layer_joint",
+  "root_cause_class": "CROSS_FIRMWARE_ABI_MISMATCH",
+  "report": "BOOT.XF.4.1/boot_images/docs/MT582_DDR_1804800_降频方案.md"
+}

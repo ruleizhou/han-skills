@@ -1,0 +1,94 @@
+{
+  "_schema": "patterns.json — 降频/频率上限调整模式库，每次成功分析后将有效的模式沉淀于此",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "_fields": {
+    "id": "唯一标识，格式 ptrn-<自增三位数>",
+    "name": "模式简短名称（一句话概括）",
+    "category": "分类：RPM_ARCH / XBL_ARCH / KERNEL_ARCH / BUILD_TRAP / DIAGNOSIS / METHOD",
+    "description": "模式详细描述，包含关键特征和判断依据",
+    "confidence": "置信度，初始为 1，success +1, fail -1（>=3 视为成熟模式）",
+    "frequency": "出现次数",
+    "keywords": "用于模式匹配的关键词列表",
+    "first_seen": "首次发现日期 YYYY-MM-DD",
+    "last_seen": "最近一次出现日期 YYYY-MM-DD",
+    "outcome": "最终结果: success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "RPM 切频查表越界无钳位导致 DDR 数据腐烂",
+      "category": "RPM_ARCH",
+      "description": "RPM 侧 HAL_DDR_Pre/Post_Clock_Switch 与 BIMC_Pre 的 clock_plan 查表循环，请求频率超过表内最高档时 new_clk_idx 越界（= ddr_num_clock_levels），直接拿越界槽的训练数据（rcw.bimc_tDQSCK 等）编程 PHY，每次切频都在写坏 PHY。症状：kernel 启动 ~5.5-6s（display/icc 投票后）出现 DDR 数据腐烂——logbuf/链表损坏、task 栈垃圾地址、parser 崩溃。修法：三处查表后加 idx+频率双钳并回写 misc.new_clk_in_kHz。kernel 侧任何 cap 都管不到 RPM 自身（DCVS/NPA/init）发出的请求，RPM 侧 clamp 是开机硬依赖。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["new_clk_idx", "ddr_num_clock_levels", "clock_plan", "越界", "clamp", "数据腐烂", "bimc_tDQSCK", "HAL_DDR_Pre_Clock_Switch", "msm_rpm_wait_for_ack"],
+      "first_seen": "2026-08-31",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "RPM 平台独立源码副本陷阱：改通用目录不生效",
+      "category": "BUILD_TRAP",
+      "description": "RPM 的 DDR 驱动存在平台专属源码副本（如 Divar 编译 rpm/divar/ddrss/，而非通用 rpm/ddrss/）。改通用路径编译不报错但产物不含改动，刷机照死。改 RPM 后必须反汇编产物验证（objdump 查 HAL_DDR_Pre_Clock_Switch 函数体，确认查表循环后出现钳位分支、函数体长度增加）。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["rpm/divar", "独立副本", "不生效", "反汇编", "objdump", "产物验证", "rpm_proc", "build/rpm"],
+      "first_seen": "2026-08-31",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "XBL 降训练频率是联动集不可拆",
+      "category": "XBL_ARCH",
+      "description": "DSF 训练策略为'最高频 band 做全套训练，低频 band 只微调后复制'。降训练起点后新最高 band 必须完整接替：训练宏 + switchboard 四表新 band 行（DCC/WRLVL/WR-RD perbit+2D VREF）+ MAX_TRAINING_FREQ_INDEX + MIN_DTTS_TRACKING_PRFS + DDR_MAX_FREQ，缺一则 WRLVL/perbit 静默缺失或训练 ABORT（错误码 84，RD 1D CF ZERO EYE WIDTH）。DSF 版本号不需要 bump（RPM 不校验且多数设备训练分区 checksum 恒 0 每次全量重训）。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["DSF_MAX_SUPPORTED_DDR_TRAINING_FREQ", "switchboard", "MAX_TRAINING_FREQ_INDEX", "MIN_DTTS_TRACKING_PRFS", "band6", "band7", "WRLVL", "perbit", "ZERO EYE WIDTH", "联动"],
+      "first_seen": "2026-08-30",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-004",
+      "name": "Kernel BIMC 投票共四条路径须全 cap",
+      "category": "KERNEL_ARCH",
+      "description": "clk-smd-rpm.c 中 BIMC 频率投票：①probe/resume 的 clk_vote_bimc(INT_MAX)；②set_rate——icc 带宽换算路径（qcom,bengal-bimc interconnect 持有 RPM_SMD_BIMC_CLK，util-factor 换算带宽→频率，不查 ddr_freq_table）；③round_rate；④prepare/unprepare（用 r->rate 缓存天然安全）。推荐可选 dts 属性 qcom,bimc-max-rate（of_property_read_u32 失败不修改变量，缺省 INT_MAX 其他平台零影响）。vote 单位是 Hz 不是 kHz（1804800kHz=1804800000）。静态变量定义必须放在 set_rate 之前否则编译报 undeclared。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["clk-smd-rpm", "clk_vote_bimc", "INT_MAX", "qcom,bimc-max-rate", "interconnect", "bengal-bimc", "icc", "带宽投票", "set_rate", "1804800000"],
+      "first_seen": "2026-08-31",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-005",
+      "name": "降频死机指纹三态判别",
+      "category": "DIAGNOSIS",
+      "description": "①kernel ~5.5-6s DDR 数据腐烂（logbuf/链表损坏、task 栈垃圾地址 0xb6b6b6b6 模式、parser exception、Core0 PC=0xdeaddead...）= RPM 切频写坏 PHY；②kernel 卡 D 状态 msm_rpm_wait_for_ack、数据结构完好 = RPM 挂死不回 ACK（INT_MAX vote 越界清零槽 PLL 全 0 等）；③boot 训练 ABORT（DDR ABORT ... ZERO EYE WIDTH / 错误码 84）或训练中卡死 = 训练配置层（联动缺失或 num_levels 截表导致 retimer 查 band 越界）。注意 QUTS 导出 log 是多段 ring buffer 拼接，先分段再定位死点。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["指纹", "数据腐烂", "msm_rpm_wait_for_ack", "ZERO EYE", "0xdeaddead", "ring buffer", "卡死", "分诊"],
+      "first_seen": "2026-08-30",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-006",
+      "name": "降频实验前强制基线对照",
+      "category": "METHOD",
+      "description": "任何降频改动刷机前，先刷'改动前原样'基线镜像确认环境健康。基线开机 → 死机都是改动引发，可放心二分；基线也死 → kernel 构建/环境问题，先排环境（新构建 kernel 可能包含时间窗内团队其他提交）。本案曾连烧四版实验镜像后才补基线，浪费两轮。配套取证：modules_table 的 srcversion 验证 kernel 真实版本；DDRCS 内存搜 freq-tbl 字节序列验证 dtbo 是否生效；两次 dump 的 DDR_DATA.BIN 差异 ~1.5%（178/12288）为训练数据健康基线。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": ["基线对照", "分锅", "二分", "srcversion", "DDR_DATA.BIN", "字节序列", "dtbo 验证"],
+      "first_seen": "2026-08-30",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    }
+  ]
+}

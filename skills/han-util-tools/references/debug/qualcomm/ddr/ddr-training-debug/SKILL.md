@@ -26,6 +26,7 @@ Qualcomm SBL1/DDI 阶段 DDR PHY 训练调试导航。系统化定位 small_eye_
 | "加诊断日志"/"定位触发点"/"分类 small_eye" | 诊断注入 | Step 2 → 4 → 5 |
 | "改阈值"/"调优"/"DCC 调整"/"放宽容限" | 参数调优 | Step 2 → 6 |
 | "问题解决"/"修复生效"/"搞定了"/"不再复现" | 反馈闭环 | feedback-loop.md |
+| 降频/训练上限/band 降档调整中遇训练异常 | 转交 | featdev/qualcomm/ddr/ddr-freq-cap（跨固件频率上限场景，XBL/RPM/Kernel 三层联动） |
 
 ## 预检清单
 
