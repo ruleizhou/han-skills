@@ -1,0 +1,25 @@
+{
+  "case_id": "20260831-mc5616-cpusys-vm",
+  "project": "MC5616",
+  "platform": "SM6450P / Parrot / netrani",
+  "title": "概率待机 27mA(正常 7mA)浅睡异常——Gunyah cpusys VM 初始化竞态",
+  "duration": "2026-08-17 ~ 2026-08-31",
+  "rounds": ["0817 首发五层深挖", "0824 好坏休眠 dump 对比", "08262 完整窗口回放+cycles 纠偏"],
+  "symptoms": {
+    "current": "7mA → 27mA, Δ≈20mA, s2idle, 飞行模式拔 USB",
+    "sleep_stats": "aosd/cxsd/ddr/apss 全 0(before 即 0, boot 决定型, 重启恢复)",
+    "real_sleep_ratio": "91% 窗口(cycles 法: 382.46s+13.67s / 437s)",
+    "aop_dump": "DDR_AUX 四连票(CX=LOW_SVS/MX=SVS/VDDA=SVS/XO=XO_ON) 恒在; HYP MX=NOM 与 TZ XO_ON 轮换; AOP 自身健康"
+  },
+  "root_cause": "Gunyah cpusys VM(CPU 电源管理 guest VM, pas-id=35/vmid=50, firmware 'Powering on cpu' 实锤) boot 期 guestvm_loader 加载竞态 → VM 状态机塌缩 → CPU 域供电票不撤 → AOP 拒绝 AOSS 塌缩 → 睡满 91% 仍 27mA 浅睡",
+  "fix": "0001-remove-vm.patch: parrot-qrd.dtsi disable cpusys_vm_mem + qcom,guestvm_loader@e0600000 (Change-Id I70a2b320, dtbo 级生效)",
+  "verification": "用户确认三轮复现条件不再出现, 电流回归正常档",
+  "patterns_matched": ["ptrn-008", "ptrn-009"],
+  "byproducts": [
+    "AOP violator enQ_msg 本地注入武器(commit f943dc1c5, 备用未上场)",
+    "build_aop_debug.sh 快速编-TEST签-部署链(~15s)",
+    "伪插入指纹: WAKE_REASON_PLUGGED_IN,PLUGGED:false + hsphy 2→100→500→0mA 脉冲(次要缺陷另案)"
+  ],
+  "report": "analysis/reports/MC5616/概率待机27mA浅睡异常终报_cpusys_vm.md",
+  "closed_at": "2026-09-02"
+}

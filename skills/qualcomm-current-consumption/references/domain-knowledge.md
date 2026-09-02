@@ -29,3 +29,9 @@
 | 平台 | AOP -t | 备注 |
 |:---|:---|:---|
 | SM6450P / Parrot | netrani | MC5616 已验证 |
+
+11. **HYP master 的票要往 guest VM 想**：hypervisor 本身几乎不主动投票，它**代 guest VM 投**。AOP dump 见 HYP 死票（如 MX=NOM）= 某个 guest VM 的资源残留。盘 dts 全部 `qcom,guestvm_loader` 节点（pas-id/vmid/firmware-name），固件 strings 看功能（MC5616 cpusys_vm.mbn 的 `Powering on cpu` = CPU 电源 VM ⇒ 必持 CX/MX 票）。"死票投手轮换、模态恒定" = 一个状态机的不同失败面，别逐 master 追。MC5616 终案：cpusys VM（pas-id=35/vmid=50）boot 期加载竞态 → 票不撤 → AOP 拒绝 AOSS 塌缩 → 睡满 91% 窗口仍 27mA；修复 = disable `cpusys_vm_mem`+`guestvm_loader@e0600000`（dtbo 级，不动签名链，loader 是 vendor_dlkm 模块 status=disabled 即不 probe）。
+
+12. **睡眠时长只能 cycles 差**：printk 时间戳 suspend 冻结，`suspend entry→exit` 差只是流程开销。用同轮 `suspend cycles / resume cycles` 差 ÷19.2MHz。先算睡眠占比再给唤醒源定权重——睡满窗口电流仍高 ⇒ 主因在档位浅（AOP 不塌缩），唤醒源循环（如 USB 伪插入 `WAKE_REASON_PLUGGED_IN,PLUGGED:false`+hsphy 2→100→500→0mA 脉冲）降级次要噪声。
+
+13. **AOP LPM violator 武器（备用）**：`DEBUG_LPM_VIOLATORS` 在 netrani 的 sleep.scons/utils.scons **本来就开**，实现在预编译 pwr_utils.lib；QMP 命令 `lpm_mon`（type=rbsc/cxpc/rdsyst、dur、flush）按需触发，数据落 MSGRAM2（AOP_PROF 段）。AP 无 aop_qmp 客户端时改 `aop_services_init.c` 用 `enQ_msg` 本地注入（走原生分发，10 行）。编签链：`build_aop_debug.sh`（BP 仓库根，~15s）——meig_build.sh 只编 devcfg、QTI-REMOTE 签名连高通内网必败须手动 TEST 签、QC SCons 增量不可靠须删 .o/.lib/elf 强制重建。同类"塌缩被谁拒"问题即插即用。

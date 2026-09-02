@@ -25,7 +25,16 @@
       "description": "qcom_sleep_stats 中 cxsd/ddr 有 Count、aosd 始终 0——这是「现象」非「根因」。根因分两类:(a) 真 STUCK(某 client 异常投 /sleep/aoss);(b) 平台 retention 设计(见 ptrn-007)。MC5616 netrani 20260729 深挖坐实为 (b):cx_ret 永久投 retention。故见本现象须先查平台 sleep.scons 分支再定性,勿默认 STUCK。",
       "confidence": 1,
       "frequency": 2,
-      "keywords": ["aosd", "cxsd", "ddr", "AOSS", "待机功耗", "sleep/aoss", "cx_ret", "retention"],
+      "keywords": [
+        "aosd",
+        "cxsd",
+        "ddr",
+        "AOSS",
+        "待机功耗",
+        "sleep/aoss",
+        "cx_ret",
+        "retention"
+      ],
       "first_seen": "2026-07-28",
       "last_seen": "2026-07-29",
       "outcome": "partial"
@@ -37,7 +46,13 @@
       "description": "无 NFC 硬件但 nfc 驱动/gpio VEN out high，拉低或 DTS disable 可降约 2mA；驱动多为 nfc_i2c.ko / qcom,sn-nci。",
       "confidence": 2,
       "frequency": 1,
-      "keywords": ["NFC", "gpio6", "VEN", "nfc_i2c", "sn-nci"],
+      "keywords": [
+        "NFC",
+        "gpio6",
+        "VEN",
+        "nfc_i2c",
+        "sn-nci"
+      ],
       "first_seen": "2026-07-28",
       "last_seen": "2026-07-28",
       "outcome": "success"
@@ -49,7 +64,13 @@
       "description": "spm_lvl 从 3(SLEEP) 提到 5(POWERDOWN+OFF) 后 Enabled regulators 可清空，但待机电流无显著下降时，勿再将 UFS 当主因。",
       "confidence": 2,
       "frequency": 1,
-      "keywords": ["spm_lvl", "UFS", "VCCQ", "pm6450_l13", "POWERDOWN"],
+      "keywords": [
+        "spm_lvl",
+        "UFS",
+        "VCCQ",
+        "pm6450_l13",
+        "POWERDOWN"
+      ],
       "first_seen": "2026-07-28",
       "last_seen": "2026-07-28",
       "outcome": "success"
@@ -61,7 +82,14 @@
       "description": "关闭 STM/ETR/DCC/debug_enabled 后约降 1mA，aosd 仍为 0。persist.debug.coresight.config=stm-events 会使 STM 复开，测流前必须回读 enable_source。",
       "confidence": 2,
       "frequency": 1,
-      "keywords": ["STM", "coresight", "debug_enabled", "stm-events", "DCC", "QDSS"],
+      "keywords": [
+        "STM",
+        "coresight",
+        "debug_enabled",
+        "stm-events",
+        "DCC",
+        "QDSS"
+      ],
       "first_seen": "2026-07-28",
       "last_seen": "2026-07-28",
       "outcome": "success"
@@ -73,7 +101,13 @@
       "description": "SM6450P/Parrot AOP hansei -t 使用 netrani；误用 845 会导致 OCIMEM/dumptable 基址错误。",
       "confidence": 2,
       "frequency": 1,
-      "keywords": ["hansei", "netrani", "845", "AOP", "elf"],
+      "keywords": [
+        "hansei",
+        "netrani",
+        "845",
+        "AOP",
+        "elf"
+      ],
       "first_seen": "2026-07-28",
       "last_seen": "2026-07-28",
       "outcome": "success"
@@ -85,7 +119,15 @@
       "description": "用户口径/当前状态可能为 s2idle 或 USB 在位（USB 持 XO 投票使 AOSD 必然为 0、抬高底流），足以造成 aosd=0+电流偏高的假阴性；下根因结论前必须核对 mem_sleep 括号项、拔 USB 浸泡窗口 delta。注意：MC5616 20260729 案例中经用户核实 deep+拔USB 窗口 aosd 仍 0，即本模式该次未命中，门控通过后转入 AOSS 主线——本模式价值在「前置排除」，勿直接当根因。",
       "confidence": 0,
       "frequency": 1,
-      "keywords": ["s2idle", "mem_sleep", "USB", "测流条件", "XO", "aosd假阴性", "diag,adb"],
+      "keywords": [
+        "s2idle",
+        "mem_sleep",
+        "USB",
+        "测流条件",
+        "XO",
+        "aosd假阴性",
+        "diag,adb"
+      ],
       "first_seen": "2026-07-29",
       "last_seen": "2026-07-29",
       "outcome": "failed"
@@ -97,9 +139,66 @@
       "description": "netrani/clarence/fillmore 在 AOP sleep.scons 编译期走 arc_assisted_cx_retention 分支(waipio/8350/kailua 走 collapse);cx_ret boot 期 aop_cx_ret_init 无条件永久投 cx.lvl=16(RAIL_VOLTAGE_LEVEL_RET),CX 到不了 OFF → ddr cxsdaosd 序列卡 CX off → aosd 恒 0。反汇编坐实(netrani aop_cx_ret_init@0x80820720: movs r1,#16; blx unpa_issue_request)。诊断信号:npa-dump 见 cx.lvl 被 cx_ret 钉 retention + adb_vote=0,即查 scons MSM_ID 分支。无 runtime 开关。配套 errata:AOSS_0C_ARC_MITIG/tme_vdu_wa。",
       "confidence": 2,
       "frequency": 1,
-      "keywords": ["cx_ret", "retention", "netrani", "sleep.scons", "arc_assisted_cx_retention", "aosd", "cx.lvl", "aop_cx_ret_init"],
+      "keywords": [
+        "cx_ret",
+        "retention",
+        "netrani",
+        "sleep.scons",
+        "arc_assisted_cx_retention",
+        "aosd",
+        "cx.lvl",
+        "aop_cx_ret_init"
+      ],
       "first_seen": "2026-07-29",
       "last_seen": "2026-07-29",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-008",
+      "name": "Gunyah guest VM 塌缩致 HYP/DDR_AUX 死票挡 AOSS 塌缩(boot 决定型)",
+      "category": "GUEST_VM_ROOT_CAUSE",
+      "description": "指纹组合:AOP reqs_by_master 出现死票且投手轮换模态恒定(如 DDR_AUX 四连票恒在+HYP MX=NOM/TZ XO_ON 轮换)+aosd/cxsd/ddr 全 0+boot 决定(重启恢复)+AOP 自身健康(hansei 'The AOP is ok')+APSS 侧清白(票值好坏相同)。终因=某 guest VM 状态机初始化竞态。心法:HYP master 的票要往 guest VM 想(hypervisor 代 VM 投票);'投手轮换、模态恒定'是状态机缺陷指纹,别追单个 master。验证:盘 dts 全部 qcom,guestvm_loader 节点,逐 VM 问'管什么资源、失败面是什么'(固件 strings 看功能,如 cpusys_vm.mbn 的 'Powering on cpu'=CPU 电源 VM 必持 CX/MX 票)。修法:parrot-qrd.dtsi disable cpusys_vm_mem+guestvm_loader@e0600000(0001-remove-vm.patch,dtbo 级生效不动签名链)。MC5616 0817/0824/08262 三轮实锤。",
+      "confidence": 3,
+      "frequency": 3,
+      "keywords": [
+        "HYP",
+        "hypervisor",
+        "gunyah",
+        "guestvm_loader",
+        "cpusys_vm",
+        "DDR_AUX",
+        "死票",
+        "投手轮换",
+        "boot决定",
+        "AOSS塌缩",
+        "vmid",
+        "pas-id"
+      ],
+      "first_seen": "2026-08-17",
+      "last_seen": "2026-08-31",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-009",
+      "name": "睡眠时长必须 cycles 差计算,printk 时间戳 suspend 冻结",
+      "category": "METHODOLOGY",
+      "description": "printk 时间戳(与 suspend ns 同源,monotonic)在 suspend 期间不走,PM: suspend entry→exit 时间戳差只是流程开销不是睡眠时长(08262 实测差 300 倍:时间戳差 1.1s,cycles 差 382.46s)。正解:同轮打印 suspend/resume cycles 差÷19.2MHz。三重互洽验证:醒段 cycles差=dmesg差;墙钟窗口−dmesg走时=冻结睡眠;logcat 墙钟长区间无 Wakeup=长睡。用途:算睡眠占比再给唤醒源定权重——若睡满窗口(如 91%)电流仍高,主因在档位浅(AOP 不塌缩),唤醒源循环降级次要;apss Count=0 在 s2idle 下不能单独证没睡。",
+      "confidence": 2,
+      "frequency": 1,
+      "keywords": [
+        "cycles",
+        "suspend ns",
+        "resume cycles",
+        "19.2MHz",
+        "睡眠时长",
+        "printk",
+        "时间戳冻结",
+        "s2idle",
+        "睡眠占比",
+        "碎片化误判"
+      ],
+      "first_seen": "2026-08-27",
+      "last_seen": "2026-08-27",
       "outcome": "success"
     }
   ]
