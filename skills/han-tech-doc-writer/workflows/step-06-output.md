@@ -14,7 +14,7 @@ Write: <notes_root>/<子路径>/<标题>.md
 
 - **output_dir**：来自 Step 1.6（Notes 根 + 按内容匹配的子目录，用户已确认）
 - **文件名**：`<标题>.md`，**标题 = frontmatter title = wikilink 名**（禁止 kebab-case slug）
-- `_diagrams/` 与 `.md` **同目录**
+- `attachment/` 与 `.md` **同目录**
 - 目录须已在 Step 1.6 经用户确认创建；**禁止**在本步对未确认路径静默 `mkdir -p`
 
 ### 多文档模式
@@ -24,7 +24,7 @@ Write: <notes_root>/<子路径>/<标题>.md
 ```
 对 docs 中的每篇文档:
   1. Write: <doc.output_dir>/<doc.filename>     # 如 "80-Notes/Drivers/GPIO/GPIO 子系统.md"
-  2. _diagrams/ 使用 <doc.title> 作为 slug 前缀（与 .md 同目录）
+  2. attachment/ 使用 <doc.title> 作为 slug 前缀（与 .md 同目录）
   3. 告知用户: "[i/N] [[doc.title]] → <doc.output_dir>/<doc.filename>"
 ```
 
@@ -39,10 +39,10 @@ Obsidian 页面已输出到: <notes_root>/<子路径>/<标题>.md
 frontmatter type: analysis | concept | source
 共 N 章, ~M 字, K 张 D2 SVG, I 张信息图, L 个 wikilink。
 
-图表源文件在同目录 _diagrams/:
-- _diagrams/<slug>-*.d2   (D2 源代码, 可二次编辑)
-- _diagrams/<slug>-*.svg  (矢量图, Obsidian 内联, 亮/暗双主题)
-- _diagrams/<slug>-info.png (信息图)
+图表源文件在同目录 attachment/:
+- attachment/<slug>-*.d2   (D2 源代码, 可二次编辑)
+- attachment/<slug>-*.svg  (矢量图, Obsidian 内联, 亮/暗双主题)
+- attachment/<slug>-info.png (信息图)
 ```
 
 提示：

@@ -3,6 +3,7 @@
 将当前对话中高价值的分析、洞察或决策归档为结构化 wiki 页面。不让好的回答消失在聊天记录里。
 
 **触发条件：**
+
 - `/han-llm-wiki save` — 自动识别对话中最高价值的内容并询问标题
 - `/han-llm-wiki save <标题>` — 指定标题保存
 - 用户说「保存这段」「归档这个分析」「存到 wiki」「记录下来」
@@ -16,6 +17,7 @@
 **步骤 1：扫描对话**
 
 识别当前对话中最有价值保存的内容：
+
 - 多步分析或推理链
 - 新的技术理解和洞察
 - 架构/策略决策及理由
@@ -34,7 +36,7 @@
 按下表确定类型。如果用户指定了类型，遵守用户选择。
 
 | 类型 | 归档位置（engineering） | 判断标准 |
-|------|------------------------|---------|
+| ------ | ------------------------ | --------- |
 | `synthesis` | `wiki/analyses/` | 多步分析、对比、综合回答、研究总结 |
 | `concept` | `wiki/concepts/` | 解释/定义了一个概念、模式、框架 |
 | `source` | `wiki/sources/` | 讨论了外部资料（文章/论文/网页），含 URL |
@@ -66,6 +68,7 @@
 **配图范围**：`synthesis` / `decision` / `concept` / `source` 类型配图；`session`（整段多主题对话摘要）默认**跳过**。
 
 **流程**：
+
 1. 一次性检测引擎可用性：`which d2 && d2 --version`、检查 `.han-skills/.env` 是否有 han 作用域 key（无 key 标记 AI 引擎不可用）
 2. 按笔记类型 + 内容特征，依 `references/diagram-guide.md` 决定：是否配图、**用哪个引擎 + 什么类型**
    - 先查 `data/patterns.json`（diagram-guide.md 第 8 节）命中经验
@@ -75,12 +78,12 @@
    - AI 引擎选中但无 key → 降级到 D2（见 diagram-guide.md 第 7 节）
    - 简单结论性笔记（无结构/流程）→ 跳过
 3. 对待配图笔记（按引擎执行，命令见 diagram-guide.md 第 4 节）：
-   - 在笔记**同目录**建 `_diagrams/`（如 `wiki/analyses/_diagrams/`，路径随上方 mode 路由表）
+   - 在笔记**同目录**建 `attachment/`（如 `wiki/analyses/attachment/`，路径随上方 mode 路由表）
    - **D2**：读 `han-d2-diagram/assets/templates/<type>.d2` 作骨架，写 `<笔记slug>-<短码>.d2` → 编译 SVG
-   - **AI 三件套**：跑对应 skill 的 workflow 生成 prompt → 调 `han-imagen --json` → `cp` 到 `_diagrams/<slug>-<code>.png`
-   - 正文嵌入 `![图 N: 标题](_diagrams/xxx.svg|.png)` + 图号 + **图后 2-5 句说明**
+   - **AI 三件套**：跑对应 skill 的 workflow 生成 prompt → 调 `han-imagen --json` → `cp` 到 `attachment/<slug>-<code>.png`
+   - 正文嵌入 `![图 N: 标题](attachment/xxx.svg|.png)` + 图号 + **图后 2-5 句说明**
 4. **自学习回写**：配图成功后回写 `data/patterns.json`（命中 frequency+1，新组合追加 confidence=1；降级记 outcome=degraded）
-5. **最小本地验证**：`ls -lh _diagrams/<name>` 确认文件存在且非空（save 不跑全量 lint，保持轻量；全量图片死链检查由后续 `ingest` Step 10 或 `/han-llm-wiki lint` 兜底）
+5. **最小本地验证**：`ls -lh attachment/<name>` 确认文件存在且非空（save 不跑全量 lint，保持轻量；全量图片死链检查由后续 `ingest` Step 10 或 `/han-llm-wiki lint` 兜底）
 
 **步骤 6：收集链接**
 
@@ -130,12 +133,14 @@
 
 - 更新 `wiki/index.md`：在相关章节顶部添加新条目
 - 追加 `wiki/log.md`：
+
   ```markdown
   ## [YYYY-MM-DD] save | 笔记标题
   - Type: synthesis
   - Location: wiki/analyses/笔记标题.md
   - From: conversation on [简要主题描述]
   ```
+
 - 更新 `wiki/hot.md`：刷新「最近活跃主题」
 
 **步骤 8：确认**
@@ -168,18 +173,21 @@ sources:
 ```
 
 `synthesis` 类型额外字段：
+
 ```yaml
 question: "触发这个问题/分析的原问题"
 answer_quality: solid  # solid | preliminary | speculative
 ```
 
 `decision` 类型额外字段：
+
 ```yaml
 decision_date: YYYY-MM-DD
 status: active  # active | superseded | implemented
 ```
 
 **Seed 页模板**（步骤 6.5 创建时使用）：
+
 ```yaml
 ---
 title: <topic-slug>
@@ -216,7 +224,7 @@ status: seed
 根据 `wiki/.mode.json` 的 mode 决定归档路径：
 
 | 类型 | engineering | generic | lyt | para | zettelkasten |
-|------|-----------|---------|-----|------|-------------|
+| ------ | ----------- | --------- | ----- | ------ | ------------- |
 | synthesis | `wiki/analyses/` | `wiki/analyses/` | `wiki/notes/` | `wiki/resources/` | `wiki/<ID>-syn-<slug>.md` |
 | concept | `wiki/concepts/` | `wiki/concepts/` | `wiki/notes/` | `wiki/resources/concepts/` | `wiki/<ID>-con-<slug>.md` |
 | source | `wiki/sources/` | `wiki/sources/` | `wiki/notes/` | `wiki/resources/` | `wiki/<ID>-src-<slug>.md` |
@@ -230,6 +238,7 @@ status: seed
 ## 保存 vs 跳过
 
 **保存：**
+
 - 非显而易见的洞察或综合
 - 带理由的决策
 - 花了功夫的分析
@@ -237,6 +246,7 @@ status: seed
 - 研究结果和总结
 
 **跳过：**
+
 - 简单问答（一个命令就解决的）
 - 纯粹的事务性对话
 - 临时性的、明天就过时的内容

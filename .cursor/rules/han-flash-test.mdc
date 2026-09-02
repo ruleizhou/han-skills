@@ -81,3 +81,4 @@ done)
 | SDINFDK4-64G | SanDisk | 1100 | 550 | 待提供 | 待提供 |
 
 > `patterns.json` 是权威源（动态更新）；本表为快查，新增型号测完后先在 patterns.json 补 `device_profiles.<model>.spec`，再在此追加一行（手动保持同步）。
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

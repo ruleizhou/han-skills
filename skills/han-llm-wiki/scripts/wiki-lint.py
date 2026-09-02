@@ -18,21 +18,27 @@ Exit code: 0 = no P0 issues, 1 = dead links or naming mismatches found.
 注: --wiki 指向 vault 根目录(内容页 00-Home/.. 在顶层, wiki/ 仅放基础设施)。
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # ─── Pages excluded from NAME-consistency check ───────────
 # These infrastructure pages use different naming conventions (e.g.
 # wiki/overview.md has title "Overview") and should not trip P0-2.
 # Dead-link scan still covers them (they contain links).
 NAME_SKIP_PATTERNS = [
-    "wiki/log.md", "wiki/index.md", "wiki/hot.md",
-    "wiki/overview.md", "wiki/.ingest-folders.yaml", "AGENTS.md",
+    "wiki/log.md",
+    "wiki/index.md",
+    "wiki/hot.md",
+    "wiki/overview.md",
+    "wiki/.ingest-folders.yaml",
+    "AGENTS.md",
 ]
 
 # Whole directories exempt from NAME-consistency: these hold scaffolding
@@ -44,18 +50,18 @@ NAME_SKIP_DIRS = ["90-templates/"]
 WIKILINK_RE = re.compile(r"\[\[([^\]\n]+)\]\]")
 
 # 图片引用：markdown ![alt](path) 与 HTML <img src="path">
-# 只校验 _diagrams/ 路径（wiki 自动生成的 D2 图），避免误报 note/ 原始图片
+# 只校验 attachment/ 路径（wiki 自动生成的 D2 图），避免误报 note/ 原始图片
 MD_IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
 HTML_IMG_RE = re.compile(r"""<img\s+[^>]*src=["']([^"']+)["']""")
-DIAGRAM_DIR = "_diagrams/"
-# 疑似漏 ! 的图片引用：[alt](_diagrams/...) 但 [ 前无 !（渲染成链接而非图，MD_IMAGE_RE 查不到）
-SUSPECT_IMG_RE = re.compile(r"(?<!\!)\[[^\]]*\]\(([^)]*_diagrams/[^)]+)\)")
+DIAGRAM_DIR = "attachment/"
+# 疑似漏 ! 的图片引用：[alt](attachment/...) 但 [ 前无 !（渲染成链接而非图，MD_IMAGE_RE 查不到）
+SUSPECT_IMG_RE = re.compile(r"(?<!\!)\[[^\]]*\]\(([^)]*attachment/[^)]+)\)")
 
 
 def image_exists(path: str, page_rel: str, wiki_dir: Path) -> bool:
     """图片引用相对页面所在目录是否存在。
 
-    仅检查本地相对路径且含 _diagrams/ 的引用；URL/绝对路径/锚点/非 _diagrams/ 直接视为 OK。
+    仅检查本地相对路径且含 attachment/ 的引用；URL/绝对路径/锚点/非 attachment/ 直接视为 OK。
     """
     if DIAGRAM_DIR not in path:
         return True
@@ -74,7 +80,7 @@ def mask_code(text: str) -> str:
     Preserves byte offsets and newlines so line numbers computed from the
     masked text match the original. Wikilinks inside code are thus ignored.
     """
-    out_lines: List[str] = []
+    out_lines: list[str] = []
     in_fence = False
     for line in text.split("\n"):
         # Fenced code block: a line whose first non-space chars are ```
@@ -100,7 +106,7 @@ def line_of(text: str, offset: int) -> int:
 # ─── Frontmatter ──────────────────────────────────────────
 
 
-def parse_title(text: str) -> Optional[str]:
+def parse_title(text: str) -> str | None:
     """Extract the `title:` field from YAML frontmatter, or None."""
     if not text.startswith("---"):
         return None
@@ -118,8 +124,9 @@ def parse_title(text: str) -> Optional[str]:
 # ─── Link target resolution ───────────────────────────────
 
 
-def resolve(target: str, all_md: set, stem_map: Dict[str, List[str]]
-            ) -> Tuple[bool, Optional[str]]:
+def resolve(
+    target: str, all_md: set, stem_map: dict[str, list[str]]
+) -> tuple[bool, str | None]:
     """Resolve a wikilink target. Returns (exists, ambiguity_note).
 
     - target with '/': look up '{target}.md' directly.
@@ -138,9 +145,9 @@ def resolve(target: str, all_md: set, stem_map: Dict[str, List[str]]
 # ─── Check ────────────────────────────────────────────────
 
 
-def collect_pages(wiki_dir: Path) -> Dict[str, str]:
+def collect_pages(wiki_dir: Path) -> dict[str, str]:
     """Map rel-path -> file content for every .md under wiki_dir."""
-    pages: Dict[str, str] = {}
+    pages: dict[str, str] = {}
     for root, dirs, files in os.walk(wiki_dir):
         # Skip hidden dirs (.claude, .obsidian, .locks, .git)
         dirs[:] = [d for d in dirs if not d.startswith(".")]
@@ -150,28 +157,28 @@ def collect_pages(wiki_dir: Path) -> Dict[str, str]:
             full = Path(root) / f
             rel = str(full.relative_to(wiki_dir)).replace("\\", "/")
             try:
-                with open(full, "r", encoding="utf-8") as fh:
+                with open(full, encoding="utf-8") as fh:
                     pages[rel] = fh.read()
-            except (IOError, UnicodeDecodeError) as e:
+            except (OSError, UnicodeDecodeError) as e:
                 print(f"WARN: 无法读取 {rel}: {e}", file=sys.stderr)
     return pages
 
 
-def run_check(wiki_dir: Path) -> Dict[str, Any]:
+def run_check(wiki_dir: Path) -> dict[str, Any]:
     wiki_dir = wiki_dir.resolve()
     pages = collect_pages(wiki_dir)
 
     all_md: set = set(pages.keys())
     # stem -> list of rel paths (for no-slash link fallback)
-    stem_map: Dict[str, List[str]] = {}
+    stem_map: dict[str, list[str]] = {}
     for rel in all_md:
         stem_map.setdefault(Path(rel).stem, []).append(rel)
 
-    dead_links: List[Dict[str, Any]] = []
-    name_mismatches: List[Dict[str, Any]] = []
-    broken_images: List[Dict[str, Any]] = []
-    suspect_images: List[Dict[str, Any]] = []
-    ambiguities: List[str] = []
+    dead_links: list[dict[str, Any]] = []
+    name_mismatches: list[dict[str, Any]] = []
+    broken_images: list[dict[str, Any]] = []
+    suspect_images: list[dict[str, Any]] = []
+    ambiguities: list[str] = []
 
     for rel in sorted(pages):
         text = pages[rel]
@@ -185,39 +192,49 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
                 continue
             exists, note = resolve(target, all_md, stem_map)
             if not exists:
-                dead_links.append({
-                    "file": rel,
-                    "line": line_of(masked, m.start()),
-                    "target": target,
-                })
+                dead_links.append(
+                    {
+                        "file": rel,
+                        "line": line_of(masked, m.start()),
+                        "target": target,
+                    }
+                )
             elif note:
-                ambiguities.append(f"{rel}:{line_of(masked, m.start())}  [[{target}]]  {note}")
+                ambiguities.append(
+                    f"{rel}:{line_of(masked, m.start())}  [[{target}]]  {note}"
+                )
 
-        # P0-3: 图片引用完整性（仅 _diagrams/，对所有页面执行——infra 页也可能引用图）
+        # P0-3: 图片引用完整性（仅 attachment/，对所有页面执行——infra 页也可能引用图）
         for m in MD_IMAGE_RE.finditer(masked):
             path = m.group(1).strip()
             if not image_exists(path, rel, wiki_dir):
-                broken_images.append({
-                    "file": rel,
-                    "line": line_of(masked, m.start()),
-                    "path": path,
-                })
+                broken_images.append(
+                    {
+                        "file": rel,
+                        "line": line_of(masked, m.start()),
+                        "path": path,
+                    }
+                )
         for m in HTML_IMG_RE.finditer(masked):
             path = m.group(1).strip()
             if not image_exists(path, rel, wiki_dir):
-                broken_images.append({
+                broken_images.append(
+                    {
+                        "file": rel,
+                        "line": line_of(masked, m.start()),
+                        "path": path,
+                    }
+                )
+
+        # P0-3b: 疑似漏 ! 的图片引用（[alt](attachment/...) 缺前导 !，渲染成链接而非图）
+        for m in SUSPECT_IMG_RE.finditer(masked):
+            suspect_images.append(
+                {
                     "file": rel,
                     "line": line_of(masked, m.start()),
-                    "path": path,
-                })
-
-        # P0-3b: 疑似漏 ! 的图片引用（[alt](_diagrams/...) 缺前导 !，渲染成链接而非图）
-        for m in SUSPECT_IMG_RE.finditer(masked):
-            suspect_images.append({
-                "file": rel,
-                "line": line_of(masked, m.start()),
-                "path": m.group(1).strip(),
-            })
+                    "path": m.group(1).strip(),
+                }
+            )
 
         # P0-2: filename == title (skip infra pages, 90-templates/, + pages without title)
         if rel in NAME_SKIP_PATTERNS or rel.startswith(tuple(NAME_SKIP_DIRS)):
@@ -227,11 +244,13 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
             continue
         stem = Path(rel).stem
         if title != stem:
-            name_mismatches.append({
-                "file": rel,
-                "stem": stem,
-                "title": title,
-            })
+            name_mismatches.append(
+                {
+                    "file": rel,
+                    "stem": stem,
+                    "title": title,
+                }
+            )
 
     return {
         "checked": len(pages),
@@ -243,7 +262,7 @@ def run_check(wiki_dir: Path) -> Dict[str, Any]:
     }
 
 
-def report(result: Dict[str, Any]) -> int:
+def report(result: dict[str, Any]) -> int:
     """Print human-readable report to stderr; return exit code (0 ok, 1 issues)."""
     nd = len(result["dead_links"])
     nn = len(result["name_mismatches"])
@@ -261,7 +280,10 @@ def report(result: Dict[str, Any]) -> int:
 
     print(f"\nP0 命名不一致 ({nn}):", file=sys.stderr)
     for n in result["name_mismatches"]:
-        print(f"  ❌ {n['file']}  文件名={n['stem']} ≠ title=\"{n['title']}\"", file=sys.stderr)
+        print(
+            f'  ❌ {n["file"]}  文件名={n["stem"]} ≠ title="{n["title"]}"',
+            file=sys.stderr,
+        )
     if nn == 0:
         print("  ✅ 文件名与 title 一致", file=sys.stderr)
 
@@ -273,7 +295,10 @@ def report(result: Dict[str, Any]) -> int:
 
     print(f"\nP0 疑似漏 ! 图片引用 ({ns}):", file=sys.stderr)
     for s in result["suspect_images"]:
-        print(f"  ⚠️ {s['file']}:{s['line']}  [{s['path']}] → 应写 ![](path)", file=sys.stderr)
+        print(
+            f"  ⚠️ {s['file']}:{s['line']}  [{s['path']}] → 应写 ![](path)",
+            file=sys.stderr,
+        )
     if ns == 0:
         print("  ✅ 无漏 ! 的图片引用", file=sys.stderr)
 
@@ -283,7 +308,10 @@ def report(result: Dict[str, Any]) -> int:
             print(f"  ⚠️ {a}", file=sys.stderr)
 
     status = "issues" if (nd or nn or ni or ns) else "ok"
-    print(f"\n结果: {status}（死链={nd}, 命名不一致={nn}, 图片缺失={ni}, 漏!图片={ns}, 歧义={na}）", file=sys.stderr)
+    print(
+        f"\n结果: {status}（死链={nd}, 命名不一致={nn}, 图片缺失={ni}, 漏!图片={ns}, 歧义={na}）",
+        file=sys.stderr,
+    )
     return 1 if (nd or nn or ni or ns) else 0
 
 
@@ -300,8 +328,9 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", help="子命令")
 
     p_check = sub.add_parser("check", help="检查死链与命名一致性")
-    p_check.add_argument("--wiki", default=".",
-                         help="wiki 目录路径，vault 根（默认: .，内容页在顶层）")
+    p_check.add_argument(
+        "--wiki", default=".", help="wiki 目录路径，vault 根（默认: .，内容页在顶层）"
+    )
 
     args = parser.parse_args()
     if args.command is None:

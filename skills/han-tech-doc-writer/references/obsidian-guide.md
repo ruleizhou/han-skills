@@ -9,7 +9,7 @@
 **文件名 = 链接名 = frontmatter `title`**（无例外）
 
 | 正确 | 错误 |
-|------|------|
+| ------ | ------ |
 | `Qualcomm DMA 架构.md` → `[[Qualcomm DMA 架构]]` | `qualcomm-dma-architecture.md` → 死链 |
 | `GPIO 子系统.md` | `gpio-subsystem.md` |
 | `API 接口说明.md` | `api-doc.md` |
@@ -40,7 +40,7 @@ source_type: url | file | paste   # 输入来源
 ### 文档类型 → frontmatter `type` 映射
 
 | han-tech-doc-writer 类型 | frontmatter `type` | 物理输出位置 |
-|--------------------------|-------------------|-------------|
+| -------------------------- | ------------------- | ------------- |
 | 架构文档 | `analysis` | `80-Notes/<按内容分类>/` |
 | 设计文档 | `analysis` | `80-Notes/<按内容分类>/` |
 | 排障指南 | `analysis` | `80-Notes/<按内容分类>/` |
@@ -64,20 +64,20 @@ source_type: url | file | paste   # 输入来源
 生成大纲时同步列出「预期 wikilink」清单：
 
 | 链接目标 | 首次出现章节 | 说明 |
-|---------|-------------|------|
-| [[DMA 控制器]] | 2. 整体架构 | 核心模块 |
-| [[Qualcomm 平台]] | 1. 概述 | 背景 |
+| --------- | ------------- | ------ |
+| `[[DMA 控制器]]` | 2. 整体架构 | 核心模块 |
+| `[[Qualcomm 平台]]` | 1. 概述 | 背景 |
 
 ---
 
-## 4. 图片与 `_diagrams/`
+## 4. 图片与 `attachment/`
 
 与 `han-llm-wiki/references/diagram-guide.md` 一致：
 
 ```
 <输出目录>/
 ├── Qualcomm DMA 架构.md
-└── _diagrams/                          ← 与 .md 同目录，共享
+└── attachment/                          ← 与 .md 同目录，共享
     ├── Qualcomm DMA 架构-arch.d2
     ├── Qualcomm DMA 架构-arch.svg      ← D2 正文内联（首选）
     ├── Qualcomm DMA 架构-flow.svg
@@ -108,14 +108,14 @@ source_type: url | file | paste   # 输入来源
 Obsidian 原生 wikilink 图片语法 `![[path]]` 与标准 Markdown `![](path)` **均可**；本 skill **默认 D2 用 wikilink 嵌入 SVG**，信息图用 Markdown 嵌入 PNG：
 
 ```markdown
-![文档核心概念全景](_diagrams/Qualcomm DMA 架构-info.png)
+![文档核心概念全景](attachment/Qualcomm DMA 架构-info.png)
 
 *文档核心概念全景 — DMA 子系统模块关系与数据流总览*
 ```
 
 - **禁止** `<div align="center">`（Obsidian 渲染不一致）
 - **禁止** HTML `<details>` 折叠 SVG（Obsidian 用 SVG 内嵌亮/暗主题即可）
-- D2 编译命令：`d2 --theme=300 --dark-theme=200 -l elk _diagrams/<name>.d2 _diagrams/<name>.svg`
+- D2 编译命令：`d2 --theme=300 --dark-theme=200 -l elk attachment/<name>.d2 attachment/<name>.svg`
 - PNG 为可选产物，**不因 PNG 失败而中断**
 
 ---
@@ -138,7 +138,7 @@ source_type: url
 
 > 一句话概括文档核心内容
 
-![文档核心概念全景](_diagrams/Qualcomm DMA 架构-info.png)
+![文档核心概念全景](attachment/Qualcomm DMA 架构-info.png)
 
 *文档核心概念全景 — 一图看懂 DMA 子系统*
 
@@ -173,7 +173,7 @@ source_type: url
 ### 6.1 Notes 根目录解析
 
 | 优先级 | 条件 | 动作 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | 1 | 存在 `80-Notes/` | 使用它 |
 | 2 | 存在其他 `NN-Notes/`（如 `08-Notes/`、`10-Notes/`） | 复用已有 Notes 根，并告知用户 |
 | 3 | 都不存在 | `结构化提问`：是否创建 `80-Notes/`？或自定义路径 |
@@ -225,13 +225,12 @@ options:
 
 ---
 
-
 ## 7. 输出前自检（Obsidian）
 
 - [ ] 文件名 = frontmatter `title` = 所有 `[[]]` 链接名
 - [ ] frontmatter 含 `title` / `type` / `created` / `updated`
 - [ ] 无 `[[]]` 带 `.md` 后缀
-- [ ] D2 图嵌入 `.svg`，路径在 `_diagrams/` 且文件存在
+- [ ] D2 图嵌入 `.svg`，路径在 `attachment/` 且文件存在
 - [ ] 每张图后有 2-5 句说明
 - [ ] 无 `<div>` / HTML 折叠块
 - [ ] 核心概念在正文中有 `[[wikilink]]`

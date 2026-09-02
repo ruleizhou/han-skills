@@ -13,6 +13,7 @@
 ## 图表类型选择映射
 
 ### 系统架构图 (system-architecture)
+
 - **适用场景**: 系统分层、模块划分、组件关系、依赖拓扑
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/system-architecture.d2`
 - **推荐 shapes**: `rectangle`(模块), `cylinder`(数据库), `cloud`(外部服务), `queue`(消息队列)
@@ -20,6 +21,7 @@
 - **布局引擎**: `elk`
 
 ### 流程图 (flowchart)
+
 - **适用场景**: 业务流程、处理步骤、决策分支、算法逻辑
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/flowchart.d2`
 - **推荐 shapes**: `oval`(起止), `rectangle`(处理), `diamond`(决策)
@@ -27,6 +29,7 @@
 - **布局引擎**: `dagre`
 
 ### 时序图 (sequence-diagram)
+
 - **适用场景**: 跨模块交互、API 调用序列、中断处理顺序、协议握手
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/sequence-diagram.d2`
 - **推荐 shapes**: `sequence_diagram`
@@ -34,6 +37,7 @@
 - **布局引擎**: `dagre`
 
 ### 状态机图 (state-machine)
+
 - **适用场景**: 状态转换、生命周期管理、协议状态、订单/任务状态流转
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/state-machine.d2`
 - **推荐 shapes**: `oval`(状态节点), `rectangle`(转换说明)
@@ -41,6 +45,7 @@
 - **布局引擎**: `dagre`
 
 ### ER 图 (er-diagram)
+
 - **适用场景**: 数据表结构、字段关系、外键依赖
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/er-diagram.d2`
 - **推荐 shapes**: `sql_table`
@@ -48,6 +53,7 @@
 - **布局引擎**: `elk`
 
 ### 类图 (class-diagram)
+
 - **适用场景**: 面向对象设计、接口继承、组合/聚合关系
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/class-diagram.d2`
 - **推荐 shapes**: `class`（**必须用 class，禁止 rectangle 拼接**）
@@ -55,6 +61,7 @@
 - **布局引擎**: `dagre`
 
 ### 网络拓扑图 (network-topology)
+
 - **适用场景**: 网络部署、设备连接、集群架构、服务依赖
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/network-topology.d2`
 - **推荐 shapes**: `rectangle`(设备), `cloud`(外部网络), `cylinder`(数据库)
@@ -62,6 +69,7 @@
 - **布局引擎**: `elk`
 
 ### 甘特图 (gantt-chart)
+
 - **适用场景**: 项目计划、阶段划分、时间线、里程碑
 - **D2 模板**: `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/gantt-chart.d2`
 - **推荐 shapes**: `rectangle`(任务条)
@@ -72,8 +80,8 @@
 
 ### 分工原则
 
-|  | D2 图表 | 信息图 |
-|--|---------|--------|
+| | D2 图表 | 信息图 |
+| -- | --------- | -------- |
 | **目的** | 精确展示技术结构/流程/关系 | 概念概览/视觉亮点/快速理解 |
 | **详细度** | 高，包含具体节点和连线 | 中，概括性呈现核心概念 |
 | **受众** | 技术人员，需要细节 | 所有读者，需要快速建立认知 |
@@ -84,7 +92,7 @@
 ### 信息图放置指南
 
 | 放置位置 | 适用场景 | 内容 |
-|---------|---------|------|
+| --------- | --------- | ------ |
 | 文档开篇（hero） | 所有文档类型 | 文档核心概念全景，一图看懂文档要讲什么 |
 | 章节开篇 | 架构文档/设计文档/知识库 | 该章节涉及模块的能力全景/关系总览 |
 | 对比区域 | 设计文档/排障指南 | 方案对比/指标对比矩阵 |
@@ -93,7 +101,7 @@
 ### 密度指南（含信息图）
 
 | 文档篇幅 | 推荐信息图数 | 推荐 D2 图数 |
-|----------|-------------|-------------|
+| ---------- | ------------- | ------------- |
 | < 500 字 | 1 张（hero） | 0-1 张 |
 | 500-1500 字 | 1 张（hero） | 1-2 张 |
 | 1500-3000 字 | 1-2 张 | 2-4 张 |
@@ -105,6 +113,7 @@
 - 信息图**不参与编号**，使用描述性标题
 - 正文引用格式：`如图 N 所示，...`
 - **D2 SVG 嵌入格式（Obsidian wikilink）**：
+
   ```markdown
   如图 1 所示，…
 
@@ -112,19 +121,22 @@
 
   *图 1: 标题名称*
   ```
+
 - **信息图 PNG 嵌入格式（Markdown）**：
+
   ```markdown
-  ![文档核心概念全景](_diagrams/<页面 slug>-info.png)
+  ![文档核心概念全景](attachment/<页面 slug>-info.png)
 
   *文档核心概念全景 — 主题总览*
   ```
+
 - D2 编译首选 SVG（`--theme=300 --dark-theme=200 -l elk`），Obsidian 原生支持亮/暗主题
 - **禁止** HTML `<details>` 折叠 SVG；**禁止** `<div align="center">`
 
 ## 颜色语义（Material Design）
 
 | 颜色 | 色值 | 语义 |
-|------|------|------|
+| ------ | ------ | ------ |
 | Orange | `#FF9800` | 核心模块、主要组件 |
 | Blue | `#2196F3` | 外部服务、第三方依赖 |
 | Green | `#4CAF50` | 数据存储、DB、缓存 |

@@ -5,6 +5,7 @@
 ## 4.1 准备工作
 
 读取以下文件：
+
 - `references/obsidian-guide.md` — frontmatter、wikilink、配图嵌入
 - `references/writing-style-guide.md` — 中文技术写作规范
 
@@ -45,7 +46,7 @@ title: Qualcomm DMA 架构
 
 > 一句话概括文档核心内容
 
-![文档核心概念全景](_diagrams/Qualcomm DMA 架构-info.png)
+![文档核心概念全景](attachment/Qualcomm DMA 架构-info.png)
 
 *文档核心概念全景 — 一图看懂 [主题]*
 
@@ -61,7 +62,7 @@ title: Qualcomm DMA 架构
 ```markdown
 ## 2. 核心模块设计
 
-![模块能力全景](_diagrams/Qualcomm DMA 架构-info-2.png)
+![模块能力全景](attachment/Qualcomm DMA 架构-info-2.png)
 
 *模块能力全景 — [模块数量] 大模块协作关系一览*
 
@@ -102,15 +103,17 @@ title: Qualcomm DMA 架构
 ```
 
 规则：
+
 - 图编号从 1 开始，D2 图表独立编号（不包含信息图）
 - 正文必须先引用再放图："如图 N 所示，..."
 - **正文嵌入用 Obsidian wikilink 语法 `![[...svg]]`**
 - 图后紧跟 2-5 句解释
-- SVG 路径相对于 .md 文件：`_diagrams/<slug>-<短码>.svg`
+- SVG 路径相对于 .md 文件：`attachment/<slug>-<短码>.svg`
 
 ### e. 代码块
 
 源内容中的代码使用 fenced code block：
+
 ````markdown
 ```c
 static int dwc3_remove(struct platform_device *pdev)
@@ -145,6 +148,7 @@ static int dwc3_remove(struct platform_device *pdev)
 ```d2
 ... D2 源码 ...
 ```
+
 ```
 
 ### 信息图缺失
@@ -158,6 +162,6 @@ static int dwc3_remove(struct platform_device *pdev)
 
 ## 4.4 多文档模式
 
-`multi_doc_mode: true` 时，逐篇重复 4.1–4.3，每篇独立 frontmatter、wikilink、`_diagrams/<slug>-*` 命名。
+`multi_doc_mode: true` 时，逐篇重复 4.1–4.3，每篇独立 frontmatter、wikilink、`attachment/<slug>-*` 命名。
 
 **完成后，读取 `workflows/step-05-review.md` 继续。**

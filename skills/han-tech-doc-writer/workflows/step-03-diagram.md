@@ -20,14 +20,14 @@ which d2 && d2 --version
 在 **Step 1.6 确认的 `output_dir`** 下创建：
 
 ```bash
-mkdir -p <output_dir>/_diagrams
+mkdir -p <output_dir>/attachment
 ```
 
-所有 .d2 源文件、SVG 产物和信息图 PNG 都放在**与 .md 同目录**的 `_diagrams/` 下。`output_dir` 本身须已在 Step 1.6 经用户确认存在。
+所有 .d2 源文件、SVG 产物和信息图 PNG 都放在**与 .md 同目录**的 `attachment/` 下。`output_dir` 本身须已在 Step 1.6 经用户确认存在。
 
 ### 页面 slug
 
-`slug` = Obsidian 页面标题（= 文件名去 `.md`），用于所有 `_diagrams/` 文件命名。
+`slug` = Obsidian 页面标题（= 文件名去 `.md`），用于所有 `attachment/` 文件命名。
 
 ## 3.1 图表类型判定
 
@@ -46,6 +46,7 @@ Read: ${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/<type>.d2
 ```
 
 模板路径映射：
+
 - system-architecture → `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/system-architecture.d2`
 - flowchart → `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/flowchart.d2`
 - sequence-diagram → `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/sequence-diagram.d2`
@@ -58,12 +59,14 @@ Read: ${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/<type>.d2
 ### b. 读取语法参考
 
 根据需要读取：
+
 - `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-shapes-guide.md` — 确认 shape 语法
 - `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-cheatsheet.md` — 连接/容器/样式语法
 
 ### c. 读取主题参考
 
 读取 `${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-themes.md`，技术文档统一使用：
+
 - 主题：`--theme=300`（Terminal 蓝灰色系）
 - 暗色：`--dark-theme=200`（SVG 内嵌亮/暗双主题，Obsidian 自动适配）
 - 布局：`-l elk`（**必须显式指定**）
@@ -72,28 +75,30 @@ Read: ${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/<type>.d2
 ### d. 写 D2 代码
 
 基于模板骨架，填入实际内容：
+
 - 所有节点标签使用中文
 - 技术术语保留英文
 - 连接线标注关键操作/数据
-- 使用 `_diagrams/<slug>-<短码>.d2` 命名（短码：arch/flow/state/seq/er/class/net/gantt）
+- 使用 `attachment/<slug>-<短码>.d2` 命名（短码：arch/flow/state/seq/er/class/net/gantt）
 
 ## 3.3 编译（SVG 首选）
 
 对每个 .d2 文件，**必须**编译 SVG：
 
 ```bash
-d2 --theme=300 --dark-theme=200 -l elk _diagrams/<slug>-<短码>.d2 _diagrams/<slug>-<短码>.svg
+d2 --theme=300 --dark-theme=200 -l elk attachment/<slug>-<短码>.d2 attachment/<slug>-<短码>.svg
 ```
 
 PNG 为可选（Obsidian 正文嵌入用 SVG，**不因 PNG 失败而中断**）：
 
 ```bash
-d2 --theme=300 -l elk _diagrams/<slug>-<短码>.d2 _diagrams/<slug>-<短码>.png
+d2 --theme=300 -l elk attachment/<slug>-<短码>.d2 attachment/<slug>-<短码>.png
 ```
 
 ### 编译失败处理
 
 常见错误及修复：
+
 - 语法错误 → 对照 d2-cheatsheet.md 检查，修正后重试
 - 中文显示异常 → 确认系统字体支持中文，必要时用英文标签兜底
 - 布局重叠 → 调整节点位置或简化层级（**保持 `-l elk`**）
@@ -102,8 +107,9 @@ d2 --theme=300 -l elk _diagrams/<slug>-<短码>.d2 _diagrams/<slug>-<短码>.png
 ### 编译成功后
 
 验证 SVG 文件存在且非空：
+
 ```bash
-ls -lh _diagrams/<slug>-*.svg
+ls -lh attachment/<slug>-*.svg
 ```
 
 ## 3.4 图表补充模式（快捷入口）
@@ -113,7 +119,7 @@ ls -lh _diagrams/<slug>-*.svg
 1. 从对话上下文或现有 Obsidian 页面提取需要配图的概念/模块/流程
 2. 读取现有页面的 frontmatter `title` 作为 slug
 3. 如果用户指定了图表类型，直接使用；否则根据内容推断
-4. 如果当前目录已有 `_diagrams/` 和文档 .md 文件，将新图追加到现有文档（Obsidian wikilink 嵌入）
+4. 如果当前目录已有 `attachment/` 和文档 .md 文件，将新图追加到现有文档（Obsidian wikilink 嵌入）
 5. 执行 3.1 → 3.2 → 3.3 流程
 
 ## 3.5 信息图生成
@@ -152,20 +158,22 @@ han-infographic 会执行其内部工作流（分析→确认参数→生成→�
 ### 3.5.3 收集产物
 
 han-infographic 完成后，产物位于:
+
 ```
 ~/Downloads/han-skill-imagen/{slug}-infographic.png
 ```
 
-复制到 vault 的 `_diagrams/`，按 Obsidian 命名规范重命名:
+复制到 vault 的 `attachment/`，按 Obsidian 命名规范重命名:
+
 ```bash
-cp ~/Downloads/han-skill-imagen/{slug}-infographic.png _diagrams/<页面slug>-info.png
+cp ~/Downloads/han-skill-imagen/{slug}-infographic.png attachment/<页面slug>-info.png
 ```
 
 多信息图时用 `-info-2`、`-info-3` 后缀区分。
 
 记录映射关系供 Step 4 使用:
-| info-1 | 文档开篇(Hero) | _diagrams/<slug>-info.png | landscape |
-| info-2 | 3. 核心模块开头 | _diagrams/<slug>-info-2.png | landscape |
+| info-1 | 文档开篇(Hero) | attachment/<slug>-info.png | landscape |
+| info-2 | 3. 核心模块开头 | attachment/<slug>-info-2.png | landscape |
 
 ### 3.5.4 生成失败处理
 

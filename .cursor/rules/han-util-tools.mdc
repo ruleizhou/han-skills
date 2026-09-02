@@ -7,7 +7,7 @@ globs:
 
 ## 核心原则
 
-1. **交互选择不可跳过（最高优先级）** — 扫描完成后唯一合法动作是调用 AskUserQuestion，严禁推断用户意图
+1. **交互选择不可跳过（最高优先级）** — 扫描完成后唯一合法动作是调用 结构化提问，严禁推断用户意图
 2. **路由即索引** — 本 skill 不做深度技术分析，负责发现和分派子 skill
 3. **子 skill 不存在是常态** — 首次遇到的问题类型走通用框架，事后创建子 skill
 4. **文件夹即分类** — 子 skill 按 `references/<scenario>/<platform>/<module>/<type>/` 目录结构组织
@@ -39,7 +39,7 @@ python3 scripts/scan_routes.py
 
 ### 2. 场景选择
 
-调用 AskUserQuestion（header: "场景"）：
+调用 结构化提问（header: "场景"）：
 - `Debug — 调试/分析/排查问题`
 - `器件 Bringup — 新硬件接入/驱动开发`
 - `功能开发 — 新特性实现/内核增强`
@@ -59,3 +59,5 @@ python3 scripts/scan_routes.py
 | `references/subskill-catalog.md` | 子 skill 目录索引（`scan_routes.py --catalog` 生成） |
 | `scripts/scan_routes.py` | 目录扫描脚本（`--scenario <name>` 过滤，`--catalog` 刷新索引） |
 | `../han-skill-creator-plus/` | 子 skill 创建工具（统一委托） |
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

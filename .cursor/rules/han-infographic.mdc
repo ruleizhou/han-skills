@@ -57,3 +57,5 @@ globs:
 - 自学习经验库:[data/patterns.json](data/patterns.json) · 历史案例 [data/cases/](data/cases/)
 
 **开始执行时,首先读取 [workflows/step-00-analyze.md](workflows/step-00-analyze.md)。**
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

@@ -2,7 +2,7 @@
 description: >
   [写作模式] 读取技术文档内容后，整理并输出图文并茂的高质量中文技术文档。
   输入可以是 URL 链接、本地文件或对话中粘贴的内容；输出为 Obsidian 原生 .md 文件
-  （YAML frontmatter、[[wikilink]]、_diagrams/ 配图），每个核心概念配有 D2 图表（SVG），
+  （YAML frontmatter、[[wikilink]]、attachment/ 配图），每个核心概念配有 D2 图表（SVG），
   关键概念配有信息图（han-infographic）。
   自动识别文档类型（架构文档/API文档/排障指南/设计文档/知识库文章），
   生成结构化大纲，D2 覆盖技术细节，信息图放在显眼位置做视觉亮点。
@@ -16,7 +16,7 @@ globs:
 
 ## 核心原则
 
-1. **Obsidian 原生** — YAML frontmatter、`[[wikilink]]`、文件名=链接名=title、`_diagrams/` 配图；规范见 `references/obsidian-guide.md`
+1. **Obsidian 原生** — YAML frontmatter、`[[wikilink]]`、文件名=链接名=title、`attachment/` 配图；规范见 `references/obsidian-guide.md`
 2. **先诊断再动手** — 必须先确定文档类型、目标受众、Notes 根（`80-Notes`），再开始写作
 3. **按内容落 Notes 子目录** — 读完源后匹配 `80-Notes/<主题>/`；目录不存在须交互确认后才创建
 4. **每章必图** — D2 图表覆盖技术细节（架构/流程/时序/ER/类图），**默认 SVG**
@@ -28,14 +28,14 @@ globs:
 ## 视觉元素分工
 
 | 视觉元素 | 负责 Skill | 用途 | 放置位置 | 产物 |
-|----------|-----------|------|---------|------|
+| ---------- | ----------- | ------ | --------- | ------ |
 | D2 图表 | han-d2-diagram | 架构图/流程图/时序图/ER图/类图/状态机/拓扑图/甘特图 | 对应章节内，正文引用"如图 N 所示" | `.svg`（首选） |
 | 信息图 | han-infographic | 文档概念总览/模块全景/对比矩阵/关键数据摘要 | 文档开篇(hero)、章节开篇 | `.png` |
 
 ## 模式判断
 
 | 触发信号 | 模式 | 动作 |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | "整理技术文档"、"写技术文档"、"技术笔记"、"帮我整理" + 内容/URL/文件 | 完整写作 | Step 0 → 1 → 2 → 3 → 4 → 5 → 6 |
 | "加个图"、"画个架构图"、"给这段配个图"、"画个流程图" | D2 图表补充 | 跳过 Step 0-2，直接进入 Step 3（D2 部分） |
 | "加个信息图"、"配张概念图"、"画个全景图"、"画个信息图总结" | 信息图补充 | 跳过 Step 0-2，直接进入 Step 3.5（信息图部分） |
@@ -55,7 +55,7 @@ globs:
 ## Workflow
 
 | Step | 文件 | 做什么 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | 0 | `workflows/step-00-diagnose.md` | 交互诊断：输入来源、文档类型、受众深度、锁定 Notes 根（`80-Notes`）、Obsidian 文件名 |
 | 1 | `workflows/step-01-source.md` | 读取源内容 + 领域识别 + **按内容确认 Notes 子路径**（缺失目录须交互确认） |
 | 2 | `workflows/step-02-outline.md` | 结构化：生成大纲 + wikilink 规划 + 标记 D2/信息图需求 |
@@ -69,7 +69,7 @@ globs:
 ## 参考资料速查
 
 | 文件 | 用途 |
-|------|------|
+| ------ | ------ |
 | `references/obsidian-guide.md` | **Obsidian 原生规范**（frontmatter/wikilink/命名/配图） |
 | `references/doc-structure-guide.md` | 5 种文档类型结构模板 + 信息图机会 |
 | `references/diagram-placement-guide.md` | D2 图表类型选择 + SVG 嵌入 |
@@ -81,6 +81,7 @@ globs:
 ## D2 知识复用
 
 本 skill 不内嵌 D2 语法知识。画图时按需读取 han-d2-diagram skill 的资源：
+
 - 模板：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/assets/templates/<type>.d2`
 - Shape 选择：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-shapes-guide.md`
 - 语法速查：`${CLAUDE_PLUGIN_ROOT}/skills/han-d2-diagram/references/d2-cheatsheet.md`
@@ -99,6 +100,7 @@ Skill(skill="han-infographic", args="<根据内容组装的信息图生成请求
 ### 信息图候选判定
 
 以下内容适合生成信息图（而非 D2）：
+
 - 文档核心概念全景（Hero infographic，放在标题后第一屏）
 - 多模块关系总览（一眼看清全局）
 - 关键数据/指标对比
@@ -108,6 +110,8 @@ Skill(skill="han-infographic", args="<根据内容组装的信息图生成请求
 ### 产物管理
 
 han-infographic 输出到 `~/Downloads/han-skill-imagen/{slug}-infographic.png`，
-复制到 `<输出目录>/_diagrams/<页面 slug>-info.png`（命名见 obsidian-guide.md）。
+复制到 `<输出目录>/attachment/<页面 slug>-info.png`（命名见 obsidian-guide.md）。
 
 **开始执行时，首先读取 `workflows/step-00-diagnose.md` 与 `references/obsidian-guide.md`。**
+
+> **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

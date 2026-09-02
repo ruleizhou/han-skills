@@ -50,6 +50,7 @@ static int dwc3_remove(struct platform_device *pdev)
 - 同一层级标题保持语法平行
 
 正确：
+
 ```markdown
 ## 2. 整体架构
 ### 2.1 应用层
@@ -57,6 +58,7 @@ static int dwc3_remove(struct platform_device *pdev)
 ```
 
 错误：
+
 ```markdown
 ## 2. 整体架构
 ### 2.1 应用层是怎么设计的呢（太长）
@@ -99,12 +101,13 @@ static int dwc3_remove(struct platform_device *pdev)
 信息图不使用图号，使用描述性标题：
 
 ```markdown
-![文档核心概念全景](_diagrams/Qualcomm DMA 架构-info.png)
+![文档核心概念全景](attachment/Qualcomm DMA 架构-info.png)
 
 *文档核心概念全景 — [主题] 模块关系与数据流总览*
 ```
 
 规则：
+
 - 信息图标题不编号，用"X 全景"或"一图看懂 Y"等语句
 - **禁止** `<div align="center">` 等 HTML 包裹（Obsidian 渲染不一致）
 - 信息图后可选 1-2 句引导文字，然后进入正文
@@ -164,7 +167,7 @@ source_type: url
 ## 常见反模式
 
 | 反模式 | 正确做法 |
-|--------|---------|
+| -------- | --------- |
 | "我们可以通过 xxx 来实现" | "通过 xxx 实现" |
 | "这个东西很简单" | 删掉，客观陈述 |
 | 连续 10+ 行没有段落分隔 | 3-7 句拆一段 |

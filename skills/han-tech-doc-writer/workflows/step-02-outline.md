@@ -40,6 +40,7 @@ options:
 - 图表编号全局递增（图 1、图 2... 跨领域连续编号）
 - 信息图同样全局管理（每领域 1 张 hero 信息图）
 - 大纲示例：
+
   ```
   # Qualcomm 外设总线文档
 
@@ -57,6 +58,7 @@ options:
   📊 图: I2C QUP 架构图 (system-architecture)
   ...
   ```
+
 - 设置 `multi_doc_mode: false`，`doc_count: 1`
 
 **分支 B — 按领域拆分为多篇**:
@@ -77,6 +79,7 @@ options:
 ```
 
 - 设置 `multi_doc_mode: true`，`docs` 列表（**Obsidian 命名：filename = title + .md**）：
+
   ```
   docs: [
     { title: "GPIO 子系统", filename: "GPIO 子系统.md", area: "GPIO", doc_type: "architecture-doc", output_dir: "80-Notes/Drivers/GPIO/" },
@@ -101,12 +104,14 @@ docs: [{title, filename, area, doc_type}, ...]
 ```
 
 后续 Step 适配规则：
-- **Step 3**: 每篇文档在各自 `output_dir/_diagrams/` 下生成图（或同 Notes 子目录共享 `_diagrams/`，用 slug 前缀区分）
+
+- **Step 3**: 每篇文档在各自 `output_dir/attachment/` 下生成图（或同 Notes 子目录共享 `attachment/`，用 slug 前缀区分）
 - **Step 4**: 逐篇写作，第 i 篇完成后继续第 i+1 篇
 - **Step 5**: 逐篇审核
 - **Step 6**: 逐篇输出到各自 `output_dir`（来自 Step 1.6）
 
 > 若 Step 1.6 尚未为某领域确认子路径，分拆确认后须补跑缺失目录的交互确认。
+>
 ## 2.1 读取结构模板
 
 先读取 `references/doc-structure-guide.md` 与 `references/obsidian-guide.md`，找到对应文档类型的推荐结构模板，了解该类型的**信息图机会**与 **wikilink 规划**。
@@ -150,7 +155,7 @@ docs: [{title, filename, area, doc_type}, ...]
 在生成大纲时，同时判定哪些内容适合用信息图呈现。判定规则：
 
 | 内容特征 | 视觉元素 | 标记 |
-|---------|---------|------|
+| --------- | --------- | ------ |
 | 概念全景/总览摘要 | 信息图 | 🎨 |
 | 模块关系/架构分层 | D2 图表 | 📊 |
 | 数据对比/指标展示 | 信息图 | 🎨 |
@@ -166,9 +171,9 @@ docs: [{title, filename, area, doc_type}, ...]
 列出正文中将出现的关键 `[[链接]]`（见 obsidian-guide.md §3）：
 
 | 链接目标 | 首次出现章节 | 角色 |
-|---------|-------------|------|
-| [[核心模块 A]] | 2. 整体架构 | 模块 |
-| [[相关概念 B]] | 1. 概述 | 背景概念 |
+| --------- | ------------- | ------ |
+| `[[核心模块 A]]` | 2. 整体架构 | 模块 |
+| `[[相关概念 B]]` | 1. 概述 | 背景概念 |
 
 - 链接名必须与预期 Obsidian 页面标题一致（= 文件名去 `.md`）
 - 文末「相关链接」章节汇总全部 wikilink
@@ -180,7 +185,7 @@ docs: [{title, filename, area, doc_type}, ...]
 ### D2 图表清单
 
 | 编号 | 所在章节 | 图表类型 | 内容说明 |
-|------|---------|---------|---------|
+| ------ | --------- | --------- | --------- |
 | 图 1 | 2. 整体架构 | system-architecture | 三层架构分层 |
 | 图 2 | 3. 核心模块 | system-architecture | 模块间依赖关系 |
 | 图 3 | 4. 关键流程 | flowchart | 数据写入主流程 |
@@ -189,7 +194,7 @@ docs: [{title, filename, area, doc_type}, ...]
 ### 信息图清单
 
 | 编号 | 位置 | 内容主题 | 建议布局 | 建议风格 |
-|------|------|---------|---------|---------|
+| ------ | ------ | --------- | --------- | --------- |
 | info-1 | 文档开头(Hero) | 系统全景一览 | dense-modules | journal |
 | info-2 | 3. 核心模块开头 | 模块能力全景 | technical-map | lab-notes |
 
