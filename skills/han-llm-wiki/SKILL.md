@@ -1,11 +1,9 @@
 ---
 name: han-llm-wiki
 description: >
-  个人知识库 Wiki 维护技能——通过命令操作。支持 init（初始化）、ingest（收录）、query（查询）、lint（健康检查）、card（抽卡学习）、weekly（周总结）、research（自主研究）、mode（方法论）、think（深度思考）、save（对话保存）九种命令。
-  使用方式：/han-llm-wiki <命令> [参数]
-  当用户输入 /han-llm-wiki 时务必使用此技能。当用户提到「收录到 wiki」「wiki 健康检查」「查一下 wiki」
-  「初始化知识库」「抽一张卡」「复习一下」「考考我」「周总结」「这周做了什么」「写周报」
-  「研究一下」「帮我查一下」「深入调查」「保存这段」「归档这个分析」「存到 wiki」「深度思考」「切换模式」「切换到 PARA」「想清楚」等场景时也触发此技能并自动匹配对应命令。
+  个人知识库 Wiki 维护技能，九命令：init/ingest/query/lint/card/weekly/research/mode/think/save。
+  触发「收录到 wiki/查一下 wiki/抽一张卡/写周报」，其余场景走命令入口。
+  使用：/han-llm-wiki <命令> [参数]。
 ---
 
 # LLM Wiki —— 个人知识库维护技能
