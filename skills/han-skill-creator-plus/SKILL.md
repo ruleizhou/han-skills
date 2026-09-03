@@ -1,12 +1,9 @@
 ---
 name: han-skill-creator-plus
 description: >
-  创建带有自主学习能力（feedback loop / 自学习 / 越用越完善）和按需文件拆分架构（SKILL.md 路由层 + workflows/ 分步骤）的 skill。
-  Trigger when: 用户说"创建一个能自学习的 skill"、"skill 需要越用越完善"、"创建带反馈闭环的 skill"、
-  "把 skill 拆分成多个文件"、"拆解 SKILL.md"、"skill 怎么做按需加载"、"skill 省 token"、
-  "为已有 skill 添加自学习/拆分架构"、"skill 不触发"、"触发错了"、"效果跑偏"、"太啰嗦"、
-  "改进调试已有 skill"、"create skill with self-learning/feedback loop"。
-  如果用户只是说"创建一个 skill"（无自学习/拆分需求），应触发官方 skill-creator 而非本 skill。
+  创建带自学习（feedback loop/patterns.json）和按需拆分架构（SKILL.md 路由层 +
+  workflows/ 分步骤）的 skill，或为已有 skill 补此架构。触发「创建能自学习的
+  skill/skill 拆分/skill 不触发」。纯简单 skill 用官方 skill-creator。
 ---
 
 # Skill Creator Plus
