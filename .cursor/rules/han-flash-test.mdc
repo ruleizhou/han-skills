@@ -1,6 +1,6 @@
 ---
 description: >
-  闪存（UFS/eMMC）读写速率测试。触发词：跑一下闪存测试、测 UFS 速度、测顺序读写、测随机 IOPS、flash benchmark、跑 fio 测试、存储性能测试、看 UFS 带宽够不够。当用户提到测试设备存储性能、验证 UFS 规格、排查存储慢问题时触发。
+  闪存（UFS/eMMC）读写速率测试。触发「测 UFS 速度/跑 fio 测试/存储性能测试」。
 alwaysApply: false
 globs:
 ---

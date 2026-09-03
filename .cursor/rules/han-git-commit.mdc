@@ -1,8 +1,7 @@
 ---
 description: >
-  交互式 Git 提交信息生成器，基于 ~/.git-template 格式模板。
-  收集 Project/Bug-ID/Module 信息，AI 自动分析 diff 填充摘要/根因/方案。
-  触发词：git commit、提交代码、生成 commit、写 commit message、帮我提交
+  交互式 Git 提交信息生成器，基于 ~/.git-template 模板，收集 Project/Bug-ID/Module，
+  AI 分析 diff 填充摘要/根因/方案。触发「git commit/提交代码」。
 alwaysApply: false
 globs:
 ---
