@@ -2,12 +2,10 @@
 name: qualcomm-current-consumption
 version: "1.1.0"
 description: >
-  排查高通 Android 待机/休眠电流偏高：aosd=0、cxsd/ddr 正常但功耗高、AOP dump/hansei 解析、
-  UFS spm_lvl、GPIO/NFC 常开脚、STM/QDSS/debug_enabled、qcom_sleep_stats 分层定位。
-  输出分层结论、命令清单与下一步（对标机/AOP 投票/板级漏电）。具备自学习：沉淀「症状→档位→根因类」模式。
-  当用户提到功耗偏高、待机电流大、灭屏电流、aosd、cxsd、ddr sleep、解析 aop dump、hansei、
-  netrani/parrot/SM6450 功耗、UFS VCCQ、hub_3v3、NFC VEN、STM/coresight 挡深睡时使用。
-  修好了/根因确认了/电流达标了 → 反馈闭环。内核 panic 用 han-kernel-crash-analyzer；闪存性能用 han-flash-test。
+  高通 Android 待机/休眠电流偏高根因排查（灭屏电流大、aosd=0、AOP dump/hansei
+  解析、qcom_sleep_stats 分层定位）。触发「功耗偏高/待机电流大」进分析；
+  「电流达标了」进反馈闭环。
+  内核 panic/ramdump 用 han-kernel-crash-analyzer。
 ---
 
 # Qualcomm Current Consumption

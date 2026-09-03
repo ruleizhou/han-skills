@@ -1,19 +1,10 @@
 ---
 name: qualcomm-reboot-analyzer
 description: >
-  高通平台「无 dump 的重启行为异常」根因分析:[分析模式] 排查无法正常重启、
-  重启后不开机、开关机压测异常(5000 次开关机进 recovery 界面)、boot 静默卡死、
-  开机卡住、压测挂死但无 ramdump/panic、软重启异常、RescueParty 自愈升级、
-  重启命令异常(reboot command 'RescueParty'/'recovery')、ABL 误入 Recovery、
-  misc BCB 异常类问题。触发词:无法正常重启、重启后不开机、开关机测试失败、
-  进 recovery、recovery 界面、开机卡死、挂死无 dump、RescueParty、重启挂死、
-  开关机压力测试异常、boot 未完成、软重启不开机、重启行为异常。
-  方法论:reboot command 全量分布统计 → RescueParty L1-L5 事件定级 → 死因指纹
-  采集(-22 try_module_get 铁证 / PMIC mfd 兄弟驱动齐挂归因)→ ABL/recovery
-  判定链 → 时序测谎与物证核验 → 分层结论。
-  [反馈闭环模式] 问题解决/根因确认/修好了时触发,回顾案例、更新 patterns.json
-  置信度。有 panic/ramdump/KASAN/parser_out 的崩溃交给 han-kernel-crash-analyzer;
-  功耗问题交 qualcomm-current-consumption;闪存速率交 han-flash-test。
+  高通平台「无 dump 的重启行为异常」根因分析（重启后不开机、开关机压测进
+  recovery、RescueParty 自愈升级、boot 静默卡死）。触发「挂死无 dump/进
+  recovery」进分析模式；「修好了/根因确认了」进反馈闭环。
+  有 panic/ramdump/KASAN 崩溃 dump 用 han-kernel-crash-analyzer。
 ---
 
 # Qualcomm 重启行为异常分析(无 dump 线)
@@ -81,6 +72,6 @@ description: >
 - `references/log-recipes.md` — grep 配方集(统计/轮界/指纹/对照组)
 - `data/patterns.json` — 自学习模式库(症状→根因类,置信度)
 - `data/cases/` — 历史案例卡(95916 三事件结构、96299 UEFI pwrkey)
-- 最佳实践 live reference:`~/.claude/skills/han-kernel-crash-analyzer/(同款拆分+自学习架构)
+- 最佳实践 live reference：`han-kernel-crash-analyzer`（同款拆分+自学习架构）
 
 > **交互工具映射**：文中「结构化提问」= Claude Code `AskUserQuestion`；OpenCode `ask`；Gemini CLI `ask_user`；Cursor `AskQuestion`；无此工具或调用失败时，用编号选项请用户回复。

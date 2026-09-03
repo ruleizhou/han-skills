@@ -1,15 +1,9 @@
 ---
 description: >
-  Two modes:
-  [分析模式] Analyze Linux kernel crash dumps (NULL pointer dereference, KASAN UAF,
-  SLUB corruption, ABBA deadlock, kernel panic, ramdump) on Qualcomm/Android
-  platforms. Trigger when user mentions kernel crash, 死机, ramdump, KASAN, kernel
-  panic, NULL pointer, deadlock, SLUB redzone, DDR blue screen, or provides crash
-  dump files (parser_out, symbols, kasan.txt).
-  [反馈闭环模式] Trigger when user signals the problem is resolved (问题解决了, 修好了,
-  修复生效, 搞定了, 根因确认了, 不再复现). Review historical cases in data/cases/,
-  ask user to confirm which analysis was correct, update patterns.json confidence,
-  and close the feedback loop.
+  高通/Android 平台内核崩溃 dump 根因分析（kernel panic、ramdump、死机、KASAN
+  UAF、SLUB 损坏、ABBA 死锁），提供 parser_out/symbols/kasan.txt 即进分析模式；
+  「修好了/根因确认了」进反馈闭环。
+  无 dump 的重启行为异常用 qualcomm-reboot-analyzer。
 alwaysApply: false
 globs:
 ---
@@ -79,8 +73,7 @@ globs:
 - 根因模式库：`data/patterns.json`（历史分析模式累积）
 - 工具链缓存：`data/tool_cache.json`（按工作区缓存可用工具）
 - SLUB 损坏提取脚本：`scripts/slub_pa_extract.py`（提取 overwritten 事件 + 算 PA + 判 DRAM/CPU/DMA，对齐 patterns ptrn-007）
-- **动态复现验证（Step 8B 调用）**：Skill `diagnosing-bugs`（`~/.pi/agent/skills/diagnosing-bugs/SKILL.md`）— 偶发/竞态类 crash 建复现回路 + 回归测试的 P1-P5 纪律，Step 8B 借用
-- **vmlinux 匹配（禅道 ramdump）**：Skill `zentao-bug-log-fetch` §「vmlinux 匹配」— 检索范围仅 `aosp-log-analysis-workspace/`，`Linux version` 整行 EXACT MATCH
+- **动态复现验证（Step 8B 调用）**：Skill `diagnosing-bugs` — 偶发/竞态类 crash 建复现回路 + 回归测试的 P1-P5 纪律，Step 8B 借用
 - **vmlinux 匹配（禅道 ramdump）**：Skill `zentao-bug-log-fetch` §「vmlinux 匹配」— 检索范围仅 `aosp-log-analysis-workspace/`，`Linux version` 整行 EXACT MATCH
 
 ## 崩溃类型速览

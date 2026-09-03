@@ -1,14 +1,9 @@
 ---
 description: >
-  高通 QMVS flash-validation 测试失败的根因排查。触发词：flash-validation 失败/fail、
-  clock scale 不过、transitions 不足、UFS 变频失败/不切档、gear 不切换、test_ran=0、
-  value=-1、性能项不达标、错误计数非零、换新 flash 料验证失败、UFS 2.x/3.x 换料测试、
-  devfreq 死区、quirk 未命中。覆盖：45 项结果 CSV 对齐定位失败面 → 驱动树确认
-  （msm/common 双树陷阱）→ governor 三分支分析 → 设备实验矩阵（负载刻画/强制变频二分/
-  禁挂起对照/ftrace load 序列）→ 分层根因 + 修复 patch（downdifferential 分流/quirk 补条目）。
-  不处理：内核 crash/ramdump（用 han-kernel-crash-analyzer）、主动测存储速率
-  （用 han-flash-test）、重启行为异常（用 qualcomm-reboot-analyzer）。
-  反馈闭环：修好了/验证通过了/根因确认了。
+  高通 QMVS flash-validation 测试失败根因排查（UFS 变频不切档、clock scale
+  不过、test_ran=0、换料验证失败）。触发「flash-validation 失败/变频失败」
+  进分析；「验证通过了」进反馈闭环。
+  主动测存储速率用 han-flash-test。
 alwaysApply: false
 globs:
 ---
