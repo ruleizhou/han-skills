@@ -1,14 +1,10 @@
 ---
 name: han-imagen
 description: >
-  Han 生图底座 skill。三 provider 支持 OpenAI(gpt-image-1.5 / dall-e-3)、
-  Google(gemini-3-pro-image-preview / imagen) 与 DataEyesAI(gpt-image-2 中转),
-  提供 provider / 模型 / 宽高比 / 尺寸 /
-  质量 / 参考图 / JSON 输出等选项;通过作用域隔离的 .han-skills/.env 与 EXTEND.md 配置,
-  支持中转 base_url,产物统一输出到 ~/Downloads/han-skill-imagen/。
-  当用户说「生成图片、画图、出图、画一张、render image、generate image、改图、编辑图片、
-  换个风格、给这段配个图、生成图片素材、image generation」时使用本 skill。
-  无 API key 时,优先使用当前运行时内置的生图工具,再用本 skill 的 Python 后端。
+  Han 生图底座 skill，统一图片生成后端（OpenAI/Google/DataEyesAI 三 provider，
+  产物输出到 ~/Downloads/han-skill-imagen/）。触发「生成图片/改图/换个风格」；
+  上层业务 skill 通过本 skill 完成实际生图。
+  无 API key 时优先用当前运行时内置生图工具。
 ---
 
 # Han Imagen

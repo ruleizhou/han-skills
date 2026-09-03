@@ -1,12 +1,10 @@
 ---
 name: han-disassembly-diagram
 description: >
-  生成高质量中文教学拆解图:物体拆解、爆炸图、剖面图、内部结构图、产品解剖卡、部件标注、
-  材料说明、工作原理流程图。支持 hybrid(默认混合)/ exploded(爆炸)/ cutaway(剖面)/ auto 四种模式,
-  统一输出到 ~/Downloads/han-skill-imagen/。具备自学习:沉淀「对象类型→模式/画幅」经验。
-  当用户说「拆解图、爆炸图、剖面图、半剖视图、产品结构说明图、科普海报、知识卡片、
-  某东西的内部结构、原理结构图」时使用本 skill。
-  想要手绘知识卡用 han-hand-write-pic;想要信息图用 han-infographic。
+  生成中文教学拆解图（爆炸图、剖面图、产品解剖卡、内部结构图），
+  hybrid/exploded/cutaway/auto 四模式。
+  触发「拆解图/某东西的内部结构/原理结构图」。
+  想要手绘知识卡用 han-hand-write-pic。
 ---
 
 # Han Disassembly Diagram

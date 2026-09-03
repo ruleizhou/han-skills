@@ -1,11 +1,10 @@
 ---
 name: han-slides
 description: >
-  把内容(文章/主题/素材)做成适合阅读和分享的图片式幻灯片——每页是一张独立完整的图片,
-  再合并成 PPTX 和 PDF。支持 18 种风格预设(blueprint 默认)+ 18 种布局,受众/页数可调,
-  每页走 han-imagen 出图,纯 Python 标准库合并(无需第三方包)。当用户说「做幻灯片、做 PPT、
-  生成 deck、把文章做成演示、生成 PPT/PPTX/PDF、图片式幻灯片」时使用本 skill。
-  想要单张信息图用 han-infographic;想要可编辑图表用 han-d2-diagram。
+  把内容（文章/主题/素材）做成图片式幻灯片——每页一张独立图片，合并为 PPTX 和 PDF，
+  18 种风格×18 种布局。
+  触发「做 PPT/做幻灯片/图片式幻灯片」。
+  想要单张信息图用 han-infographic；想要可编辑图表用 han-d2-diagram。
 ---
 
 # Han Slides
