@@ -12,7 +12,7 @@
    - `*.log` 文件 — 内核日志/dmesg 输出
    - `*.json` 文件 — 解析元数据
 3. **如有足够文件**：直接进入 Step 2。
-3.5 **如无 dmesg_TZ.txt 但有 raw ramdump BIN + vmlinux**：检查 dump/ 目录含 DDRCS*.BIN 文件时 → 走crash直接解析路径：读取 workflows/crash-parse-raw.md → 从dump_info.txt取DDRCS物理映射 → 从OCIMEM.BIN取KASLR(0xdead4ead) → 拼接crash启动命令(优先从data/tool_cache.json读crash字段) → 启动crash执行sys/bt -a/log提取panic现场 → 写等效dmesg_TZ.txt → 回到主流程。
+3.5 **如无 dmesg_TZ.txt 但有 raw ramdump BIN + vmlinux**：检查 dump/ 目录含 DDRCS*.BIN 文件时 → **优先走 ramparse 正向路径**：调用 skill `han-ramdump-parser`（负责定位 vmlinux/parser 源码、环境自检、跑 ramparse 出全量 parser_out），产物出来回到本步骤开头重新检测输入。ramparse 跑不通（缺工具链/依赖装不上等）时再走 crash 直接解析降级路径：读取 workflows/crash-parse-raw.md → 从dump_info.txt取DDRCS物理映射 → 从OCIMEM.BIN取KASLR(0xdead4ead) → 拼接crash启动命令(优先从data/tool_cache.json读crash字段) → 启动crash执行sys/bt -a/log提取panic现场 → 写等效dmesg_TZ.txt → 回到主流程。
 4. **如缺少关键文件**：使用 `结构化提问` 弹出交互式提问，收集缺失的输入。
 
 `结构化提问` 示例：

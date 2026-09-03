@@ -1,0 +1,142 @@
+{
+  "_schema": "patterns.json — 模式/经验库，每次成功排坑后将有效的模式沉淀于此",
+  "_confidence_rules": {
+    "on_success": "confidence += 1, frequency += 1",
+    "on_failure": "confidence -= 1",
+    "on_confidence_below_zero": "从 patterns 数组中移除该条目"
+  },
+  "_fields": {
+    "id": "唯一标识，格式 ptrn-<自增三位数>",
+    "name": "模式简短名称（一句话概括）",
+    "category": "分类：env=环境 / toolchain=工具链 / dump=dump格式 / parse=解析行为 / version=版本匹配",
+    "description": "症状 + 解法写在一起，方便下次按关键词 grep",
+    "confidence": "置信度，初始为 1，success +1, fail -1",
+    "frequency": "出现次数",
+    "keywords": "用于模式匹配的关键词列表",
+    "first_seen": "首次发现日期 YYYY-MM-DD",
+    "last_seen": "最近一次出现日期 YYYY-MM-DD",
+    "outcome": "最终结果: success / partial / failed"
+  },
+  "patterns": [
+    {
+      "id": "ptrn-001",
+      "name": "PYTHONNOUSERSITE 导致 pyelftools import 不到",
+      "category": "env",
+      "description": "本机 PYTHONNOUSERSITE=1，pip3 --user 装的 pyelftools 默认不可见，报 ModuleNotFoundError: elftools。解法：跑 ramparse 的命令显式带 PYTHONPATH=$HOME/.local/lib/python3.8/site-packages。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["ModuleNotFoundError", "elftools", "pyelftools", "PYTHONPATH", "PYTHONNOUSERSITE"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-002",
+      "name": "KBA 教程的 psutil 依赖是过时信息",
+      "category": "env",
+      "description": "高通 KBA-200305021713 让装 psutil+pyelftools，实测该基线 parser 只需 pyelftools（func_timeout 仅 --timeout 时用）。别在装 psutil 上耗时。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["psutil", "KBA", "依赖", "requirements"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-003",
+      "name": "extensions 需手工符号链接到 proprietary（两种布局）",
+      "category": "parse",
+      "description": "opensource tools 树里的 linux-ramdump-parser-v2 不含 extensions（board_def.py 等专有配置）。解法：ln -s <proprietary路径> <parser目录>/extensions。proprietary 位置两种布局都探：新布局 vendor/qcom/proprietary/ramdump-parser（MC5616/LA.VENDOR.1.0.R1 实测），老布局 vendor/qcom-proprietary/ramdump-parser（KBA 文档写法）。MC9829 基线已链好但 git 未跟踪，新检出源码树要重链。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["extensions", "board_def", "proprietary", "符号链接", "ImportError", "qcom-proprietary"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-006",
+      "name": "AOSP prebuilts 无 gdb，gdb 需 ARM 预编译包",
+      "category": "toolchain",
+      "description": "项目源码树 prebuilts（如 MC5616 的 aarch64-linux-android-4.9）有 nm/objdump 但从不含 gdb；ramparse 的 gdb 硬依赖只能靠 ~/.tools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-gdb（无 root 方案，下载 URL 见 references/toolchain.md）。glibc 过老时 patchelf --set-rpath ~/.tools/glibc-2.39/lib。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["gdb", "prebuilts", "gcc-arm-10.3", "aarch64-none-linux-gnu"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-004",
+      "name": "本机缺 aarch64 交叉工具链",
+      "category": "toolchain",
+      "description": "MC9829 prebuilts 只有 32 位 arm-eabi-4.8，系统也无 gdb-multiarch/aarch64-linux-gnu-gdb。64 位 dump 需先装：apt install gdb-multiarch binutils-aarch64-linux-gnu（有 root）或解压 gcc-arm-10.3 预编译包到 ~/.tools（无 root，URL 见 references/toolchain.md）。装好后更新该条并记路径。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["gdb", "nm", "objdump", "aarch64", "arm64", "gdb-multiarch", "toolchain", "Incorrect path for toolchain"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "partial"
+    },
+    {
+      "id": "ptrn-005",
+      "name": "必须 cd 到 parser 目录跑（插件相对路径加载）",
+      "category": "parse",
+      "description": "parser_util 的 import_all_by_path('parsers') 按相对路径加载插件，在别的目录跑 ramparse.py 会找不到插件。解法：cd <parser目录> 后执行。",
+      "confidence": 1,
+      "frequency": 1,
+      "keywords": ["cd", "parsers", "插件", "import_all_by_path", "relative"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-007",
+      "name": "新平台内核无 struct smem_shared → auto detection 必败，直接 --force-hardware",
+      "category": "dump",
+      "description": "SM6450P/MC5616 案例：vmlinux（5.10 android12-9）里 gdb ptype 无 struct smem_shared/smem_header（smem 驱动结构改名），ramparse 报 '!!!! Could not get a necessary offset for auto detection!' + '!!!! Could not find hardware' + '!!!! The SMEM didn't match anything'，产物 dmesg_TZ.txt 只有头 ~10 行。解法：跳过 auto detection，直接 --force-hardware <board_num>。⚠️ 平台名必须在跑之前确认（鸡生蛋：产物解不出来正是要指定平台的原因）：① 现场 log（Log/Serial Debug*.txt、*dump-log*.txt）grep 'Hardware name' 最快 ② 无现场 log 用 skill 自带 scripts/qcom_platform_id.py <dump目录> --parser-dir <parser目录>（秒级：先全文件搜 Hardware name 权威名，未命中再收集全部 DTB compatible 候选与 board_num 全集交集消歧——DDR 里 HLOS/adsp 多份 DTB，adsp 的 netrani 会抢先，交集才定 parrot）③ strings DDRCS*.BIN 慢兜底。产物 dmesg 的 Hardware name 行只做事后验证。MC5616 SM6450P = parrot（board_num 'parrot'，socid 537/613，与 diwali 同内存布局参数故 diwali 也能蒙对）。注意 waipio/ravelin/netrani 等是音频/DSP 代号，Hardware name 行才是平台。",
+      "confidence": 3,
+      "frequency": 2,
+      "keywords": ["smem_shared", "smem_header", "Could not find hardware", "SMEM didn't match", "force-hardware", "Hardware name", "parrot", "diwali", "Could not get a necessary offset", "现场log"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-008",
+      "name": "部分基线 local_settings.py 是硬依赖（debug_image_v2 顶层 import）",
+      "category": "env",
+      "description": "部分基线 local_settings.py 是硬依赖：MC5616/LA.VENDOR.1.0.R1 与 MC5612/LA.VENDOR.13.2.1 的 debug_image_v2.py:23 在模块顶层裸 import local_settings（非 try/except），缺文件时 ramparse 启动即 ModuleNotFoundError。⚠️ MC5612 变体：parsers/dtb.py:21 也裸 import 且 :52 直接访问 local_settings.dtc_path（无 AttributeError 保护），占位文件需带 dtc_path='/usr/bin/dtc'。解法（两版皆可）：① parser 目录写 local_settings.py（gdb64_path/nm64_path/objdump64_path + 32 位三字段兜底；工具链走命令行 -g/-n/-j 时只需存在即可）② 零污染版：占位文件放 issue 目录（如 <issue>/ramparse_tmp/local_settings.py），跑命令 PYTHONPATH=<该目录>:$HOME/.local/lib/python3.8/site-packages 前插——多项目共用一棵 parser 树时互不打架（推荐）。scandump_parser_path/cpuss_parser_path 是可选字段（用到才查，有 except 保护）。各基线行为不同（MC9829 的是 try/except 可选），报 local_settings 缺失就先写一份。",
+      "confidence": 3,
+      "frequency": 3,
+      "keywords": ["local_settings", "ModuleNotFoundError", "debug_image_v2", "scandump_parser_path", "cpuss_parser_path", "dtb.py", "dtc_path", "dtc"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-009",
+      "name": "gdb-multiarch 用 deb 解包装 ~/.tools（无 root 替代 ARM 大包）",
+      "category": "toolchain",
+      "description": "ARM 官方包 ~130MB 下载慢时，可改从 Ubuntu 归档解包轻量 gdb：gdb-multiarch_8.1.1 deb + 依赖 libbabeltrace1/libdw1/gdb 主包（python 脚本在 gdb 主包 usr/share/gdb/python）全 dpkg -x 到 ~/.tools/gdb-multiarch/。运行需 export LD_LIBRARY_PATH=$HOME/.tools/gdb-multiarch/usr/lib/x86_64-linux-gnu。依赖 URL 在 archive.ubuntu.com pool（universe/g/gdb、universe/b/babeltrace、main/e/elfutils、main/b/babeltrace——libbabeltrace1 在 main 池）。注意 gdb 主包在 main 池路径 /pool/main/g/gdb/（universe 目录列表会缺 gdb 主包造成 404）。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["gdb-multiarch", "deb", "dpkg -x", "libbabeltrace", "libdw", "LD_LIBRARY_PATH", "gdb 主包", "python gdb 模块"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    },
+    {
+      "id": "ptrn-010",
+      "name": "pip3 指向 py2.7，装包必须 python3 -m pip",
+      "category": "env",
+      "description": "本机 pip3 是 python2.7 的（装到 py2.7 site-packages 后 python3 import 不到）；用 python3 -m pip install --user <pkg> 才装进 /usr/local/meig/python/3.8.20 的 user site。MC5616 基线还需 tabulate（parsers/pm_genpd_parser.py 顶层 import），缺了 ramparse --help 报 ModuleNotFoundError: tabulate。",
+      "confidence": 2,
+      "frequency": 2,
+      "keywords": ["pip3", "python2.7", "tabulate", "ModuleNotFoundError", "python3 -m pip"],
+      "first_seen": "2026-09-03",
+      "last_seen": "2026-09-03",
+      "outcome": "success"
+    }
+  ]
+}

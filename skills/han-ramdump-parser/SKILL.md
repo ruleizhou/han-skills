@@ -1,0 +1,61 @@
+---
+name: han-ramdump-parser
+description: >
+  高通平台 ramdump 解析前置工具：调用项目源码树里的 linux-ramdump-parser-v2（ramparse.py），
+  把 raw ramdump（DDRCS*.BIN + dump_info.txt / MR_HLOS*.ELF / md_*.BIN minidump）解析成
+  parser_out 目录（dmesg_TZ.txt、taskdump、smem、T32 脚本等全量产物），并给出 panic 签名
+  一行摘要。当用户说「跑 ramparse / 解析 ramdump / 出 parser_out / parse 一下这个 dump /
+  帮我解个 dump / 这个 dump 怎么解析」或给出 ramdump 目录要求解析时使用，即使没点名
+  ramparse 也应触发。ramparse 跑失败/报错时进排坑模式。深度根因分析交给
+  han-kernel-crash-analyzer（本 skill 负责跑到 parser_out 为止）；无 dump 的重启行为异常
+  用 qualcomm-reboot-analyzer。
+---
+
+# han-ramdump-parser：ramdump → parser_out
+
+把 raw ramdump 用 linux-ramdump-parser-v2 跑出 parser_out 产物目录，校验后交棒根因分析。本 skill 只负责「解析 + 轻分析」，不展开栈回溯与根因分析。
+
+## 核心原则
+
+1. **vmlinux 必须与 dump 严格匹配**——从出 dump 的项目同一次编译产物里拿（out/ 目录下的 vmlinux）。版本不匹配时符号化全错、后续分析全废；拿不准就问用户，不要拿相近版本凑合。
+2. **路径不猜**——三要素（dump 目录、vmlinux、parser 源码）自动定位失败时，用 AskUserQuestion 问清再动，不要试错式乱跑。
+3. **跑前环境自检**——python3/pyelftools/extensions/工具链任一缺失都会让 ramparse 半路死掉（step-01 逐项检查），报错先查 `workflows/troubleshoot.md` 按症状定位，不盲目重试。
+4. **产物必须校验后才算完成**——parser_out 目录存在且 dmesg_TZ.txt 有效才算解析成功；完成后主动交棒 han-kernel-crash-analyzer。
+
+## 模式判断
+
+**先判断用户意图属于哪种模式**：
+
+| 触发信号 | 模式 | 动作 |
+|----------|------|------|
+| 给 ramdump 目录/文件要求解析（默认） | 解析模式 | Step 0 → 1 → 2 → 3 |
+| 只要快速看内核日志（明确说"快点/先看 dmesg"） | 快速模式 | 同解析模式，Step 2 用 `--dmesg` 精选替代 `-x` 全量 |
+| ramparse 报错/失败/历史上没跑通 | 排坑模式 | 读 `workflows/troubleshoot.md` 按症状索引 |
+
+## 预检清单
+
+进入工作流前快速判断：
+
+- dump 目录里有 `DDR*.BIN`/`dump_info.txt`/`MR_HLOS*.ELF`/`md_*.BIN` 之一（格式判型见 `references/dump-formats.md`）
+- vmlinux 未 stripped（`file vmlinux` 显示 "not stripped"，带符号才可解析）
+- parser 源码通常在项目源码树 `vendor/qcom/opensource/tools/linux-ramdump-parser-v2`（可联动 project-info skill 按项目名定位源码树）
+
+## Workflow
+
+本 skill 使用 4 步工作流（Step 0 ~ Step 3），按顺序执行。**每个步骤开始时，先 Read 对应的详细指令文件：**
+
+| Step | 文件 | 做什么 |
+|------|------|--------|
+| 0 | `workflows/step-00-scenario.md` | 收集三要素（dump/vmlinux/parser 源码）+ dump 格式判型 + 模式确认 |
+| 1 | `workflows/step-01-envcheck.md` | 环境自检：python3、pyelftools、extensions、交叉工具链 |
+| 2 | `workflows/step-02-run.md` | 构造并执行 ramparse 命令（默认 `-x` 全量，快速模式用 `--dmesg`） |
+| 3 | `workflows/step-03-verify.md` | 产物校验 + panic 签名摘要 + 交棒 + 新坑收录 patterns.json |
+
+**开始执行时，首先读取 `workflows/step-00-scenario.md`。**
+
+## 参考资料速查
+
+- `references/ramparse-options.md` — 命令行选项矩阵 + ~100 个 parser 插件分类速查
+- `references/dump-formats.md` — 四种 dump 格式（完整/reduced/minidump/VMSSR）判型规则
+- `references/toolchain.md` — gdb/nm/objdump 三种配置方式 + 探测顺序 + 本机缺口与获取方案
+- `data/patterns.json` — 坑库（排坑成功后按 schema 收录，越用越准）
