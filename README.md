@@ -23,9 +23,6 @@ Han 个人 Skills 仓库，用来集中维护可复用的本地 AI 工作流。�
 ├── .cursor/
 │   └── rules/
 │       └── *.mdc                  # 每个 skill 一个，由 scripts/gen_cursor_rules.py 生成
-├── hooks/
-│   ├── hooks.json               # Claude Code SessionStart 钩子
-│   └── session-start.sh         # 打印可用 skill 速查
 ├── references/
 │   └── README.md                # 跨 skill 共享参考
 ├── scripts/
